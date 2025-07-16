@@ -1,3 +1,5 @@
+import { CurrencyCombobox } from "@/components/CurrencyCombobox";
+import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -38,15 +40,18 @@ export default async function WizardPage() {
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
-
+                    <CurrencyCombobox />
                 </CardContent>
             </Card>
             <Separator />
-            <Link href="/">
-                <Button className="w-full" asChild>
+            <Button className="w-full" asChild>
+                <Link href="/">
                     I &apos;m all set! Take me to the dashboard
-                </Button>
-            </Link>
+                </Link>
+            </Button>
+            <div className="mt-10">
+                <Logo />
+            </div>
         </div>
     )
 }
