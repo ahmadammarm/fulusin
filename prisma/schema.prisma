@@ -14,7 +14,7 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model UserSettings {
+model CurrencySettings {
     userId String @id
     currency String @default("USD")
 }

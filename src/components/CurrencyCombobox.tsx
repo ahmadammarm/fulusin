@@ -1,7 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import * as React from "react"
-
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -23,44 +23,74 @@ import {
 } from "@/components/ui/popover"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Currencies, Currency } from "@/lib/currencies"
+import { useQuery } from "@tanstack/react-query"
+import SkeletonWrapper from "./SkeletonWrapper"
+import { CurrencySettings } from "@/generated/prisma"
 
 
 
 export function CurrencyCombobox() {
-    const [open, setOpen] = React.useState(false)
+    const [open, setOpen] = useState(false)
     const isDesktop = useMediaQuery("(min-width: 768px)")
-    const [selectedCurrency, setSelectedCurrency] = React.useState<Currency | null>(
+    const [selectedCurrency, setSelectedCurrency] = useState<Currency | null>(
         null
     )
 
+    const currencySettings = useQuery<CurrencySettings>({
+        queryKey: ["currencySettings"],
+        queryFn: async () => {
+            const response = await fetch("/api/currency-setting");
+            if (!response.ok) {
+                throw new Error("Failed to fetch currency settings");
+            }
+            return response.json();
+        }
+    });
+
+    useEffect(() => {
+        if (!currencySettings.data) {
+            return
+        }
+        const userCurrency = Currencies.find((currency) => currency.value === currencySettings.data.currency);
+        if (userCurrency) {
+            setSelectedCurrency(userCurrency);
+        } else {
+            setSelectedCurrency(null);
+        }
+    }, [currencySettings.data]);
+
     if (isDesktop) {
         return (
-            <Popover open={open} onOpenChange={setOpen}>
-                <PopoverTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
-                        {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
-                    </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0" align="start">
-                    <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
-                </PopoverContent>
-            </Popover>
+            <SkeletonWrapper isLoading={currencySettings.isFetching}>
+                <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start">
+                            {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
+                        </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[200px] p-0" align="start">
+                        <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
+                    </PopoverContent>
+                </Popover>
+            </SkeletonWrapper>
         )
     }
 
     return (
-        <Drawer open={open} onOpenChange={setOpen}>
-            <DrawerTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                    {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
-                </Button>
-            </DrawerTrigger>
-            <DrawerContent>
-                <div className="mt-4 border-t">
-                    <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
-                </div>
-            </DrawerContent>
-        </Drawer>
+        <SkeletonWrapper isLoading={currencySettings.isFetching}>
+            <Drawer open={open} onOpenChange={setOpen}>
+                <DrawerTrigger asChild>
+                    <Button variant="outline" className="w-full justify-start">
+                        {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
+                    </Button>
+                </DrawerTrigger>
+                <DrawerContent>
+                    <div className="mt-4 border-t">
+                        <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
+                    </div>
+                </DrawerContent>
+            </Drawer>
+        </SkeletonWrapper>
     )
 }
 
