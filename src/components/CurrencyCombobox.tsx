@@ -25,7 +25,7 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { Currencies, Currency } from "@/lib/currencies"
 import { useQuery } from "@tanstack/react-query"
 import SkeletonWrapper from "./SkeletonWrapper"
-import { CurrencySettings } from "@/generated/prisma"
+import { CurrencySettings } from "@prisma/client"
 
 
 
@@ -123,7 +123,7 @@ function CurrencyList({
                             }}
                             className="w-full"
                         >
-                            {currency.value} - {currency.label}
+                            {currency.label}
                         </CommandItem>
                     ))}
                 </CommandGroup>

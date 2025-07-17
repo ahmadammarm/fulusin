@@ -5,61 +5,61 @@
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+    provider = "prisma-client-js"
+    output   = "../node_modules/.prisma/client"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model CurrencySettings {
-    userId String @id
+    userId   String @id
     currency String @default("USD")
 }
 
 model Category {
     createdAt DateTime @default(now())
-    name String @id
-    userId String
-    icon String
-    type String @default("income")
+    name      String   @id
+    userId    String
+    icon      String
+    type      String   @default("income")
 
     @@unique([userId, name, type])
 }
 
 model Transaction {
-    id String @id @default(uuid())
+    id        String   @id @default(uuid())
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    amount Float
+    amount      Float
     description String?
-    date DateTime
-    userId String
-    type String @default("income")
-    category String
-    categoryId String
+    date        DateTime
+    userId      String
+    type        String   @default("income")
+    category    String
+    categoryId  String
 }
 
 model MonthHistory {
-    userId String
-    day Int
-    month Int
-    year Int
-    income Float @default(0)
-    expense Float @default(0)
+    userId  String
+    day     Int
+    month   Int
+    year    Int
+    income  Float  @default(0)
+    expense Float  @default(0)
 
     @@id([userId, day, month, year])
 }
 
 model YearHistory {
-    userId String
-    month Int
-    year Int
-    income Float @default(0)
-    expense Float @default(0)
+    userId  String
+    month   Int
+    year    Int
+    income  Float  @default(0)
+    expense Float  @default(0)
 
     @@id([userId, month, year])
 }
