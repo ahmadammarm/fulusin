@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import {
     Command,
@@ -23,9 +23,11 @@ import {
 } from "@/components/ui/popover"
 import { useMediaQuery } from "@/hooks/use-media-query"
 import { Currencies, Currency } from "@/lib/currencies"
-import { useQuery } from "@tanstack/react-query"
+import { useMutation, useQuery } from "@tanstack/react-query"
 import SkeletonWrapper from "./SkeletonWrapper"
 import { CurrencySettings } from "@prisma/client"
+import { UpdateUserCurrencyAction } from "@/app/wizard/actions/currencySettings"
+import { toast } from "sonner"
 
 
 
@@ -59,17 +61,47 @@ export function CurrencyCombobox() {
         }
     }, [currencySettings.data]);
 
+    const mutation = useMutation({
+        mutationFn: UpdateUserCurrencyAction,
+        onSuccess: (data: CurrencySettings) => {
+            toast.success("Currency updated successfully", {
+                id: "update-currency"
+            });
+
+            setSelectedCurrency(Currencies.find((currency) => currency.value === data.currency) || null);
+        },
+        onError: (error: any) => {
+            toast.error(error?.message || "Failed to update currency", {
+                id: "update-currency"
+            });
+        },
+    });
+
+    const selectedCurrencyOption = useCallback((currency: Currency | null) => {
+        if (!currency) {
+            toast.error("Please select a currency");
+            return
+        }
+
+        toast.loading("Updating currency...", {
+            id: "update-currency"
+        });
+
+        mutation.mutate(currency.value)
+
+    }, [mutation]);
+
     if (isDesktop) {
         return (
             <SkeletonWrapper isLoading={currencySettings.isFetching}>
                 <Popover open={open} onOpenChange={setOpen}>
                     <PopoverTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start">
+                        <Button variant="outline" className="w-full justify-start" disabled={mutation.isPending}>
                             {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
                         </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[200px] p-0" align="start">
-                        <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
+                        <CurrencyList setOpen={setOpen} setSelectedCurrency={selectedCurrencyOption} />
                     </PopoverContent>
                 </Popover>
             </SkeletonWrapper>
@@ -80,13 +112,13 @@ export function CurrencyCombobox() {
         <SkeletonWrapper isLoading={currencySettings.isFetching}>
             <Drawer open={open} onOpenChange={setOpen}>
                 <DrawerTrigger asChild>
-                    <Button variant="outline" className="w-full justify-start">
+                    <Button variant="outline" className="w-full justify-start" disabled={mutation.isPending}>
                         {selectedCurrency ? <>{selectedCurrency.label}</> : <>+ Set currency</>}
                     </Button>
                 </DrawerTrigger>
                 <DrawerContent>
                     <div className="mt-4 border-t">
-                        <CurrencyList setOpen={setOpen} setSelectedCurrency={setSelectedCurrency} />
+                        <CurrencyList setOpen={setOpen} setSelectedCurrency={selectedCurrencyOption} />
                     </div>
                 </DrawerContent>
             </Drawer>
