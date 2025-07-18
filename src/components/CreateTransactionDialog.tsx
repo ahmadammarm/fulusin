@@ -32,7 +32,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                 {trigger}
             </DialogTrigger>
             <DialogContent>
-                <DialogHeader>
+                <DialogHeader className="mb-5">
                     <DialogTitle>
                         Create a new <span className={cn("m-1", type === "income" ? "text-green-500" : "text-red-500")}>{type === "income" ? "Income" : "Expense"}</span> transaction
                     </DialogTitle>
@@ -46,11 +46,11 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 <FormItem>
                                     <FormLabel>Description</FormLabel>
                                     <FormControl>
-                                        <Input defaultValue={''} {...field} />
+                                        <Input defaultValue={''} {...field} placeholder="Enter a description (optional)" />
                                     </FormControl>
-                                    <FormDescription>
+                                    {/* <FormDescription>
                                         Transaction description (optional)
-                                    </FormDescription>
+                                    </FormDescription> */}
                                 </FormItem>
                             )}
                         />
@@ -59,13 +59,13 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                             name="amount"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Amount</FormLabel>
+                                    <FormLabel>Amount <span className="text-red-500 font-bold">*</span></FormLabel>
                                     <FormControl>
                                         <Input defaultValue={0} {...field} type="number" />
                                     </FormControl>
-                                    <FormDescription>
+                                    {/* <FormDescription>
                                         Transaction amount (required)
-                                    </FormDescription>
+                                    </FormDescription> */}
                                 </FormItem>
                             )}
                         />
@@ -75,13 +75,13 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 name="category"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Category</FormLabel>
+                                        <FormLabel>Category <span className="text-red-500 font-bold">*</span></FormLabel>
                                         <FormControl>
                                             <CategoryPicker type={type} />
                                         </FormControl>
-                                        <FormDescription>
-                                            Select a category for this transaction
-                                        </FormDescription>
+                                        {/* <FormDescription>
+                                            Select a category for the transaction
+                                        </FormDescription> */}
                                     </FormItem>
                                 )}
                             />
