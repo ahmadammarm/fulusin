@@ -9,6 +9,7 @@ import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
+import CategoryPicker from "./CategoryPicker";
 
 interface Props {
     trigger: ReactNode;
@@ -69,7 +70,21 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                             )}
                         />
                         <div className="flex items-center gap-2 justify-between">
-                            
+                            <FormField
+                                control={form.control}
+                                name="category"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Category</FormLabel>
+                                        <FormControl>
+                                            <CategoryPicker type={type} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Select a category for this transaction
+                                        </FormDescription>
+                                    </FormItem>
+                                )}
+                            />
                         </div>
                     </form>
                 </Form>
