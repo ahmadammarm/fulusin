@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buttonVariants } from "./ui/button";
-import { UserButton } from "@clerk/nextjs";
+// import { UserButton } from "@clerk/nextjs";
 
 const NavbarItems = [
     { label: "Dashboard", href: "/" },
@@ -48,7 +48,7 @@ export default function DesktopNavbar() {
                     </div>
                 </div>
                 <div className="flex items-center">
-                    <UserButton afterSignOutUrl="/sign-in" />
+                    {/* <UserButton afterSignOutUrl="/sign-in" /> */}
                 </div>
             </nav>
         </div>

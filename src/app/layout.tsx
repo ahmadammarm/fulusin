@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
-import RootProvider from "@/providers/RootProvider";
 import { Toaster } from "@/components/ui/sonner";
+import NextAuthProvider from "@/providers/NextAuthProvider";
+import { getServerSession } from "next-auth";
+import RootProvider from "@/providers/RootProvider";
 
 const geistSans = Geist({
     variable: "--font-geist-sans",
@@ -20,23 +21,26 @@ export const metadata: Metadata = {
     description: "Track your finances effortlessly with Finscopease, your AI-powered financial assistant.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
     children,
 }: Readonly<{
     children: React.ReactNode;
 }>) {
+
+    const session = await getServerSession();
+
     return (
-        <ClerkProvider>
-            <html lang="en">
-                <body
-                    className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-                >
+        <html lang="en">
+            <body
+                className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+            >
+                <NextAuthProvider session={session}>
                     <Toaster richColors position="bottom-right" />
                     <RootProvider>
                         {children}
                     </RootProvider>
-                </body>
-            </html>
-        </ClerkProvider>
+                </NextAuthProvider>
+            </body>
+        </html>
     );
 }

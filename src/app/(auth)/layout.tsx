@@ -2,11 +2,9 @@ import Logo from "@/components/Logo"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="relative flex h-screen w-full flex-col items-center justify-center">
+        <div className="flex items-center justify-center min-h-screen flex-col w-full">
             <Logo />
-            <div className="mt-5">
-                {children}
-            </div>
+            {children}
         </div>
     );
 }

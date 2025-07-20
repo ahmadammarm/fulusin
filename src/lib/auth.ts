@@ -1,72 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import prisma from "@/lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions, getServerSession } from "next-auth";
 import { Adapter } from "next-auth/adapters";
-import { compare, hash } from "bcryptjs";
-import { z } from "zod";
-import { User } from "next-auth";
+import { compare } from "bcryptjs";
 import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
-
-interface CustomUser extends User {
-    uuid: string;
-    role?: string;
-}
-
-export async function registerUser(
-    email: string,
-    password: string,
-    name: string,
-    role: string = "user"
-) {
-    const schema = z.object({
-        email: z.string().email({ message: "Email is not valid" }),
-        password: z.string().min(8, { message: "Minimum password length is 8" }),
-        name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-        role: z.enum(["user", "admin"], {
-            errorMap: () => ({ message: "Role must be either 'user' or 'admin'" }),
-        }),
-    });
-
-    const result = schema.safeParse({ email, password, name, role });
-
-    if (!result.success) {
-        throw new Error(result.error.errors[0].message);
-    }
-
-    const existingUser = await prisma.user.findUnique({ where: { email } });
-
-    if (existingUser) {
-        throw new Error("User with this email already exists");
-    }
-
-    const hashedPassword = await hash(password, 12);
-
-    const user = await prisma.user.create({
-        data: {
-            email,
-            password: hashedPassword,
-            name,
-            role,
-        },
-    });
-
-    return {
-        uuid: user.uuid,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-    };
-}
+import { z } from "zod";
+import prisma from "./prisma";
 
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma) as Adapter,
     session: {
         strategy: "jwt",
     },
-    secret: process.env.NEXTAUTH_SECRET,
+    secret: process.env.NEXT_AUTH_SECRET,
     pages: {
-        signIn: "/auth/sign-in",
+        signIn: "/sign-in",
     },
     providers: [
         CredentialsProvider({
@@ -77,72 +26,72 @@ export const authOptions: NextAuthOptions = {
             },
             async authorize(credentials) {
                 if (!credentials) {
-                    throw new Error("Credentials are missing");
+                    throw Error("Credentials undefined");
                 }
 
                 const schema = z.object({
-                    email: z.string().email("Email is not valid"),
-                    password: z.string().min(8, "Minimum password length is 8"),
+                    email: z.string().email(),
+                    password: z.string().min(6, "Password must be at least 6 characters long"),
                 });
 
-                const result = schema.safeParse(credentials);
+                const validation = schema.safeParse(credentials);
 
-                if (!result.success) {
-                    throw new Error(result.error.errors[0].message);
+                if (!validation.success) {
+                    throw Error("Invalid email or password");
                 }
 
-                const { email, password } = result.data;
+                const { email, password }: z.infer<typeof schema> = credentials;
 
                 const user = await prisma.user.findUnique({
-                    where: { email },
-                    select: {
-                        uuid: true,
-                        email: true,
-                        name: true,
-                        password: true,
-                        role: true,
+                    where: {
+                        email: email,
                     },
                 });
 
                 if (!user) {
-                    throw new Error("User not found or wrong password");
+                    throw Error("Incorrect email");
                 }
 
-                const isMatch = await compare(password, user.password);
-                if (!isMatch) {
-                    throw new Error("User not found or wrong password");
+                const passwordMatch = await compare(password, user.password);
+
+                if (!passwordMatch) {
+                    throw Error("Incorrect password");
                 }
 
                 return {
-                    uuid: user.uuid,
+                    id: user.id,
                     email: user.email,
                     name: user.name,
-                    role: user.role,
-                } as CustomUser;
+                } as any;
             },
         }),
     ],
     callbacks: {
         async jwt({ token, user }) {
             if (user) {
-                token.uuid = (user as CustomUser).uuid;
-                token.role = (user as CustomUser).role;
+                return {
+                    ...token,
+                    id: user.id,
+                };
             }
             return token;
         },
         async session({ session, token }) {
-            session.user.uuid = token.uuid as string;
-            session.user.role = token.role as string | undefined;
-            return session;
+            return {
+                ...session,
+                user: {
+                    ...session.user,
+                    id: token.id,
+                    name: token.name,
+                },
+            };
         },
     },
 };
 
+// Use it in server contexts
 export function auth(
-    ...args:
-        | [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]]
-        | [NextApiRequest, NextApiResponse]
-        | []
+    ...args: [GetServerSidePropsContext["req"], GetServerSidePropsContext["res"]] | [NextApiRequest, NextApiResponse] | []
 ) {
     return getServerSession(...args, authOptions);
 }

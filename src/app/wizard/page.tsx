@@ -3,23 +3,24 @@ import Logo from "@/components/Logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { currentUser } from "@clerk/nextjs/server"
+import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 
 export default async function WizardPage() {
 
-    const user = await currentUser();
-
-    if (!user) {
-        redirect('/sign-in');
+    const session = await auth();
+    if (!session || !session.user) {
+        redirect("/signin");
     }
+
+    const user = session.user;
 
     return (
         <div className="container flex max-w-2xl flex-col items-center justify-between gap-4 p-4">
             <div>
                 <h1 className="text-center text-3xl">
-                    Welcome, <span className="ml-2 font-bold">{user.firstName}</span>
+                    Welcome, <span className="ml-2 font-bold">{user.name}</span>
                 </h1>
                 <h2 className="mt-4 text-center text-base text-muted-foreground">
                     Let &apos;s get started by setting up your currency preferences.
