@@ -22,27 +22,39 @@ model User {
     password  String
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+
+    currencySettings CurrencySettings?
+    categories       Category[]
+    transactions     Transaction[]
+    monthHistories   MonthHistory[]
+    yearHistories    YearHistory[]
 }
 
 model CurrencySettings {
     userId   String @id
     currency String @default("USD")
+
+    user     User   @relation(fields: [userId], references: [id])
 }
 
 model Category {
-    createdAt DateTime @default(now())
-    name      String   @id
+    name      String
     userId    String
     icon      String
     type      String   @default("income")
+    createdAt DateTime @default(now())
 
+    user      User     @relation(fields: [userId], references: [id])
+    transactions Transaction[] @relation("CategoryTransactions")
+
+    @@id([userId, name, type])
     @@unique([userId, name, type])
 }
 
 model Transaction {
-    id        String   @id @default(uuid())
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+    id          String   @id @default(uuid())
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     amount      Float
     description String?
@@ -51,6 +63,9 @@ model Transaction {
     type        String   @default("income")
     category    String
     categoryId  String
+
+    user        User     @relation(fields: [userId], references: [id])
+    categoryRel Category @relation("CategoryTransactions", fields: [userId, category, type], references: [userId, name, type])
 }
 
 model MonthHistory {
@@ -61,6 +76,8 @@ model MonthHistory {
     income  Float  @default(0)
     expense Float  @default(0)
 
+    user    User   @relation(fields: [userId], references: [id])
+
     @@id([userId, day, month, year])
 }
 
@@ -70,6 +87,8 @@ model YearHistory {
     year    Int
     income  Float  @default(0)
     expense Float  @default(0)
+
+    user    User   @relation(fields: [userId], references: [id])
 
     @@id([userId, month, year])
 }

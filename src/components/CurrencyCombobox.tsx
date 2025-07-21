@@ -30,7 +30,6 @@ import { UpdateUserCurrencyAction } from "@/actions/currencySettings"
 import { toast } from "sonner"
 
 
-
 export function CurrencyCombobox() {
     const [open, setOpen] = useState(false)
     const isDesktop = useMediaQuery("(min-width: 768px)")
@@ -45,8 +44,10 @@ export function CurrencyCombobox() {
             if (!response.ok) {
                 throw new Error("Failed to fetch currency settings");
             }
-            return response.json();
-        }
+            const data = await response.json();
+            return data as CurrencySettings;
+        },
+        refetchOnWindowFocus: false,
     });
 
     useEffect(() => {

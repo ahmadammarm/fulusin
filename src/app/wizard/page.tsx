@@ -46,7 +46,7 @@ export default async function WizardPage() {
             </Card>
             <Separator />
             <Button className="w-full" asChild>
-                <Link href="/">
+                <Link href="/dashboard">
                     I &apos;m all set! Take me to the dashboard
                 </Link>
             </Button>
