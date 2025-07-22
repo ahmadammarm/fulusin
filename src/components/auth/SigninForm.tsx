@@ -20,7 +20,7 @@ export default function SigninForm() {
 
     useEffect(() => {
         if (user) {
-            router.push("/wizard");
+            router.push("/dashboard");
         }
     }, [user, router]);
 
@@ -43,7 +43,7 @@ export default function SigninForm() {
         },
         onSuccess: () => {
             toast.success("Signed in successfully!");
-            router.push("/wizard");
+            router.push("/dashboard");
         },
         onError: (error: Error) => {
             toast.error(`Sign in failed: ${error.message}`);

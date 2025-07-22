@@ -1,20 +1,21 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import z from "zod";
 
 export async function GET(request: NextRequest) {
-    const user = await currentUser();
-    
-    if(!user) {
+    const session = await auth();
+    const user = session?.user;
+
+    if (!user) {
         redirect('/sign-in');
     }
 
     try {
         const { searchParams } = new URL(request.url);
-        
+
         const paramType = searchParams.get('type');
 
 
@@ -43,8 +44,8 @@ export async function GET(request: NextRequest) {
         })
 
         return NextResponse.json(categories);
-        
-    } catch(error: any) {
+
+    } catch (error: any) {
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
