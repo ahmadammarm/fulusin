@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { cn } from "@/lib/utils";
 import CategoryRow from "./CategoryRow";
+import { Command, CommandInput } from "./ui/command";
 
 
 interface CategoryPickerProps {
@@ -39,7 +40,12 @@ export default function CategoryPicker({ type }: CategoryPickerProps) {
             </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
-    
+            <Command>
+                <CommandInput
+                    placeholder="Search categories..."
+                />
+                <CreateCategoryDialog type={type} />
+            </Command>
         </PopoverContent>
     </Popover>
 }
