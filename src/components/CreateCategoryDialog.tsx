@@ -1,19 +1,22 @@
 "use client"
 
 import { TransactionType } from "@/lib/types";
-import { categorySchema } from "@/schemas/categories";
+import { categorySchema, CategorySchemaType } from "@/schemas/categories";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useForm } from "react-hook-form";
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { CircleOff, PlusSquareIcon } from "lucide-react";
+import { CircleOff, Loader2, PlusSquareIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import Picker from '@emoji-mart/react';
 import data from '@emoji-mart/data';
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateCategoryAction } from "@/actions/categories";
+import { toast } from "sonner";
 
 
 export default function CreateCategoryDialog({ type }: { type: TransactionType }) {
@@ -26,6 +29,40 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
             type
         }
     });
+
+    const queryClient = useQueryClient();
+
+    const { mutate, isPending } = useMutation({
+        mutationFn: CreateCategoryAction,
+        onSuccess: async () => {
+            form.reset({
+                name: '',
+                icon: '',
+                type
+            })
+            toast.success("Category created successfully!", {
+                id: "create-category-success"
+            });
+
+            await queryClient.invalidateQueries({
+                queryKey: ['categories']
+            });
+
+            setOpen(prev => !prev);
+        },
+        onError: (error: Error) => {
+            toast.error(`Failed to create category: ${error.message}`, {
+                id: "create-category-error"
+            });
+        }
+    })
+
+    const onSubmit = useCallback((data: CategorySchemaType) => {
+        toast.loading("Creating category...", {
+            id: "create-category-loading"
+        });
+        mutate(data);
+    }, [mutate]);
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -44,7 +81,7 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
                         Categories are used to organize your transactions. You can create a new category here.
                     </DialogDescription>
                     <Form {...form}>
-                        <form className="space-y-4">
+                        <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
                             <FormField
                                 control={form.control}
                                 name="name"
@@ -101,8 +138,8 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
                                                                 Cancel
                                                             </Button>
                                                         </DialogClose>
-                                                        <Button>
-                                                            Save
+                                                        <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+                                                            {isPending ? <Loader2 /> : "Save"}
                                                         </Button>
                                                     </DialogFooter>
                                                 </PopoverContent>
