@@ -17,9 +17,15 @@ import data from '@emoji-mart/data';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateCategoryAction } from "@/actions/categories";
 import { toast } from "sonner";
+import { Category } from "@prisma/client";
+
+interface Props {
+    type: TransactionType;
+    onSuccessCallback: (category: Category) => void;
+}
 
 
-export default function CreateCategoryDialog({ type }: { type: TransactionType }) {
+export default function CreateCategoryDialog({ type, onSuccessCallback }: Props) {
 
     const [open, setOpen] = useState(false);
 
@@ -34,7 +40,7 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
 
     const { mutate, isPending } = useMutation({
         mutationFn: CreateCategoryAction,
-        onSuccess: async () => {
+        onSuccess: async (data: Category) => {
             form.reset({
                 name: '',
                 icon: '',
@@ -43,6 +49,8 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
             toast.success("Category created successfully!", {
                 id: "create-category-success"
             });
+
+            onSuccessCallback(data)
 
             await queryClient.invalidateQueries({
                 queryKey: ['categories']
@@ -127,22 +135,22 @@ export default function CreateCategoryDialog({ type }: { type: TransactionType }
                                                     <Picker
                                                         data={data}
                                                         onEmojiSelect={(emoji: { native: string }) => {
-                                                            field.onChange(emoji?.native || "");
+                                                            field.onChange(emoji.native || "");
                                                         }}
                                                     />
-                                                    <DialogFooter>
-                                                        <DialogClose asChild>
-                                                            <Button type="button" variant={"secondary"} onClick={() => {
-                                                                form.reset();
-                                                            }}>
-                                                                Cancel
-                                                            </Button>
-                                                        </DialogClose>
-                                                        <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-                                                            {isPending ? <Loader2 /> : "Save"}
-                                                        </Button>
-                                                    </DialogFooter>
                                                 </PopoverContent>
+                                                <DialogFooter>
+                                                    <DialogClose asChild>
+                                                        <Button type="button" variant={"secondary"} onClick={() => {
+                                                            form.reset();
+                                                        }}>
+                                                            Cancel
+                                                        </Button>
+                                                    </DialogClose>
+                                                    <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
+                                                        {isPending ? <Loader2 /> : "Save"}
+                                                    </Button>
+                                                </DialogFooter>
                                             </Popover>
                                         </FormControl>
                                     </FormItem>

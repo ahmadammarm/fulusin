@@ -1,7 +1,7 @@
 "use client"
 
 import { TransactionType } from "@/lib/types";
-import { ReactNode } from "react"
+import { ReactNode, useCallback } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
@@ -25,6 +25,10 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
             date: new Date(),
         },
     })
+
+    const handleCategoryChange = useCallback((category: string) => {
+        form.setValue("category", category);
+    }, [form]);
 
     return (
         <Dialog>
@@ -69,15 +73,15 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 </FormItem>
                             )}
                         />
-                        <div className="flex items-center gap-2 justify-between">
+                        <div className="flex items-center gap-2 justify-between mt-3">
                             <FormField
                                 control={form.control}
                                 name="category"
                                 render={({ field }) => (
-                                    <FormItem>
-                                        <FormLabel>Category <span className="text-red-500 font-bold">*</span></FormLabel>
-                                        <FormControl>
-                                            <CategoryPicker type={type} />
+                                    <FormItem className="flex items-center gap-4 w-full">
+                                        <FormLabel className="whitespace-nowrap">Category <span className="text-red-500 font-bold">*</span></FormLabel>
+                                        <FormControl className="flex-1">
+                                            <CategoryPicker type={type} onChange={handleCategoryChange} />
                                         </FormControl>
                                         {/* <FormDescription>
                                             Select a category for the transaction
