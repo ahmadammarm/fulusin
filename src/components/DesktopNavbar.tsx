@@ -8,7 +8,7 @@ import { buttonVariants } from "./ui/button";
 // import { UserButton } from "@clerk/nextjs";
 
 const NavbarItems = [
-    { label: "Dashboard", href: "/" },
+    { label: "Dashboard", href: "/dashboard" },
     { label: "Transactions", href: "/transactions" },
     { label: "Manage", href: "/manage" },
     { label: "AI Assistant", href: "/ai-assistant" },

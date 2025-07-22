@@ -16,7 +16,7 @@ export default async function DashboardPage() {
 
     const currencySettings = await prisma.currencySettings.findUnique({
         where: {
-            userId: user.email!,
+            userId: user.id,
         },
     });
 
