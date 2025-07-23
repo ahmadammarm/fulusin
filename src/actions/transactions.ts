@@ -50,7 +50,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 userId_day_month_year: {
                     userId: user.id,
                     day: date.getUTCDate(),
-                    month: date.getUTCMonth() + 1,
+                    month: date.getUTCMonth() + 1, // +1 karena format dari utc month dimulai dari 0-11 bukan 1-12
                     year: date.getUTCFullYear(),
                 }
             },
