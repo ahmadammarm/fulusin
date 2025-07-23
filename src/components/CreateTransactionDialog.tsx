@@ -1,7 +1,7 @@
 "use client"
 
 import { TransactionType } from "@/lib/types";
-import { ReactNode, useCallback } from "react"
+import { ReactNode, useCallback, useState } from "react"
 import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
@@ -15,6 +15,10 @@ import { Button } from "./ui/button";
 import { format } from "date-fns";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { CreateTransactionAction } from "@/actions/transactions";
+import { toast } from "sonner";
+import { DatetoUTCDate } from "@/lib/dateHelper";
 
 interface Props {
     trigger: ReactNode;
@@ -22,6 +26,8 @@ interface Props {
 }
 
 export default function CreateTransactionDialog({ trigger, type }: Props) {
+
+    const [open, setOpen] = useState(false)
 
     const form = useForm<CreateTransactionSchemaType>({
         resolver: zodResolver(CreateTransactionSchema),
@@ -35,8 +41,42 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
         form.setValue("category", category);
     }, [form]);
 
+
+    const queryClient = useQueryClient();
+
+    const { mutate, isPending } = useMutation({
+        mutationFn: CreateTransactionAction,
+        onSuccess: () => {
+            toast.success("Transaction created successfully!", {
+                id: "create-transaction-success"
+            });
+
+            form.reset({
+                amount: 0,
+                description: '',
+                date: new Date(),
+                category: '',
+                type
+            });
+
+            queryClient.invalidateQueries({
+                queryKey: ['overview']
+            });
+
+            setOpen(prev => !prev);
+        }
+    });
+
+    const onSubmit = useCallback((data: CreateTransactionSchemaType) => {
+        mutate({
+            ...data,
+            date: DatetoUTCDate(data.date)
+        });
+    }, [mutate]);
+
+
     return (
-        <Dialog>
+        <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
                 {trigger}
             </DialogTrigger>
@@ -83,7 +123,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 control={form.control}
                                 name="category"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="flex flex-col">
                                         <FormLabel className="whitespace-nowrap">Category <span className="text-red-500 font-bold">*</span></FormLabel>
                                         <FormControl className="flex-1">
                                             <CategoryPicker type={type} onChange={handleCategoryChange} />
@@ -95,7 +135,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 control={form.control}
                                 name="date"
                                 render={({ field }) => (
-                                    <FormItem>
+                                    <FormItem className="flex flex-col">
                                         <FormLabel className="whitespace-nowrap">Transaction Date <span className="text-red-500 font-bold">*</span></FormLabel>
                                         <FormControl className="flex-1">
                                             <Popover>
@@ -111,7 +151,11 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                                     <Calendar
                                                         mode="single"
                                                         selected={field.value}
-                                                        onSelect={field.onChange}
+                                                        onSelect={(value) => {
+                                                            if (!value) return;
+                                                            console.log(value);
+                                                            field.onChange(value);
+                                                        }}
                                                         initialFocus
                                                     />
                                                 </PopoverContent>

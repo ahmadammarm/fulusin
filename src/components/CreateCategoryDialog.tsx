@@ -66,9 +66,6 @@ export default function CreateCategoryDialog({ type, onSuccessCallback }: Props)
     })
 
     const onSubmit = useCallback((data: CategorySchemaType) => {
-        toast.loading("Creating category...", {
-            id: "create-category-loading"
-        });
         mutate(data);
     }, [mutate]);
 

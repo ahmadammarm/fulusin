@@ -50,49 +50,49 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 userId_day_month_year: {
                     userId: user.id,
                     day: date.getUTCDate(),
-                    month: date.getUTCMonth(),
+                    month: date.getUTCMonth() + 1,
                     year: date.getUTCFullYear(),
                 }
             },
             create: {
                 userId: user.id,
                 day: date.getUTCDate(),
-                month: date.getUTCMonth(),
+                month: date.getUTCMonth() + 1,
                 year: date.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
             update: {
-                expense: type === "expense" ? {
-                    increment: amount
-                } : 0,
-                income: type === "income" ? {
-                    increment: amount
-                } : 0,
+                expense: {
+                    increment: type === "expense" ? amount : 0
+                },
+                income: {
+                    increment: type === "income" ? amount : 0
+                }
             }
         }),
         prisma.yearHistory.upsert({
             where: {
                 userId_month_year: {
                     userId: user.id,
-                    month: date.getUTCMonth(),
+                    month: date.getUTCMonth() + 1,
                     year: date.getUTCFullYear(),
                 }
             },
             create: {
                 userId: user.id,
-                month: date.getUTCMonth(),
+                month: date.getUTCMonth() + 1,
                 year: date.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
             update: {
-                expense: type === "expense" ? {
-                    increment: amount
-                } : 0,
-                income: type === "income" ? {
-                    increment: amount
-                } : 0,
+                expense: {
+                    increment: type === "expense" ? amount : 0
+                },
+                income: {
+                    increment: type === "income" ? amount : 0
+                }
             }
         })
     ])
