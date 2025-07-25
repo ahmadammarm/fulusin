@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import { CurrencySettings } from "@prisma/client";
@@ -7,7 +8,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { toast } from "sonner";
 
-export default function OverviewSection(currencySettings: CurrencySettings) {
+export default function OverviewSection({ currencySettings }: { currencySettings: CurrencySettings }) {
 
     const [dateRange, setDateRange] = useState<{ from: Date, to: Date }>({
         from: startOfMonth(new Date()),
