@@ -8,6 +8,7 @@ import Logo, { LogoMobile } from "./Logo"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
+import SignoutButton from "./auth/SignoutButton"
 // import { UserButton } from "@clerk/nextjs"
 
 const NavbarItems = [
@@ -72,6 +73,7 @@ export default function MobileNavbar() {
                     <LogoMobile />
                 </div>
                 <div className="flex items-center gap-2">
+                    <SignoutButton />
                     {/* <UserButton afterSignOutUrl="/sign-in" /> */}
                 </div>
             </nav>

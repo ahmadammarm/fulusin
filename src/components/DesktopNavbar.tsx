@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buttonVariants } from "./ui/button";
+import SignoutButton from "./auth/SignoutButton";
 // import { UserButton } from "@clerk/nextjs";
 
 const NavbarItems = [
@@ -48,6 +49,7 @@ export default function DesktopNavbar() {
                     </div>
                 </div>
                 <div className="flex items-center">
+                    <SignoutButton />
                     {/* <UserButton afterSignOutUrl="/sign-in" /> */}
                 </div>
             </nav>

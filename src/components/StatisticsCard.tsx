@@ -41,7 +41,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
             <SkeletonWrapper isLoading={statsQuery.isFetching}>
                 <StatisticsCardItem
                     formatter={formatter}
-                    title="Income"
+                    title="Income Total"
                     value={income}
                     icon={
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-400/20 shadow-lg">
@@ -55,7 +55,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
             <SkeletonWrapper isLoading={statsQuery.isFetching}>
                 <StatisticsCardItem
                     formatter={formatter}
-                    title="Expense"
+                    title="Expense Total"
                     value={expense}
                     icon={
                         <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-400/10">
