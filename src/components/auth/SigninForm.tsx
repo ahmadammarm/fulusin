@@ -88,7 +88,7 @@ export default function SigninForm() {
                         <Button
                             type="submit"
                             disabled={mutation.isPending}
-                            className={`w-full p-2 bg-green-600 text-white rounded hover:bg-green-700 ${mutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`w-full p-2 bg-teal-600 text-white rounded hover:bg-green-700 ${mutation.isPending ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             {mutation.isPending ? "Signing in..." : "Sign In"}
                         </Button>
