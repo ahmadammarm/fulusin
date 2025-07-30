@@ -8,6 +8,7 @@ import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { toast } from "sonner";
 import StatisticsCard from "./StatisticsCard";
+import CategoriesStatistics from "./CategoriesStatistics";
 
 export default function OverviewSection({ currencySettings }: { currencySettings: CurrencySettings }) {
 
@@ -39,7 +40,10 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                     />
                 </div>
             </div>
-            <StatisticsCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
+            <div className="container flex flex-col w-full gap-2">
+                <StatisticsCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
+                <CategoriesStatistics currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
+            </div>
         </>
     )
 }
