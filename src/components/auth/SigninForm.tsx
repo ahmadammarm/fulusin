@@ -58,15 +58,15 @@ export default function SigninForm() {
         <div className="w-full max-w-md mx-auto mt-5">
             <Card className="border-green-200 shadow-lg">
                 <CardHeader className="space-y-1 text-center">
-                    <CardTitle className="text-2xl font-bold text-green-800">Sign In</CardTitle>
-                    <CardDescription className="text-green-800">
+                    <CardTitle className="bg-gradient-to-r from-teal-500 to-teal-600 bg-clip-text text-2xl font-bold leading-tight tracking-tighter text-transparent">Sign In</CardTitle>
+                    <CardDescription className="text-sm text-gray-600">
                         Enter your email and password to sign in
                     </CardDescription>
                 </CardHeader>
                 <CardContent>
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email" className="text-green-700 font-medium">Email Address</Label>
+                            <Label htmlFor="email" className="text-teal-500 font-medium">Email Address</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -76,7 +76,7 @@ export default function SigninForm() {
                             {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
                         </div>
                         <div className="space-y-2">
-                            <Label htmlFor="password" className="text-green-700 font-medium">Password</Label>
+                            <Label htmlFor="password" className="text-teal-500 font-medium">Password</Label>
                             <Input
                                 id="password"
                                 type="password"

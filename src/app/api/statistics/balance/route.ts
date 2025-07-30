@@ -44,3 +44,32 @@ export async function GET(request: NextRequest) {
         }, { status: 500 })
     }
 }
+
+export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>;
+
+async function getBalanceStatistics(userId: string, from: Date, to: Date) {
+    try {
+        const totale = await prisma.transaction.groupBy({
+            by: ["type"],
+            where: {
+                userId,
+                date: {
+                    gte: from,
+                    lte: to,
+                }
+            },
+            _sum: {
+                amount: true,
+            },
+        });
+
+        return {
+            expense: totale.find(t => t.type === "expense")?._sum.amount || 0,
+            income: totale.find(t => t.type === "income")?._sum.amount || 0,
+        }
+
+    } catch(error) {
+        console.error("Error in getBalanceStatistics:", error);
+        throw new Error("Failed to fetch balance statistics.");
+    }
+}

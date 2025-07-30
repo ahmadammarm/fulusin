@@ -1,6 +1,5 @@
 import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { differenceInDays } from "date-fns";
-import { X } from "lucide-react";
 import z from "zod";
 
 export const overviewQuerySchema = z.object({
