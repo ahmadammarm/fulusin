@@ -47,15 +47,15 @@ export default function MobileNavbar() {
     const [isOpen, setIsOpen] = useState<boolean>(false)
 
     return (
-        <div className="block border-separate bg-background md:hidden">
-            <nav className="container flex items-center justify-between px-8">
+        <div className="block bg-background md:hidden w-full fixed top-0 left-0 z-50">
+            <nav className="flex items-center justify-between px-4 w-full h-16 shadow-md">
                 <Sheet open={isOpen} onOpenChange={setIsOpen}>
                     <SheetTrigger asChild>
                         <Button variant={"ghost"} size={"icon"}>
                             <Menu />
                         </Button>
                     </SheetTrigger>
-                    <SheetContent className="w-[400px] sm:w-[540px]" side="left">
+                    <SheetContent className="w-[80%] sm:w-[400px]" side="left">
                         <Logo />
                         <div className="flex flex-col gap-1 pt-4">
                             {NavbarItems.map((item) => (
@@ -63,20 +63,20 @@ export default function MobileNavbar() {
                                     key={item.label}
                                     label={item.label}
                                     link={item.href}
-                                    clickCallback={() => setIsOpen((prev) => !prev)}
+                                    clickCallback={() => setIsOpen(false)}
                                 />
                             ))}
                         </div>
                     </SheetContent>
                 </Sheet>
-                <div className="flex h-[80px] min-h-[60px] items-center gap-x-4">
+                <div className="flex items-center gap-x-4">
                     <LogoMobile />
                 </div>
                 <div className="flex items-center gap-2">
                     <SignoutButton />
-                    {/* <UserButton afterSignOutUrl="/sign-in" /> */}
                 </div>
             </nav>
         </div>
+
     )
 }
