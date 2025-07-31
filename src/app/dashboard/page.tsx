@@ -1,5 +1,6 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 import CreateTransactionDialog from "@/components/CreateTransactionDialog";
+import HistorySection from "@/components/HistorySection";
 import OverviewSection from "@/components/OverviewSection";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
@@ -48,6 +49,7 @@ export default async function DashboardPage() {
                 </div>
             </div>
             <OverviewSection currencySettings={currencySettings} />
+            <HistorySection currencySettings={currencySettings} />
         </div>
     )
 }
