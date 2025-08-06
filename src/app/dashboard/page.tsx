@@ -30,7 +30,7 @@ export default async function DashboardPage() {
     return (
         <div className="h-full bg-background">
             <div className="border-b bg-card">
-                <div className="container flex flex-wrap items-center justify-between gap-6 py-8 pt-20 md:pt-0">
+                <div className="container flex flex-wrap items-center justify-between gap-6 py-8 pt-20 md:pt-10 px-5">
                     <p className="text-3xl font-bold ml-5">
                         Hello, {user.name}!
                     </p>

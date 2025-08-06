@@ -23,7 +23,7 @@ const NavbarItemFuntion = ({ label, link, clickCallback }: { label: string; link
     const isActive = pathname === link;
 
     return (
-        <div className="relative flex items-center">
+        <div className=" flex items-center">
             <Link href={link} className={cn(
                 buttonVariants({ variant: "ghost" }), "w-full justify-start text-lg text-muted-foreground hover:text-foreground", isActive && "text-foreground font-semibold",
             )}

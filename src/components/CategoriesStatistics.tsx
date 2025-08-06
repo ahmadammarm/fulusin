@@ -60,9 +60,9 @@ function CategoriesStatisticsCard({ formatter, type, data }: { formatter: Intl.N
             </CardHeader>
             <div className="flex items-center justify-between gap-2">
                 {filteredData.length === 0 && (
-                    <div className="flex h-60 w-full flex-col items-center justify-center">
+                    <div className="flex h-60 w-full flex-col items-center justify-center px-4 md:px-2">
                         <p className="text-muted-foreground">No data available for this period</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground text-center">
                             Try selecting a different period or add a new {""}
                             {type === "income" ? "income" : "expense"} transaction
                         </p>
@@ -85,7 +85,7 @@ function CategoriesStatisticsCard({ formatter, type, data }: { formatter: Intl.N
                                                 </span>
                                             </span>
                                             <span className="text-sm text-gray-400">
-                                                {formatter.format(amount)}  
+                                                {formatter.format(amount)}
                                             </span>
                                         </div>
                                         <Progress value={percentage} indicator={type === "income" ? "bg-emerald-500" : "bg-red-500"} />
