@@ -1,11 +1,10 @@
 import { Period, Timeframe } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+// import axios from "axios";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { GetHistoryPeriodResponseType } from "@/app/api/history-period/route";
-import { Select, SelectContent, SelectTrigger, SelectValue } from "./ui/select";
-import { SelectItem } from "@radix-ui/react-select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 
 interface HistoryPeriodSelectorProps {
     period: Period;
@@ -23,10 +22,7 @@ export default function HistoryPeriodSelector({
 
     const historyPeriods = useQuery<GetHistoryPeriodResponseType>({
         queryKey: ["overview", "history-periods"],
-        queryFn: async () => {
-            const response = await axios.get("/api/history-period");
-            return response.data.data;
-        }
+        queryFn: async () => fetch("/api/history-period").then((res) => res.json()),
     });
 
     return (
@@ -43,6 +39,11 @@ export default function HistoryPeriodSelector({
                 <SkeletonWrapper isLoading={historyPeriods.isFetching}>
                     <YearSelector period={period} setPeriod={setPeriod} years={historyPeriods.data || []} />
                 </SkeletonWrapper>
+                {timeframe === "month" && (
+                    <SkeletonWrapper isLoading={historyPeriods.isFetching} fullWidth={false}>
+                        <MonthSelector period={period} setPeriod={setPeriod} />
+                    </SkeletonWrapper>
+                )}
             </div>
         </div>
     );
@@ -62,6 +63,29 @@ const YearSelector = ({ period, setPeriod, years }:
                         {year}
                     </SelectItem>
                 ))}
+            </SelectContent>
+        </Select>
+    )
+}
+
+const MonthSelector = ({ period, setPeriod }:
+    { period: Period; setPeriod: (period: Period) => void; }
+) => {
+    return (
+        <Select value={period.month.toString()} onValueChange={(value) => setPeriod({ year: period.year, month: parseInt(value) })}>
+            <SelectTrigger className="w-[180px]">
+                <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+                {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((month) => {
+                    const monthString = new Date(period.year, month, 1).
+                        toLocaleString("default", { month: "long" });
+                    return (
+                        <SelectItem key={month} value={month.toString()}>
+                            {monthString}
+                        </SelectItem>
+                    );
+                })}
             </SelectContent>
         </Select>
     )

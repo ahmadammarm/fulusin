@@ -11,10 +11,8 @@ export async function GET(request: NextRequest) {
         redirect("/sign-in");
     }
 
-    const period = await getHistoryPeriod(user.id);
-    return NextResponse.json({
-        period: period,
-    });
+    const periods = await getHistoryPeriod(user.id);
+    return NextResponse.json(periods);
 
 }
 
