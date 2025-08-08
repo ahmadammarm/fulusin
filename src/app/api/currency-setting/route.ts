@@ -8,28 +8,23 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
     try {
-        
-        const user = await auth().then(session => {
-            if (!session?.user) {
-                redirect("/sign-in");
-            }
-            return session.user;
-        });
+        const session = await auth();
+        const user = session?.user;
 
-        let currencySetting = await prisma.currencySettings.findUnique({
+        if (!user) {
+            redirect("/sign-in");
+        }
+
+        const currencySetting = await prisma.currencySettings.upsert({
             where: {
                 userId: user.id,
-            }
+            },
+            update: {},
+            create: {
+                userId: user.id,
+                currency: "USD",
+            },
         });
-
-        if (!currencySetting) {
-            currencySetting = await prisma.currencySettings.create({
-                data: {
-                    userId: user.id,
-                    currency: "USD",
-                }
-            });
-        }
 
         revalidatePath("/");
 

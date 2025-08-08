@@ -49,16 +49,16 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             where: {
                 userId_day_month_year: {
                     userId: user.id,
-                    day: date.getUTCDate(),
-                    month: date.getUTCMonth() + 1, // +1 karena format dari utc month dimulai dari 0-11 bukan 1-12
-                    year: date.getUTCFullYear(),
+                    day: date.getDate(),
+                    month: date.getMonth() + 1,
+                    year: date.getFullYear(),
                 }
             },
             create: {
                 userId: user.id,
-                day: date.getUTCDate(),
-                month: date.getUTCMonth() + 1,
-                year: date.getUTCFullYear(),
+                day: date.getDate(),
+                month: date.getMonth() + 1,
+                year: date.getFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
@@ -71,18 +71,19 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 }
             }
         }),
+
         prisma.yearHistory.upsert({
             where: {
                 userId_month_year: {
                     userId: user.id,
-                    month: date.getUTCMonth() + 1,
-                    year: date.getUTCFullYear(),
+                    month: date.getMonth() + 1,
+                    year: date.getFullYear(),
                 }
             },
             create: {
                 userId: user.id,
-                month: date.getUTCMonth() + 1,
-                year: date.getUTCFullYear(),
+                month: date.getMonth() + 1,
+                year: date.getFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
@@ -96,4 +97,5 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             }
         })
     ])
+
 }

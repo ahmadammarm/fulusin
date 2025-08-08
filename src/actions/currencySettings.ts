@@ -16,18 +16,29 @@ export async function UpdateUserCurrencyAction(currency: string): Promise<{ user
     const session = await auth();
     const user = session?.user;
 
-
     if (!user) {
         redirect("/sign-in");
     }
 
+    const existingUser = await prisma.user.findUnique({
+        where: { id: user.id },
+    });
+
+    if (!existingUser) {
+        throw new Error("User not found in the database.");
+    }
+
     try {
-        const currencySettings = await prisma.currencySettings.update({
+        const currencySettings = await prisma.currencySettings.upsert({
             where: {
                 userId: user.id,
             },
-            data: {
-                currency
+            update: {
+                currency,
+            },
+            create: {
+                userId: user.id,
+                currency,
             },
         });
 

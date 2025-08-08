@@ -15,6 +15,10 @@ declare module "next-auth" {
             id: string;
         } & DefaultSession["user"];
     }
+
+    interface User {
+        id: string;
+    }
 }
 
 export const authOptions: NextAuthOptions = {
@@ -54,11 +58,22 @@ export const authOptions: NextAuthOptions = {
                 const isPasswordCorrect = await compare(password, user.password);
                 if (!isPasswordCorrect) throw new Error("Incorrect password");
 
+                await prisma.user.upsert({
+                    where: { id: user.id },
+                    update: {},
+                    create: {
+                        id: user.id,
+                        name: user.name,
+                        email: user.email,
+                        password: user.password,
+                    },
+                });
+
                 return {
                     id: user.id,
                     email: user.email,
                     name: user.name,
-                } satisfies { id: string; email: string; name: string | null };
+                };
             },
         }),
     ],

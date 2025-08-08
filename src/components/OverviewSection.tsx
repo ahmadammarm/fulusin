@@ -20,7 +20,7 @@ export default function OverviewSection({ currencySettings }: { currencySettings
     return (
         <>
             <div className="container flex flex-wrap items-end justify-between gap-2 py-6 px-5">
-                <h2 className="ml-5 text-3xl font-bold">
+                <h2 className="ml-3 text-3xl font-bold">
                     Overview
                 </h2>
                 <div className="flex items-center gap-3">
