@@ -110,7 +110,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                 <FormItem>
                                     <FormLabel>Amount <span className="text-red-500 font-bold">*</span></FormLabel>
                                     <FormControl>
-                                        <Input defaultValue={0} {...field} type="number" />
+                                        <Input defaultValue={0} type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
                                     </FormControl>
                                     {/* <FormDescription>
                                         Transaction amount (required)
