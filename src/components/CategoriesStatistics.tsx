@@ -21,14 +21,16 @@ interface CategoriesStatisticsProps {
 export default function CategoriesStatistics({ currencySettings, from, to }: CategoriesStatisticsProps) {
 
     const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
-        queryKey: ["overview", "statistics", "categories", from, to],
+        queryKey: ["overview", "statistics", "categories", from.toISOString(), to.toISOString()],
         queryFn: async () => {
             const response = await fetch(`/api/statistics/categories?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch categories statistics');
             }
             return response.json();
-        }
+        },
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 
     const formatter = useMemo(() => {

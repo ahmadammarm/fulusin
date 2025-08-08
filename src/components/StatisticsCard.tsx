@@ -17,14 +17,17 @@ interface StatisticCardProps {
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
 
     const statsQuery = useQuery<BalanceStatistics>({
-        queryKey: ['overview', 'statistics', from, to],
+        queryKey: ['overview', 'statistics', from.toISOString(), to.toISOString()],
         queryFn: async () => {
             const response = await fetch(`/api/statistics/balance?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
             if (!response.ok) {
                 throw new Error('Failed to fetch statistics');
             }
             return response.json();
-        }
+        },
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
+        staleTime: 1000 * 60 * 5,
     });
 
     const formatter = useMemo(() => {
