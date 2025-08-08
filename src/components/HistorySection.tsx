@@ -4,9 +4,13 @@ import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
 import { Timeframe } from "@/lib/types"
 import { CurrencySettings } from "@prisma/client"
 import { useMemo, useState } from "react"
-import { Card, CardHeader, CardTitle } from "./ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
 import HistoryPeriodSelector from "./HistoryPeriodSelector"
+import { useQuery } from "@tanstack/react-query"
+import { GetHistoryDataResponseType } from "@/app/api/history-data/route"
+import SkeletonWrapper from "./SkeletonWrapper"
+import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
 
 export default function HistorySection({ currencySettings }: { currencySettings: CurrencySettings }) {
 
@@ -21,6 +25,14 @@ export default function HistorySection({ currencySettings }: { currencySettings:
     const formatter = useMemo(() => {
         return GetFormatterForCurrency(currencySettings.currency)
     }, [currencySettings.currency]);
+
+    const historyData = useQuery<GetHistoryDataResponseType>({
+        queryKey: ["overview", "history", timeframe],
+        queryFn: async () => fetch(`/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`)
+            .then((res) => res.json())
+    })
+
+    const dataAvailable = historyData.data && historyData.data.length > 0;
 
 
 
@@ -53,6 +65,29 @@ export default function HistorySection({ currencySettings }: { currencySettings:
                         </div>
                     </CardTitle>
                 </CardHeader>
+                <CardContent>
+                    <SkeletonWrapper isLoading={historyData.isFetching}>
+                        {dataAvailable && <ResponsiveContainer width={"100%"} height={300}>
+                            <BarChart
+                                height={300}
+                                data={historyData.data}
+                                barCategoryGap={10}
+                            >
+                                <defs>
+        
+                                </defs>
+                            </BarChart>
+                        </ResponsiveContainer>}
+                        {!dataAvailable && (
+                            <Card className="flex h-[300px] flex-col items-center justify-center bg-background">
+                                No data available for the selected period.
+                                <p className="text-sm text-muted-foreground">
+                                    Try select a differeng period or create a new transaction.
+                                </p>
+                            </Card>
+                        )}
+                    </SkeletonWrapper>
+                </CardContent>
             </Card >
         </div >
     )

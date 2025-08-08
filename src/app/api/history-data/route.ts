@@ -39,8 +39,9 @@ export async function GET(request: NextRequest) {
             year: queryParams.data.year
         })
 
+        return NextResponse.json(data);
 
-
+        
     } catch (error: any) {
         return NextResponse.json({
             error: error.message || "An error occurred while fetching history data."
