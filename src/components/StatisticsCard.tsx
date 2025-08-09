@@ -2,12 +2,11 @@ import { CurrencySettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { BalanceStatistics } from '../app/api/statistics/balance/route';
 import { DatetoUTCDate } from "@/lib/dateHelper";
-import { useCallback, useMemo } from "react";
+import { useMemo } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
-import { Card } from "./ui/card";
-import CountUp from "react-countup";
+import StatisticsCardItem from "./StatisticsCardItem";
 
 interface StatisticCardProps {
     from: Date;
@@ -52,7 +51,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                         </div>
                     }
                     valueClass="text-emerald-300"
-                    cardBg="bg-emerald-950/90 shadow-md"
+                    cardBackground="bg-emerald-950/90 shadow-md"
                 />
             </SkeletonWrapper>
             <SkeletonWrapper isLoading={statsQuery.isFetching}>
@@ -66,7 +65,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                         </div>
                     }
                     valueClass="text-red-300"
-                    cardBg="bg-red-950/90 shadow-md"
+                    cardBackground="bg-red-950/90 shadow-md"
                 />
             </SkeletonWrapper>
             <SkeletonWrapper isLoading={statsQuery.isFetching}>
@@ -80,48 +79,10 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                         </div>
                     }
                     valueClass="text-blue-300"
-                    cardBg="bg-blue-950/90 shadow-md"
+                    cardBackground="bg-blue-950/90 shadow-md"
                 />
             </SkeletonWrapper>
         </div>
     )
 }
 
-function StatisticsCardItem({
-    title,
-    value,
-    formatter,
-    icon,
-    valueClass = "",
-    cardBg = "",
-}: {
-    title: string;
-    value: number;
-    formatter: Intl.NumberFormat;
-    icon?: React.ReactNode;
-    valueClass?: string;
-    cardBg?: string;
-}) {
-    const formatFunction = useCallback(
-        (value: number) => {
-            return formatter.format(value);
-        },
-        [formatter]
-    );
-
-    return (
-        <Card className={`flex h-auto w-full gap-4 p-4 shadow-sm ${cardBg}`}>
-            {icon}
-            <div className="flex flex-col justify-center">
-                <p className="text-lg text-muted-foreground">{title}</p>
-                <CountUp
-                    preserveValue
-                    redraw={false}
-                    end={value}
-                    formattingFn={formatFunction}
-                    className={`text-2xl font-bold ${valueClass}`}
-                />
-            </div>
-        </Card>
-    );
-}
