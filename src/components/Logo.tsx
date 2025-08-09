@@ -6,7 +6,7 @@ export default function Logo() {
         <Link href="/" className="flex items-center gap-2">
             <HandCoins className="stroke h-11 w-11 stroke-teal-500 stroke-[1.5]" />
             <p className="bg-gradient-to-r from-teal-500 to-teal-600 bg-clip-text text-2xl font-bold leading-tight tracking-tighter text-transparent">
-                Finscopease
+                Fulusin
             </p>
         </Link>
     )
@@ -16,7 +16,7 @@ export function LogoMobile() {
     return (
         <Link href="/" className="flex items-center gap-2">
             <p className="bg-gradient-to-r from-teal-500 to-teal-600 bg-clip-text text-2xl font-bold leading-tight tracking-tighter text-transparent">
-                Finscopease
+                Fulusin
             </p>
         </Link>
     )

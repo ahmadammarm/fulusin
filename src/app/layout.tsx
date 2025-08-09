@@ -18,8 +18,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-    title: "Finscopease - Your Financial Tracking Assistant",
-    description: "Track your finances effortlessly with Finscopease, your AI-powered financial assistant.",
+    title: "Fulusin - Your Financial Tracking Assistant",
+    description: "Track your finances effortlessly with Fulusin, your AI-powered financial assistant.",
 };
 
 export default async function RootLayout({
