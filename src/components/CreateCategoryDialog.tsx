@@ -22,10 +22,11 @@ import { Category } from "@prisma/client";
 interface Props {
     type: TransactionType;
     onSuccessCallback: (category: Category) => void;
+    trigger?: React.ReactNode;
 }
 
 
-export default function CreateCategoryDialog({ type, onSuccessCallback }: Props) {
+export default function CreateCategoryDialog({ type, onSuccessCallback, trigger }: Props) {
 
     const [open, setOpen] = useState(false);
 
@@ -72,10 +73,12 @@ export default function CreateCategoryDialog({ type, onSuccessCallback }: Props)
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant={"ghost"} className="flex items-center border-separata justify-start rounded-none border-b px-3 py-3 text-muted-foreground">
-                    <PlusSquareIcon className="mr-2 h-4 w-4" />
-                    Create new category
-                </Button>
+                {trigger ? trigger : (
+                    <Button variant={"ghost"} className="flex items-center border-separata justify-start rounded-none border-b px-3 py-3 text-muted-foreground">
+                        <PlusSquareIcon className="mr-2 h-4 w-4" />
+                        Create new category
+                    </Button>
+                )}
             </DialogTrigger>
             <DialogContent>
                 <DialogHeader>
