@@ -16,7 +16,7 @@ interface StatisticCardProps {
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
 
     const statsQuery = useQuery<BalanceStatistics>({
-        queryKey: ['overview', 'statistics', from.toISOString(), to.toISOString()],
+        queryKey: ['overview', 'statistics', from, to],
         queryFn: async () => {
             const response = await fetch(`/api/statistics/balance?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
             if (!response.ok) {
