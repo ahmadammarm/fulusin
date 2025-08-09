@@ -7,3 +7,10 @@ export const categorySchema = z.object({
 })
 
 export type CategorySchemaType = z.infer<typeof categorySchema>;
+
+export const CategoryDeleteSchema = z.object({
+    name: z.string().min(1, "Category name is required").max(20),
+    type: z.enum(["income", "expense"])
+})
+
+export type CategoryDeleteSchemaType = z.infer<typeof CategoryDeleteSchema>;

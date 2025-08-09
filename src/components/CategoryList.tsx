@@ -30,7 +30,7 @@ export default function CategoryList({ type }: CategoryListProps) {
     const availableData = categoriesData.data && categoriesData.data.length > 0;
 
     return (
-        <SkeletonWrapper isLoading={categoriesData.isFetching}>
+        <SkeletonWrapper isLoading={categoriesData.isLoading}>
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center justify-between gap-2">
