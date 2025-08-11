@@ -28,10 +28,12 @@ import { useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import { DataTableFacetedFilter } from "./data-table/FacetedFilter";
 import { DataTableViewOptions } from "./data-table/ColumnToggle";
-import { ChevronLeft, ChevronRight, DownloadIcon } from "lucide-react";
+import { ChevronLeft, ChevronRight, DownloadIcon, MoreHorizontal, TrashIcon } from "lucide-react";
 import { Button } from "./ui/button";
 
 import { download, generateCsv, mkConfig } from "export-to-csv";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
+import TransactionDeleteDialog from "./TransactionDeleteDialog";
 
 interface TransactionHistoryTableProps {
     from: Date;
@@ -39,7 +41,6 @@ interface TransactionHistoryTableProps {
 }
 
 type TransactionHistoryRow = GetTransactionHistoryResponse[0];
-
 
 
 export const columns: ColumnDef<TransactionHistoryRow>[] = [
@@ -77,11 +78,10 @@ export const columns: ColumnDef<TransactionHistoryRow>[] = [
         cell: ({ row }) => {
 
             const date = new Date(row.original.date);
-            const formattedDate = date.toLocaleDateString("default", {
-                timeZone: "UTC",
-                year: "numeric",
-                day: "2-digit"
-            })
+            const day = String(date.getUTCDate()).padStart(2, "0");
+            const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+            const year = date.getUTCFullYear();
+            const formattedDate = `${day}/${month}/${year}`;
             return (<div className="text-muted-foreground">
                 {formattedDate}
             </div>)
@@ -112,12 +112,20 @@ export const columns: ColumnDef<TransactionHistoryRow>[] = [
             </p>
         )
     },
+    {
+        id: "actions",
+        enableHiding: false,
+        cell: ({ row }) => (
+            <RowActions transaction={row.original} />
+        )
+    }
 ];
 
 const csvConfig = mkConfig({
     fieldSeparator: ",",
     decimalSeparator: ".",
-    useKeysAsHeaders: true
+    useKeysAsHeaders: true,
+    filename: "transaction_history.csv"
 })
 
 export default function TransactionHistoryTable({ from, to }: TransactionHistoryTableProps) {
@@ -259,26 +267,57 @@ export default function TransactionHistoryTable({ from, to }: TransactionHistory
                 <div className="flex items-center justify-end space-x-2 py-4">
                     <Button
                         variant="outline"
-                        size="icon"
-                        className="size-8"
+                        size="sm"
+                        className="flex items-center gap-1"
                         onClick={() => dataTable.previousPage()}
                         disabled={!dataTable.getCanPreviousPage()}
                     >
+                        <ChevronLeft className="w-4 h-4" />
                         Previous
-                        <ChevronLeft />
                     </Button>
                     <Button
                         variant="outline"
-                        size="icon"
-                        className="size-8"
+                        size="sm"
+                        className="flex items-center gap-1"
                         onClick={() => dataTable.nextPage()}
                         disabled={!dataTable.getCanNextPage()}
                     >
                         Next
-                        <ChevronRight />
+                        <ChevronRight className="w-4 h-4" />
                     </Button>
                 </div>
             </SkeletonWrapper>
         </div>
     )
+}
+
+const RowActions = ({ transaction }: { transaction: TransactionHistoryRow }) => {
+    const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState<boolean>(false)
+
+    return (
+        <>
+            <TransactionDeleteDialog open={isOpenDeleteDialog} setOpen={setIsOpenDeleteDialog} transactionId={transaction.id} />
+            <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button variant={"ghost"} className="w-8 h-8 p-0">
+                        <span className="sr-only">Open menu</span>
+                        <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>
+                        Actions
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="flex items-center gap-2" onSelect={() => {
+                        setIsOpenDeleteDialog((prev) => !prev)
+                    }}>
+                        <TrashIcon className="w-4 h-4 text-muted-foreground" />
+                        Delete
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+            </DropdownMenu>
+        </>
+    )
+
 }
