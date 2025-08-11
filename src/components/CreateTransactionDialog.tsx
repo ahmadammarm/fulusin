@@ -60,8 +60,10 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
             });
 
             queryClient.invalidateQueries({
-                queryKey: ['overview', 'statistics', form.getValues("date")]
+                queryKey: ['overview'],
+                exact: false
             });
+
 
             setOpen(prev => !prev);
         }

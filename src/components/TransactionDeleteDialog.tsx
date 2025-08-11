@@ -22,9 +22,9 @@ export default function TransactionDeleteDialog({ open, setOpen, transactionId }
             toast.success("Transaction deleted successfully", {
                 id: transactionId
             });
-
-            await queryClient.invalidateQueries({
-                queryKey: ["transactions"]
+            queryClient.invalidateQueries({
+                queryKey: ["transactionHistory"],
+                exact: false
             });
         },
         onError: (error: any) => {
