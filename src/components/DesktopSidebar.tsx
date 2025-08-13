@@ -92,13 +92,13 @@ export default function DesktopSidebar() {
                                 </li>
                                 <li>
                                     <Link
-                                        href="/dashboard/ai-assistant"
-                                        className={`block rounded px-3 py-2 transition-colors ${pathname.startsWith("/dashboard/ai-assistant")
+                                        href="/dashboard/education"
+                                        className={`block rounded px-3 py-2 transition-colors ${pathname.startsWith("/dashboard/education")
                                             ? "bg-teal-700 text-white font-medium"
                                             : "hover:bg-muted"
                                             }`}
                                     >
-                                        AI Assistant
+                                        Education
                                     </Link>
                                 </li>
                             </ul>
