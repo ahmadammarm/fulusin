@@ -9,3 +9,12 @@ export type HistoryData = {
     month: number,
     day?: number,
 }
+
+export type FinancialAnalysis = {
+    totalIncome: number;
+    totalExpense: number;
+    netFlow: number;
+    topExpenseCategories: Array<{category: string; amnout: number; percentage: number;}>
+    monthlyTrend: Array<{month: string; income: number; expense: number}>;
+    savingsRate: number;
+}
