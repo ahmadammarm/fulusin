@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "User" (
+CREATE TABLE "public"."User" (
     "id" TEXT NOT NULL,
     "email" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE "User" (
 );
 
 -- CreateTable
-CREATE TABLE "CurrencySettings" (
+CREATE TABLE "public"."CurrencySettings" (
     "userId" TEXT NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'USD',
 
@@ -19,7 +19,7 @@ CREATE TABLE "CurrencySettings" (
 );
 
 -- CreateTable
-CREATE TABLE "Category" (
+CREATE TABLE "public"."Category" (
     "name" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
     "icon" TEXT NOT NULL,
@@ -30,7 +30,7 @@ CREATE TABLE "Category" (
 );
 
 -- CreateTable
-CREATE TABLE "Transaction" (
+CREATE TABLE "public"."Transaction" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -46,7 +46,7 @@ CREATE TABLE "Transaction" (
 );
 
 -- CreateTable
-CREATE TABLE "MonthHistory" (
+CREATE TABLE "public"."MonthHistory" (
     "userId" TEXT NOT NULL,
     "day" INTEGER NOT NULL,
     "month" INTEGER NOT NULL,
@@ -58,7 +58,7 @@ CREATE TABLE "MonthHistory" (
 );
 
 -- CreateTable
-CREATE TABLE "YearHistory" (
+CREATE TABLE "public"."YearHistory" (
     "userId" TEXT NOT NULL,
     "month" INTEGER NOT NULL,
     "year" INTEGER NOT NULL,
@@ -69,25 +69,25 @@ CREATE TABLE "YearHistory" (
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Category_userId_name_type_key" ON "Category"("userId", "name", "type");
+CREATE UNIQUE INDEX "Category_userId_name_type_key" ON "public"."Category"("userId", "name", "type");
 
 -- AddForeignKey
-ALTER TABLE "CurrencySettings" ADD CONSTRAINT "CurrencySettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."CurrencySettings" ADD CONSTRAINT "CurrencySettings_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Category" ADD CONSTRAINT "Category_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Transaction" ADD CONSTRAINT "Transaction_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_userId_category_type_fkey" FOREIGN KEY ("userId", "category", "type") REFERENCES "Category"("userId", "name", "type") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."Transaction" ADD CONSTRAINT "Transaction_userId_category_type_fkey" FOREIGN KEY ("userId", "category", "type") REFERENCES "public"."Category"("userId", "name", "type") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "MonthHistory" ADD CONSTRAINT "MonthHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."MonthHistory" ADD CONSTRAINT "MonthHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "YearHistory" ADD CONSTRAINT "YearHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "public"."YearHistory" ADD CONSTRAINT "YearHistory_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

@@ -22,7 +22,7 @@ export async function TransactionDelete(id: string) {
             throw new Error("Transaction not found or unauthorized");
         }
 
-        await prisma.$transaction(async (tx) => {
+        await prisma.$transaction(async (tx: any) => {
             await tx.transaction.delete({
                 where: { id },
             });
@@ -80,7 +80,7 @@ export async function TransactionDelete(id: string) {
                     },
                 });
 
-                const allZero = monthRecords.every(r => r.income === 0 && r.expense === 0);
+                const allZero = monthRecords.every((r: any) => r.income === 0 && r.expense === 0);
                 console.log("All month records are zero:", allZero);
 
                 if (allZero) {
@@ -133,7 +133,7 @@ export async function TransactionDelete(id: string) {
                     },
                 });
 
-                const allYearZero = yearRecords.every(r => r.income === 0 && r.expense === 0);
+                const allYearZero = yearRecords.every((r: any) => r.income === 0 && r.expense === 0);
                 console.log("All year records are zero:", allYearZero);
 
                 if (allYearZero) {

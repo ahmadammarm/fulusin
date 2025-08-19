@@ -71,7 +71,7 @@ async function getTransactionHistory(userId: string, from: Date, to: Date) {
         }
     });
 
-    return transaction.map((transaction) => ({
+    return transaction.map((transaction: any) => ({
         ...transaction,
         formattedAmount: formatter.format(transaction.amount),
     }))
