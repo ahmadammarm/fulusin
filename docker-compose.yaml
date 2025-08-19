@@ -6,7 +6,12 @@ services:
     container_name: fulusin
     env_file:
       - .env
-    command: ['sh', '-c', 'pnpm prisma migrate deploy && pnpm start']
+    command: >
+      sh -c "
+        pnpm dlx prisma generate &&
+        pnpm dlx prisma migrate deploy &&
+        pnpm start
+      "
     ports:
       - '3000:3000'
     depends_on:
