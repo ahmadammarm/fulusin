@@ -15,19 +15,22 @@ RUN pnpm run build
 
 
 # production stage
-FROM node:18-alpine AS runner
+FROM alpine:latest AS runner
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
-COPY --from=builder /app/.next/ ./.next/
-COPY --from=builder /app/public/ ./public/
-COPY --from=builder /app/next.config.ts ./
-COPY --from=builder /app/package.json ./
+RUN apk add --no-cache nodejs npm && npm i -g pnpm
 
-RUN npm i -g pnpm && pnpm install --prod --frozen-lockfile
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/pnpm-lock.yaml ./pnpm-lock.yaml
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/next.config.ts ./next.config.ts
+
+RUN pnpm install --prod --frozen-lockfile
 
 EXPOSE 3000
 
