@@ -1,0 +1,36 @@
+services:
+  fulusin:
+    build:
+      context: .
+      dockerfile: deployment/Dockerfile
+    container_name: fulusin
+    env_file:
+      - .env
+    command: ['sh', '-c', 'pnpm prisma migrate deploy && pnpm start']
+    ports:
+      - '3000:3000'
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: always
+
+  db:
+    image: postgres:15-alpine
+    container_name: postgres-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: fulusin
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d fulusin']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
