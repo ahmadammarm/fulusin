@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -34,7 +35,7 @@ async function getHistoryPeriod(userId: string) {
         ]
     })
 
-    const years = result.map(item => item.year);
+    const years = result.map((item: any) => item.year);
 
     if (years.length === 0) {
         return [new Date().getFullYear()];

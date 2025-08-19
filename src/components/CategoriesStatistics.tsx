@@ -50,8 +50,8 @@ export default function CategoriesStatistics({ currencySettings, from, to }: Cat
 }
 
 function CategoriesStatisticsCard({ formatter, type, data }: { formatter: Intl.NumberFormat, type: TransactionType, data: GetCategoriesStatisticsResponseType }) {
-    const filteredData = data.filter(item => item.type === type);
-    const total = filteredData.reduce((sum, item) => sum + (item._sum.amount || 0), 0);
+    const filteredData = data.filter((item: any) => item.type === type);
+    const total = filteredData.reduce((sum: any, item: { _sum: { amount: any; }; }) => sum + (item._sum.amount || 0), 0);
 
     return (
         <Card className="h-80 w-full">
@@ -73,7 +73,7 @@ function CategoriesStatisticsCard({ formatter, type, data }: { formatter: Intl.N
                 {filteredData.length > 0 && (
                     <ScrollArea className="h-60 w-full px-4">
                         <div className="flex w-full flex-col gap-4 p-4">
-                            {filteredData.map((item) => {
+                            {filteredData.map((item: any) => {
                                 const amount = item._sum.amount || 0;
                                 const percentage = total > 0 ? (amount / total) * 100 : 0;
 

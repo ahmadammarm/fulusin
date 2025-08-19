@@ -1,7 +1,0 @@
-node_modules
-.docker
-.git
-Dockerfile
-.dockerignore
-npm-debug.log
-pnpm-debug.log

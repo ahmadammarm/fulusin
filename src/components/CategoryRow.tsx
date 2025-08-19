@@ -6,7 +6,7 @@ export default function CategoryRow({ category }: { category: Category }) {
             <span role="img">
                 {category.icon}
             </span>
-            <span className="text-sm font-medium">
+        <span className="text-sm font-medium">
                 {category.name}
             </span>
         </div>
