@@ -15,7 +15,7 @@ RUN pnpm run build
 
 # production stage
 
-FROM node:18-alpine AS runner
+FROM alpine:latest as runner
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
