@@ -74,13 +74,10 @@ export default function SigninForm() {
 
             <div className="flex w-full lg:w-1/2 items-center p-6 min-h-screen lg:min-h-0">
                 <div className="w-full bgtransparent rounded-none lg:rounded-l-2xl p-10 shadow-lg">
-                    <h1 className="text-3xl font-bold mb-6">
+                    <h1 className="text-3xl font-bold mb-10">
                         Selamat Datang di <span className="text-teal-500">Fulusin</span>
                     </h1>
 
-                    <h2 className="text-md text-white mb-6">
-                        Silakan masuk menggunakan akun Anda
-                    </h2>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
