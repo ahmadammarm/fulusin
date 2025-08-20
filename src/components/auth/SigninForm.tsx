@@ -78,7 +78,7 @@ export default function SigninForm() {
                         Selamat Datang di <span className="text-teal-500">Fulusin</span>
                     </h1>
 
-                    <h2 className="text-lg text-white mb-6">
+                    <h2 className="text-md text-white mb-6">
                         Silakan masuk menggunakan akun Anda
                     </h2>
 
