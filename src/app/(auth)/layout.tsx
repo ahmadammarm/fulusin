@@ -1,9 +1,7 @@
-import Logo from "@/components/Logo"
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
     return (
-        <div className="flex items-center justify-center min-h-screen flex-col w-full">
-            <Logo />
+        <div>
             {children}
         </div>
     );
