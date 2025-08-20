@@ -12,6 +12,7 @@ import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Image from "next/image";
+import Link from "next/link";
 
 export default function SigninForm() {
 
@@ -105,12 +106,12 @@ export default function SigninForm() {
                         </div>
 
                         <div className="flex items-center justify-between mt-6">
-                            <a
+                            <Link
                                 className="underline text-sm text-gray-300 hover:text-gray-600"
-                                href="/register"
+                                href="/sign-up"
                             >
                                 Buat Akun Baru
-                            </a>
+                            </Link>
 
                             <Button
                                 type="submit"
