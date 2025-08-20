@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { Button } from "./ui/button";
 import Logo from "./Logo";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "./ui/alert-dialog";
 
 export default function DesktopSidebar() {
 
@@ -106,13 +107,29 @@ export default function DesktopSidebar() {
                     </SidebarGroup>
                 </SidebarContent>
                 <SidebarFooter>
-                    <Button
-                        onClick={handleLogout}
-                        disabled={mutation.isPending}
-                        className="w-full bg-red-500 hover:bg-red-700 text-white font-semibold transition-colors"
-                    >
-                        {mutation.isPending ? "Logging out..." : "Logout"}
-                    </Button>
+                    <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                            <Button
+                                className="w-full bg-red-500 hover:bg-red-700 text-white font-semibold transition-colors"
+                            >
+                                Logout
+                            </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                            <AlertDialogHeader>
+                                <AlertDialogTitle>Confirm Logout</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                    Are you sure you want to log out?
+                                </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={handleLogout} disabled={mutation.isPending} className="bg-red-500 hover:bg-red-700 text-white transition-colors">
+                                    {mutation.isPending ? "Logging out..." : "Confirm"}
+                                </AlertDialogAction>
+                            </AlertDialogFooter>
+                        </AlertDialogContent>
+                    </AlertDialog>
                 </SidebarFooter>
             </Sidebar>
         </div>

@@ -9,7 +9,6 @@ import Link from "next/link"
 import { cn } from "@/lib/utils"
 import { usePathname } from "next/navigation"
 import SignoutButton from "./auth/SignoutButton"
-// import { UserButton } from "@clerk/nextjs"
 
 const NavbarItems = [
     { label: "Dashboard", href: "/" },
