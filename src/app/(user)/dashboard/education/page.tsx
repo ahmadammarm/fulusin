@@ -13,9 +13,9 @@ export default function EducationPage() {
 
     return (
         <div className="flex flex-col items-center justify-center h-screen">
-            Maaf halaman ini masih dalam tahap pengembangan
+            Sorry, this page is still under development.
             <Button onClick={handleDashboard} className="mt-4">
-                Kembali ke Dashboard
+                Back to Dashboard
             </Button>
         </div>
     )

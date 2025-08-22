@@ -9,7 +9,6 @@ import { SignupAction } from "@/actions/signup";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import Image from "next/image";
 import Link from "next/link";
 
@@ -52,19 +51,18 @@ export default function SignupForm() {
                 <div className="absolute inset-0 bg-black/80"></div>
 
                 <div className="absolute bottom-10 left-8 right-8 text-white text-4xl font-semibold text-left">
-                    Kelola keuangan dengan mudah dan aman bersama kami.
+                    Manage your finances easily and securely with <span className="text-teal-500">Fulusin</span>
                 </div>
             </div>
 
             <div className="flex w-full lg:w-1/2 items-center p-6 min-h-screen lg:min-h-0">
                 <div className="w-full bg-transparent p-10 shadow-lg">
                     <h1 className="text-3xl font-bold mb-10">
-                        Daftar Sekarang di <span className="text-teal-500">Fulusin</span>
+                        Sign Up
                     </h1>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="name">Nama Lengkap</Label>
                             <Input
                                 id="name"
                                 type="name"
@@ -72,11 +70,10 @@ export default function SignupForm() {
                                 {...register("name")}
                                 className={`w-full p-2 rounded-lg border ${errors.name ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.name && <p className="text-red-500">{errors.name.message}</p>}
+                            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
@@ -88,7 +85,6 @@ export default function SignupForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
@@ -100,11 +96,10 @@ export default function SignupForm() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="confirmPassword">Konfirmasi Password</Label>
                             <Input
                                 id="confirmPassword"
                                 type="password"
-                                placeholder="Konfirmasi Password"
+                                placeholder="Password Confirm"
                                 {...register("confirmPassword")}
                                 className={`w-full p-2 rounded-lg border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
                             />
@@ -116,7 +111,7 @@ export default function SignupForm() {
                                 className="underline text-sm text-gray-300 hover:text-gray-600"
                                 href="/sign-in"
                             >
-                                Sudah punya akun? Masuk
+                                Already have an account? Sign in
                             </Link>
 
                             <Button
@@ -124,7 +119,7 @@ export default function SignupForm() {
                                 disabled={mutation.isPending}
                                 className={`ml-3 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition-colors duration-300 ${mutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
-                                {mutation.isPending ? "Signing up..." : "Daftar"}
+                                {mutation.isPending ? "Signing up..." : "Sign up"}
                             </Button>
                         </div>
                     </form>

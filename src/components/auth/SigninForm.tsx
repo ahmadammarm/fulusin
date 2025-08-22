@@ -69,14 +69,14 @@ export default function SigninForm() {
                 <div className="absolute inset-0 bg-black/80"></div>
 
                 <div className="absolute bottom-10 left-8 right-8 text-white text-4xl font-semibold text-left">
-                    Solusi pintar untuk mengelola keuangan Anda.
+                    A smart solution to manage your finances.
                 </div>
             </div>
 
             <div className="flex w-full lg:w-1/2 items-center p-6 min-h-screen lg:min-h-0">
                 <div className="w-full bgtransparent rounded-none lg:rounded-l-2xl p-10 shadow-lg">
                     <h1 className="text-3xl font-bold mb-10">
-                        Selamat Datang di <span className="text-teal-500">Fulusin</span>
+                        Sign in
                     </h1>
 
 
@@ -108,7 +108,7 @@ export default function SigninForm() {
                                 className="underline text-sm text-gray-300 hover:text-gray-600"
                                 href="/sign-up"
                             >
-                                Buat Akun Baru
+                                Don&apos;t have an account? Sign Up
                             </Link>
 
                             <Button
@@ -116,7 +116,7 @@ export default function SigninForm() {
                                 disabled={mutation.isPending}
                                 className={`ml-3 bg-teal-500 text-white px-4 py-2 rounded-lg hover:bg-teal-600 transition-colors duration-300 ${mutation.isPending ? "opacity-50 cursor-not-allowed" : ""}`}
                             >
-                                {mutation.isPending ? "Signing in..." : "Masuk"}
+                                {mutation.isPending ? "Signing in..." : "Sign in"}
                             </Button>
                         </div>
                     </form>
