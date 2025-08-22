@@ -57,20 +57,20 @@ export default function SignupForm() {
 
             <div className="flex w-full lg:w-1/2 items-center p-6 min-h-screen lg:min-h-0">
                 <div className="w-full bg-transparent p-10 shadow-lg">
-                    <h1 className="text-3xl font-bold mb-10">
+                    <h1 className="text-3xl font-bold mb-10 md:px-10">
                         Sign Up
                     </h1>
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:px-10">
                         <div className="space-y-2">
                             <Input
                                 id="name"
-                                type="name"
+                                type="text"
                                 placeholder="Full name"
                                 {...register("name")}
-                                className={`w-full p-2 rounded-lg border ${errors.name ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 rounded-lg border p-5 ${errors.name ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.name && <p className="text-red-500 text-sm">{errors.name.message}</p>}
+                            {errors.name && <p className="text-red-500 text-xs">{errors.name.message}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -79,9 +79,9 @@ export default function SignupForm() {
                                 type="email"
                                 placeholder="Email"
                                 {...register("email")}
-                                className={`w-full p-2 rounded-lg border ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 rounded-lg border p-5 ${errors.email ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+                            {errors.email && <p className="text-red-500 text-xs">{errors.email.message}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -90,9 +90,9 @@ export default function SignupForm() {
                                 type="password"
                                 placeholder="Password"
                                 {...register("password")}
-                                className={`w-full p-2 rounded-lg border ${errors.password ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 rounded-lg border p-5 ${errors.password ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                            {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -101,9 +101,9 @@ export default function SignupForm() {
                                 type="password"
                                 placeholder="Password Confirm"
                                 {...register("confirmPassword")}
-                                className={`w-full p-2 rounded-lg border ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 rounded-lg border p-5 ${errors.confirmPassword ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.confirmPassword && <p className="text-red-500 text-sm">{errors.confirmPassword.message}</p>}
+                            {errors.confirmPassword && <p className="text-red-500 text-xs">{errors.confirmPassword.message}</p>}
                         </div>
 
                         <div className="flex items-center justify-between mt-6">

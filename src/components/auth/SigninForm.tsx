@@ -74,22 +74,22 @@ export default function SigninForm() {
             </div>
 
             <div className="flex w-full lg:w-1/2 items-center p-6 min-h-screen lg:min-h-0">
-                <div className="w-full bgtransparent rounded-none lg:rounded-l-2xl p-10 shadow-lg">
-                    <h1 className="text-3xl font-bold mb-10">
+                <div className="w-full bg-transparent rounded-none lg:rounded-l-2xl p-10 shadow-lg">
+                    <h1 className="text-3xl font-bold mb-10 md:px-10">
                         Sign in
                     </h1>
 
 
-                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+                    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:px-10">
                         <div className="space-y-2">
                             <Input
                                 id="email"
                                 type="email"
                                 placeholder="Email"
                                 {...register("email")}
-                                className={`w-full p-4 rounded-md border ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 p-5 rounded-md border ${errors.email ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.email && <p className="text-red-500 text-sm mb-5">{errors.email.message}</p>}
+                            {errors.email && <p className="text-red-500 text-xs mb-5">{errors.email.message}</p>}
                         </div>
 
                         <div className="space-y-2">
@@ -98,9 +98,9 @@ export default function SigninForm() {
                                 type="password"
                                 placeholder="Password"
                                 {...register("password")}
-                                className={`w-full p-4 rounded-md border ${errors.password ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full h-12 p-5 rounded-md border ${errors.password ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
+                            {errors.password && <p className="text-red-500 text-xs">{errors.password.message}</p>}
                         </div>
 
                         <div className="flex items-center justify-between mt-6">
