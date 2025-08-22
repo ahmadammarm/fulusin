@@ -8,7 +8,6 @@ import { useRouter } from "next/navigation"
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { Label } from "../ui/label";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import Image from "next/image";
@@ -34,6 +33,7 @@ export default function SigninForm() {
             const result = await signIn("credentials", {
                 email: data.email,
                 password: data.password,
+                redirect: false
             });
 
             if (result?.error) {
@@ -82,25 +82,23 @@ export default function SigninForm() {
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="email">Email</Label>
                             <Input
                                 id="email"
                                 type="email"
                                 placeholder="Email"
                                 {...register("email")}
-                                className={`w-full p-2 rounded-lg border ${errors.email ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full p-4 rounded-md border ${errors.email ? "border-red-500" : "border-gray-300"}`}
                             />
-                            {errors.email && <p className="text-red-500 text-sm">{errors.email.message}</p>}
+                            {errors.email && <p className="text-red-500 text-sm mb-5">{errors.email.message}</p>}
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
                             <Input
                                 id="password"
                                 type="password"
                                 placeholder="Password"
                                 {...register("password")}
-                                className={`w-full p-2 rounded-lg border ${errors.password ? "border-red-500" : "border-gray-300"}`}
+                                className={`w-full p-4 rounded-md border ${errors.password ? "border-red-500" : "border-gray-300"}`}
                             />
                             {errors.password && <p className="text-red-500 text-sm">{errors.password.message}</p>}
                         </div>

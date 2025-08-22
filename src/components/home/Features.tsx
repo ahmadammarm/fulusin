@@ -8,7 +8,7 @@ export default function Features() {
             <div className="container mx-auto">
                 <div className="text-center mb-16">
                     <h2 className="text-4xl font-bold mb-4 text-foreground">
-                        Everything You Need to <span className="text-accent">Succeed</span>
+                        Everything You Need to <span className="text-teal-500">Succeed</span>
                     </h2>
                     <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
                         Powerful features designed to help you understand and optimize your financial habits
