@@ -51,13 +51,13 @@ export default function DesktopSidebar() {
     return (
         <div className="w-64 h-full">
             <Sidebar className="border-r border-gray-200 bg-background">
-                <SidebarHeader>
+                <SidebarHeader className="p-5">
                     <Logo />
                 </SidebarHeader>
                 <SidebarContent>
                     <SidebarGroup>
                         <nav>
-                            <ul className="flex flex-col gap-1 px-2">
+                            <ul className="flex flex-col gap-1 px-2 mt-10">
                                 <li>
                                     <Link
                                         href="/dashboard"
