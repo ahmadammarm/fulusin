@@ -13,7 +13,7 @@ export default function TransactionHistoryPage() {
                     </div>
                 </div>
             </div>
-            <div className="container py-6">
+            <div className="container py-6 px-5">
                 <TransactionHistoryTable />
             </div>
         </>
