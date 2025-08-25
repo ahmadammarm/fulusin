@@ -1,7 +1,6 @@
 import { CurrencySettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { BalanceStatistics } from '../app/api/statistics/balance/route';
-import { DatetoUTCDate } from "@/lib/dateHelper";
 import { useMemo } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import SkeletonWrapper from "./SkeletonWrapper";
@@ -18,7 +17,9 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
     const statsQuery = useQuery<BalanceStatistics>({
         queryKey: ['overview', 'statistics', from, to],
         queryFn: async () => {
-            const response = await fetch(`/api/statistics/balance?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
+            const response = await fetch(
+                `/api/statistics/balance?from=${from.toISOString()}&to=${to.toISOString()}`
+            );
             if (!response.ok) {
                 throw new Error('Failed to fetch statistics');
             }

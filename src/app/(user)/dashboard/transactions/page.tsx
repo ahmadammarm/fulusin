@@ -1,21 +1,20 @@
 "use client"
 
-import { useState } from "react";
-import { startOfMonth } from "date-fns";
-import TransactionHistoryHeader from "@/components/TransactionHistory";
 import TransactionHistoryTable from "@/components/TransactionHistoryTable";
 
-export default function TransactionPage() {
-    const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
-        from: startOfMonth(new Date()),
-        to: new Date(),
-    });
-
+export default function TransactionHistoryPage() {
     return (
         <>
-            <TransactionHistoryHeader dateRange={dateRange} setDateRange={setDateRange} />
-            <div className="container px-4">
-                <TransactionHistoryTable from={dateRange.from} to={dateRange.to} />
+            <div className="border-b bg-card">
+                <div className="container flex flex-wrap items-center justify-between gap-6 py-8 px-4">
+                    <div>
+                        <p className="text-3xl font-bold">All Transactions History</p>
+                        <p className="text-muted-foreground mt-2">View and manage all your transactions</p>
+                    </div>
+                </div>
+            </div>
+            <div className="container py-6">
+                <TransactionHistoryTable />
             </div>
         </>
     );

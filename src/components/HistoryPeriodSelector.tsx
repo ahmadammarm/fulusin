@@ -1,6 +1,5 @@
 import { Period, Timeframe } from "@/lib/types";
 import { useQuery } from "@tanstack/react-query";
-// import axios from "axios";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { GetHistoryPeriodResponseType } from "@/app/api/history-period/route";

@@ -49,13 +49,20 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
+        const startOfDay = new Date(from);
+        startOfDay.setHours(0, 0, 0, 0);
+
+        const endOfDay = new Date(to);
+        endOfDay.setHours(23, 59, 59, 999);
+        
+
         const totale = await prisma.transaction.groupBy({
             by: ["type"],
             where: {
                 userId,
                 date: {
-                    gte: from,
-                    lte: to,
+                    gte: startOfDay,
+                    lte: endOfDay,
                 }
             },
             _sum: {
@@ -67,8 +74,7 @@ async function getBalanceStatistics(userId: string, from: Date, to: Date) {
             expense: totale.find((t: any) => t.type === "expense")?._sum.amount || 0,
             income: totale.find((t: any) => t.type === "income")?._sum.amount || 0,
         }
-
-    } catch(error) {
+    } catch (error) {
         console.error("Error in getBalanceStatistics:", error);
         throw new Error("Failed to fetch balance statistics.");
     }

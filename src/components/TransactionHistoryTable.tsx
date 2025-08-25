@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DatetoUTCDate } from "@/lib/dateHelper";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
@@ -34,11 +33,6 @@ import { Button } from "./ui/button";
 import { download, generateCsv, mkConfig } from "export-to-csv";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import TransactionDeleteDialog from "./TransactionDeleteDialog";
-
-interface TransactionHistoryTableProps {
-    from: Date;
-    to: Date;
-}
 
 type TransactionHistoryRow = GetTransactionHistoryResponse[0];
 
@@ -78,10 +72,7 @@ export const columns: ColumnDef<TransactionHistoryRow>[] = [
         cell: ({ row }) => {
 
             const date = new Date(row.original.date);
-            const day = String(date.getUTCDate()).padStart(2, "0");
-            const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-            const year = date.getUTCFullYear();
-            const formattedDate = `${day}/${month}/${year}`;
+            const formattedDate = date.toISOString().slice(0, 10);
             return (<div className="text-muted-foreground">
                 {formattedDate}
             </div>)
@@ -128,16 +119,16 @@ const csvConfig = mkConfig({
     filename: "transaction_history.csv"
 })
 
-export default function TransactionHistoryTable({ from, to }: TransactionHistoryTableProps) {
+export default function TransactionHistoryTable() {
 
     const [sorting, setSorting] = useState<SortingState>([]);
 
     const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
 
     const transactionHistory = useQuery<GetTransactionHistoryResponse>({
-        queryKey: ["transactionHistory", "history", from, to],
+        queryKey: ["transactionHistory"],
         queryFn: async () => {
-            const response = await axios.get(`/api/transaction-history?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
+            const response = await axios.get(`/api/transaction-history`);
             return response.data;
         }
     });

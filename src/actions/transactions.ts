@@ -6,6 +6,11 @@ import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/
 import { redirect } from "next/navigation";
 
 
+
+function normalizeDate(date: Date) {
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+}
+
 export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
     const parsedBody = CreateTransactionSchema.safeParse(form);
     if (!parsedBody.success) {
@@ -13,7 +18,6 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     }
 
     const session = await auth();
-
     const user = session?.user;
     if (!user) {
         redirect("sign-in");
@@ -21,12 +25,14 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
 
     const { amount, category, date, description, type } = parsedBody.data;
 
+    const normalizedDate = normalizeDate(new Date(date));
+
     const categoryRow = await prisma.category.findFirst({
         where: {
             userId: user.id,
             name: category,
-        }
-    })
+        },
+    });
 
     if (!categoryRow) {
         throw new Error("Category not found");
@@ -37,65 +43,64 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             data: {
                 userId: user.id,
                 amount,
-                date,
+                date: normalizedDate, 
                 description: description || "",
                 type,
                 category: categoryRow.name,
                 categoryIcon: categoryRow.icon,
-            }
+            },
         }),
 
         prisma.monthHistory.upsert({
             where: {
                 userId_day_month_year: {
                     userId: user.id,
-                    day: date.getDate(),
-                    month: date.getMonth() + 1,
-                    year: date.getFullYear(),
-                }
+                    day: normalizedDate.getUTCDate(),
+                    month: normalizedDate.getUTCMonth() + 1,
+                    year: normalizedDate.getUTCFullYear(),
+                },
             },
             create: {
                 userId: user.id,
-                day: date.getDate(),
-                month: date.getMonth() + 1,
-                year: date.getFullYear(),
+                day: normalizedDate.getUTCDate(),
+                month: normalizedDate.getUTCMonth() + 1,
+                year: normalizedDate.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
             update: {
                 expense: {
-                    increment: type === "expense" ? amount : 0
+                    increment: type === "expense" ? amount : 0,
                 },
                 income: {
-                    increment: type === "income" ? amount : 0
-                }
-            }
+                    increment: type === "income" ? amount : 0,
+                },
+            },
         }),
 
         prisma.yearHistory.upsert({
             where: {
                 userId_month_year: {
                     userId: user.id,
-                    month: date.getMonth() + 1,
-                    year: date.getFullYear(),
-                }
+                    month: normalizedDate.getUTCMonth() + 1,
+                    year: normalizedDate.getUTCFullYear(),
+                },
             },
             create: {
                 userId: user.id,
-                month: date.getMonth() + 1,
-                year: date.getFullYear(),
+                month: normalizedDate.getUTCMonth() + 1,
+                year: normalizedDate.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
             update: {
                 expense: {
-                    increment: type === "expense" ? amount : 0
+                    increment: type === "expense" ? amount : 0,
                 },
                 income: {
-                    increment: type === "income" ? amount : 0
-                }
-            }
-        })
-    ])
-
+                    increment: type === "income" ? amount : 0,
+                },
+            },
+        }),
+    ]);
 }
