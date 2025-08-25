@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import Image from "next/image";
 import Link from "next/link";
+import { signIn } from "next-auth/react";
 
 
 export default function SignupForm() {
@@ -41,10 +42,22 @@ export default function SignupForm() {
         mutation.mutate(data)
     }
 
+    const handleGoogleSignin = async () => {
+        const result = await signIn("google", {
+            callbackUrl: "/dashboard",
+            redirect: false
+        });
+
+        if (result?.error) {
+            toast.error(`Sign in failed: ${result.error}`);
+        } else {
+            router.push("/dashboard");
+        }
+    }
+
     return (
         <div className="min-h-screen flex flex-col lg:flex-row bg-cover bg-center overflow-hidden bg-transparent">
 
-            {/* right section */}
             <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center overflow-hidden">
                 <Image src="/assets/sign-up-banner.jpg" alt="Signup banner" className="aboslute inset-0 w-full h-full object-cover" width={800} height={600} />
 
@@ -60,6 +73,25 @@ export default function SignupForm() {
                     <h1 className="text-3xl font-bold mb-10 md:px-10">
                         Sign Up
                     </h1>
+
+                    <div className="md:px-10">
+                        <Button
+                            type="button"
+                            onClick={handleGoogleSignin}
+                            className="w-full h-12 flex items-center justify-center gap-3 bg-white text-gray-800 border border-gray-300 rounded-lg py-3 mb-6 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 font-medium"
+                        >
+                            <span className="flex items-center justify-center w-6 h-6 bg-white rounded-full">
+                                <Image src="/assets/google.webp" alt="Google Logo" width={20} height={20} />
+                            </span>
+                            <span className="text-base">Sign in with Google</span>
+                        </Button>
+
+                        <div className="flex items-center my-6">
+                            <div className="flex-grow h-px bg-gray-200" />
+                            <span className="mx-4 text-gray-400 text-sm">or</span>
+                            <div className="flex-grow h-px bg-gray-200" />
+                        </div>
+                    </div>
 
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 md:px-10">
                         <div className="space-y-2">
