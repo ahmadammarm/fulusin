@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { SigninSchema, SigninSchemaType } from "@/schemas/signinSchema";
@@ -5,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation } from "@tanstack/react-query";
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { Input } from "../ui/input";
@@ -55,16 +56,25 @@ export default function SigninForm() {
         mutation.mutate({ data });
     };
 
-    const handleGoogleSignin = async () => {
-        const result = await signIn("google", {
-            callbackUrl: "/dashboard",
-            redirect: false
-        });
+    const [isGoogleLoading, setIsGoogleLoading] = useState<boolean>(false)
 
-        if (result?.error) {
-            toast.error(`Sign in failed: ${result.error}`);
-        } else {
-            router.push("/dashboard");
+    const handleGoogleSignin = async () => {
+        try {
+            setIsGoogleLoading(true);
+            const result = await signIn("google", {
+                callbackUrl: "/dashboard",
+                redirect: false
+            });
+
+            if (result?.error) {
+                toast.error(`Sign in failed: ${result.error}`);
+                setIsGoogleLoading(false);
+            } else {
+                router.push("/dashboard");
+            }
+        } catch(error: any) {
+            toast.error(`Sign in failed: ${error.message}`);
+            setIsGoogleLoading(false);
         }
     }
 
@@ -96,12 +106,15 @@ export default function SigninForm() {
                         <Button
                             type="button"
                             onClick={handleGoogleSignin}
-                            className="w-full h-12 flex items-center justify-center gap-3 bg-white text-gray-800 border border-gray-300 rounded-lg py-3 mb-6 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 font-medium"
+                            disabled={isGoogleLoading}
+                            className={`w-full h-12 flex items-center justify-center gap-3 bg-white text-gray-800 border border-gray-300 rounded-lg py-3 mb-6 shadow-sm hover:shadow-md hover:bg-gray-50 transition-all duration-200 font-medium cursor-pointer ${isGoogleLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                         >
                             <span className="flex items-center justify-center w-6 h-6 bg-white rounded-full">
                                 <Image src="/assets/google.webp" alt="Google Logo" width={20} height={20} />
                             </span>
-                            <span className="text-base">Sign in with Google</span>
+                            <span className="text-base">
+                                {isGoogleLoading ? "Signing in..." : "Sign in with Google"}
+                            </span>
                         </Button>
 
                         <div className="flex items-center my-6">
