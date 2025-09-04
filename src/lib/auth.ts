@@ -62,6 +62,10 @@ export const authOptions: NextAuthOptions = {
 
                 if (!user) throw new Error("Incorrect email");
 
+                if(!user.password) {
+                    throw new Error("Email is already exist with google authentication")
+                }
+
                 const isPasswordCorrect = await compare(password, user.password || "");
                 if (!isPasswordCorrect) throw new Error("Incorrect password");
 
@@ -164,7 +168,6 @@ export const authOptions: NextAuthOptions = {
                     return true;
                 }
             }
-
             return true;
         },
 
