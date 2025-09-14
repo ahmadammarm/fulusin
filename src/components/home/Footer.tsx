@@ -1,3 +1,4 @@
+import Link from "next/link";
 import Logo from "../Logo";
 
 export default function Footer() {
@@ -9,6 +10,11 @@ export default function Footer() {
                 </div>
                 <p className="text-muted-foreground mb-4">
                     Empowering individuals to make smarter financial decisions, one period at a time.
+                </p>
+            </div>
+            <div className="container mx-auto text-center">
+                <p className="text-muted-foreground">
+                    &copy; {new Date().getFullYear()} Fulusin. All rights reserved.
                 </p>
             </div>
         </footer>
