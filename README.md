@@ -20,7 +20,7 @@ fulusin/
 │   ├── app/            # Next.js app router pages
 │   ├── components/     # Reusable React components
 │   ├── lib/            # Core utilities and helpers
-│   ├── provider/       # React Query Client provider configuration
+│   ├── provider/       # Next Auth and React Query Client provider configurations
 │   ├── schemas/        # Form validation schemas
 ```
 
