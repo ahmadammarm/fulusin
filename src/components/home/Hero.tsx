@@ -17,7 +17,6 @@ export default function Hero() {
         <section className="py-20 px-4 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5"></div>
             <div className="container mx-auto relative z-10">
-                <Badge className="mb-6 bg-accent/20 text-muted-foreground border-accent/30">Web-based Financial Tracker</Badge>
                 <h1 className="text-5xl md:text-7xl font-black mb-6 bg-gradient-to-r from-teal-300 via-teal-800 to-teal-400 bg-clip-text text-transparent leading-tight">
                     Master Your Money,
                     <br />
