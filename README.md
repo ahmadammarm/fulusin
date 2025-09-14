@@ -111,5 +111,5 @@ npm run build
 npm start
 ```
 
-### This project is open for contributions. Feel free to submit issues or pull requests. Thank you :)
+### This project is open for contributions. Feel free to submit issues or pull requests. Thanks
 
