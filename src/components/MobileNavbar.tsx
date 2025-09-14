@@ -11,10 +11,10 @@ import { usePathname } from "next/navigation"
 import SignoutButton from "./auth/SignoutButton"
 
 const NavbarItems = [
-    { label: "Dashboard", href: "/" },
-    { label: "Transactions", href: "/transactions" },
-    { label: "Manage", href: "/manage" },
-    { label: "AI Assistant", href: "/ai-assistant" },
+    { label: "Dashboard", href: "/dashboard" },
+    { label: "Transactions", href: "/dashboard/transactions" },
+    { label: "Manage", href: "/dashboard/manage" },
+    { label: "Education", href: "/dashboard/education" },
 ]
 
 const NavbarItemFuntion = ({ label, link, clickCallback }: { label: string; link: string; clickCallback: () => void }) => {
