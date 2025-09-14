@@ -23,7 +23,7 @@ export default function Features() {
                             </div>
                             <CardTitle className="text-foreground">Period-Based Tracking</CardTitle>
                             <CardDescription className="text-muted-foreground">
-                                Organize your finances by custom time periods - weekly, monthly, or quarterly analysis
+                                Organize your finances by custom time periods - monthly or annual analysis
                             </CardDescription>
                         </CardHeader>
                     </Card>
@@ -59,7 +59,7 @@ export default function Features() {
                             </div>
                             <CardTitle className="text-foreground">Secure & Private</CardTitle>
                             <CardDescription className="text-muted-foreground">
-                                Bank-level security with end-to-end encryption to keep your financial data safe
+                                Your data is protected with privacy controls
                             </CardDescription>
                         </CardHeader>
                     </Card>
@@ -81,9 +81,11 @@ export default function Features() {
                             <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
                                 <Zap className="w-6 h-6 text-primary" />
                             </div>
-                            <CardTitle className="text-foreground">Real-time Updates</CardTitle>
+                            <CardTitle className="text-foreground">
+                                Fast & Intuitive
+                            </CardTitle>
                             <CardDescription className="text-muted-foreground">
-                                Instant synchronization across all devices with real-time budget updates
+                                User-friendly design for quick setup and effortless navigation
                             </CardDescription>
                         </CardHeader>
                     </Card>
