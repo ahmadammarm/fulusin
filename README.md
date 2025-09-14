@@ -1,36 +1,115 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fulusin
+
+Fulusin is a web-based financial tracking platform designed to help individuals manage, monitor, and analyze their financial activities within specific timeframes.
+
+## Tech Stack
+
+- **Framework**: Next.js 15
+- **Language**: TypeScript
+- **Styling**: TailwindCSS
+- **UI Components**: shadcn/ui
+- **Database**: PostgreSQL
+- **Containerization**: Docker(optional)
+
+## Project Structure
+
+```
+fulusin/
+├── src/
+│   ├── actions/        # Next.js server action handlers
+│   ├── app/            # Next.js app router pages
+│   ├── components/     # Reusable React components
+│   ├── lib/            # Core utilities and helpers
+│   ├── provider/       # React Query Client provider configuration
+│   ├── schemas/        # Form validation schemas
+```
+
+## Key Features
+- OAuth integration with Google and GitHub
+- React Query for handling server actions functionality
+- Allows users to choose their preferred default currency, with automatic formatting and symbol adjustments
+- Enables adding, editing, and organizing categories for income and expenses
+- Displays transaction history for monthly and yearly periods
 
 ## Getting Started
 
-First, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+1. Clone the repository:
+```sh
+git clone https://github.com/ahmadammarm/fulusin.git
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Navigate to the project directory:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```sh
+cd fulusin
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Install dependencies:
+```bash
+npm install
+```
 
-## Learn More
+4. Configure Environment Variable: Copy the file `.env.example` to `.env` and adjust it to your configuration:
 
-To learn more about Next.js, take a look at the following resources:
+```sh
+cp .env.example .env
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```
+NEXTAUTH_SECRET=
+DATABASE_URL=
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+5. Run development server:
+```bash
+npm run dev
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Getting Started with Docker
+
+1. Clone the repository:
+```sh
+git clone https://github.com/ahmadammarm/fulusin.git
+```
+
+2. Navigate to the project directory:
+
+```sh
+cd fulusin
+```
+
+3. Run the Docker Compose:
+
+```sh
+docker-compose up
+```
+
+or run in detach mode:
+```sh
+docker-compose up -d
+```
+
+4. To stop the Docker Compose:
+```sh
+docker-compose down
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+
+
+## Build and Deployment
+
+```bash
+# Production build
+npm run build
+
+# Start production server
+npm start
+```
+
+### This project is open for contributions. Feel free to submit issues or pull requests. Thank you :)
+
