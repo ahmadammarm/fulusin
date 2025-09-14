@@ -1,8 +1,18 @@
+"use client"
+
 import { TrendingUp } from "lucide-react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { useRouter } from "next/navigation";
 
 export default function Hero() {
+
+    const router = useRouter();
+
+    const handleTrackingNow = () => {
+        router.push('/sign-in')
+    }
+
     return (
         <section className="py-20 px-4 text-center relative overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-accent/5"></div>
@@ -18,8 +28,8 @@ export default function Hero() {
                     set goals, and make informed decisions within specific timeframes.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                    <Button size="lg" className="bg-accent text-teal-500 hover:bg-accent/90 text-lg px-8 py-4">
-                        Start Tracking Free
+                    <Button size="lg" className="bg-accent text-teal-500 hover:bg-accent/90 text-lg px-8 py-4" onClick={handleTrackingNow}>
+                        Start Tracking Now
                         <TrendingUp className="w-5 h-5 ml-2" />
                     </Button>
                 </div>
