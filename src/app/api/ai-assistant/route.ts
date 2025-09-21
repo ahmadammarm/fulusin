@@ -1,16 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import geminiModel from "@/lib/gemini";
 
-
-const genAI = new GoogleGenerativeAI(String(process.env.GEMINI_API_KEY || ""));
-
-const geminiModel = genAI.getGenerativeModel({
-    model: "gemini-2.5-pro",
-    tools: [{
-        codeExecution: {}
-    }]
-})
 
 export async function POST(request: NextRequest) {
 
