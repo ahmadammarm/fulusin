@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
+import { fromZonedTime } from "date-fns-tz";
+import { startOfDay, endOfDay } from "date-fns";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -27,21 +29,19 @@ export async function GET(request: NextRequest) {
             }, { status: 400 });
         }
 
-
         const statistics = await getBalanceStatistics(
             user.id,
             queryParams.data.from,
             queryParams.data.to
-        )
+        );
 
         return NextResponse.json(statistics);
-
 
     } catch (error: any) {
         console.error("Error fetching balance statistics:", error);
         return NextResponse.json({
             error: "Failed to fetch balance statistics."
-        }, { status: 500 })
+        }, { status: 500 });
     }
 }
 
@@ -49,20 +49,24 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
-        const startOfDay = new Date(from);
-        startOfDay.setHours(0, 0, 0, 0);
 
-        const endOfDay = new Date(to);
-        endOfDay.setHours(23, 59, 59, 999);
-        
+        const indonesiaTimezone = "Asia/Jakarta";
+
+
+        const startIndonesia = startOfDay(from);
+        const endIndonesia = endOfDay(to);
+
+
+        const startUTC = fromZonedTime(startIndonesia, indonesiaTimezone);
+        const endUTC = fromZonedTime(endIndonesia, indonesiaTimezone);
 
         const totale = await prisma.transaction.groupBy({
             by: ["type"],
             where: {
                 userId,
                 date: {
-                    gte: startOfDay,
-                    lte: endOfDay,
+                    gte: startUTC,
+                    lte: endUTC,
                 }
             },
             _sum: {
@@ -73,7 +77,7 @@ async function getBalanceStatistics(userId: string, from: Date, to: Date) {
         return {
             expense: totale.find((t: any) => t.type === "expense")?._sum.amount || 0,
             income: totale.find((t: any) => t.type === "income")?._sum.amount || 0,
-        }
+        };
     } catch (error) {
         console.error("Error in getBalanceStatistics:", error);
         throw new Error("Failed to fetch balance statistics.");
