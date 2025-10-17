@@ -1,11 +1,14 @@
+"use client";
+
 import { CurrencySettings } from "@prisma/client";
 import { useQuery } from "@tanstack/react-query";
 import { BalanceStatistics } from '../app/api/statistics/balance/route';
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import SkeletonWrapper from "./SkeletonWrapper";
-import { TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { Eye, EyeOff, TrendingDown, TrendingUp, Wallet } from "lucide-react";
 import StatisticsCardItem from "./StatisticsCardItem";
+import { Button } from "./ui/button";
 
 interface StatisticCardProps {
     from: Date;
@@ -13,6 +16,8 @@ interface StatisticCardProps {
     currencySettings: CurrencySettings;
 }
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
+
+    const [isShow, setIsShow] = useState<boolean>(false);
 
     const statsQuery = useQuery<BalanceStatistics>({
         queryKey: ['overview', 'statistics', from, to],
@@ -39,50 +44,77 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
 
     const balance = income - expense;
 
+    const handleShowAmounts = () => {
+        setIsShow(!isShow);
+    }
+
     return (
-        <div className="relative grid w-full grid-cols-1 gap-4 md:grid-cols-3 px-5">
-            <SkeletonWrapper isLoading={statsQuery.isFetching}>
-                <StatisticsCardItem
-                    formatter={formatter}
-                    title="Income Total"
-                    value={income}
-                    icon={
-                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-emerald-400/20 shadow-lg">
-                            <TrendingUp className="h-8 w-8 text-emerald-500" />
-                        </div>
-                    }
-                    valueClass="text-emerald-300"
-                    cardBackground="bg-emerald-950/90 shadow-md"
-                />
-            </SkeletonWrapper>
-            <SkeletonWrapper isLoading={statsQuery.isFetching}>
-                <StatisticsCardItem
-                    formatter={formatter}
-                    title="Expense Total"
-                    value={expense}
-                    icon={
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-400/10">
-                            <TrendingDown className="h-7 w-7 text-red-500" />
-                        </div>
-                    }
-                    valueClass="text-red-300"
-                    cardBackground="bg-red-950/90 shadow-md"
-                />
-            </SkeletonWrapper>
-            <SkeletonWrapper isLoading={statsQuery.isFetching}>
-                <StatisticsCardItem
-                    formatter={formatter}
-                    title="Balance"
-                    value={balance}
-                    icon={
-                        <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-400/10">
-                            <Wallet className="h-7 w-7 text-blue-500" />
-                        </div>
-                    }
-                    valueClass="text-blue-300"
-                    cardBackground="bg-blue-950/90 shadow-md"
-                />
-            </SkeletonWrapper>
+        <div className="relative w-full px-5">
+            <div className="mb-3 flex justify-end">
+                <Button
+                    onClick={handleShowAmounts}
+                    className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
+                >
+                    {isShow ? (
+                        <>
+                            <Eye className="h-4 w-4" />
+                            <span>Hide Balance</span>
+                        </>
+                    ) : (
+                        <>
+                            <EyeOff className="h-4 w-4" />
+                            <span>Show Balance</span>
+                        </>
+                    )}
+                </Button>
+            </div>
+            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+                <SkeletonWrapper isLoading={statsQuery.isFetching}>
+                    <StatisticsCardItem
+                        formatter={formatter}
+                        title="Income Total"
+                        value={isShow ? income : 0}
+                        isHidden={!isShow}
+                        icon={
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400/10">
+                                <TrendingUp className="h-7 w-7 text-emerald-500" />
+                            </div>
+                        }
+                        valueClass="text-emerald-300"
+                        cardBackground="bg-emerald-950/90 shadow-md"
+                    />
+                </SkeletonWrapper>
+                <SkeletonWrapper isLoading={statsQuery.isFetching}>
+                    <StatisticsCardItem
+                        formatter={formatter}
+                        title="Expense Total"
+                        value={isShow ? expense : 0}
+                        isHidden={!isShow}
+                        icon={
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-400/10">
+                                <TrendingDown className="h-7 w-7 text-red-500" />
+                            </div>
+                        }
+                        valueClass="text-red-300"
+                        cardBackground="bg-red-950/90 shadow-md"
+                    />
+                </SkeletonWrapper>
+                <SkeletonWrapper isLoading={statsQuery.isFetching}>
+                    <StatisticsCardItem
+                        formatter={formatter}
+                        title="Balance"
+                        value={isShow ? balance : 0}
+                        isHidden={!isShow}
+                        icon={
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-400/10">
+                                <Wallet className="h-7 w-7 text-blue-500" />
+                            </div>
+                        }
+                        valueClass="text-blue-300"
+                        cardBackground="bg-blue-950/90 shadow-md"
+                    />
+                </SkeletonWrapper>
+            </div>
         </div>
     )
 }

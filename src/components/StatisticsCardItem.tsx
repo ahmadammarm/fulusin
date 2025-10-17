@@ -7,6 +7,7 @@ interface StatisticCardItemProps {
     value: number;
     formatter: Intl.NumberFormat;
     icon?: ReactNode;
+    isHidden?: boolean;
     valueClass?: string;
     cardBackground?: string
 }
@@ -16,6 +17,7 @@ export default function StatisticsCardItem({
     value,
     formatter,
     icon,
+    isHidden,
     valueClass,
     cardBackground
 }: StatisticCardItemProps) {
@@ -27,17 +29,25 @@ export default function StatisticsCardItem({
 
 
     return (
-        <Card className={`flex h-auto w-full gap-4 p-4 shadow-sm ${cardBackground}`}>
-            {icon}
-            <div className="flex flex-col justify-center">
-                <p className="text-lg text-muted-foreground">{title}</p>
-                <CountUp
-                    preserveValue
-                    redraw={false}
-                    end={value}
-                    formattingFn={formatFunction}
-                    className={`text-2xl font-bold ${valueClass}`}
-                />
+        <Card className={`p-4 ${cardBackground ? cardBackground : 'bg-card'}`}>
+            <div className="flex items-center space-x-4">
+                {icon}
+                <div>
+                    <p className="text-sm text-muted-foreground">{title}</p>
+                    <h3 className={`mt-1 text-2xl font-semibold ${valueClass ? valueClass : 'text-foreground'}`}>
+                        {isHidden ? (
+                            '••••••'
+                        ) : (
+                            <CountUp
+                                start={0}
+                                end={value}
+                                duration={1.5}
+                                separator=","
+                                formattingFn={formatFunction}
+                            />
+                        )}
+                    </h3>
+                </div>
             </div>
         </Card>
     )

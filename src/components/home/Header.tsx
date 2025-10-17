@@ -32,9 +32,9 @@ export default function Header() {
                     <Logo />
                 </div>
                 <div className="flex items-center space-x-4">
-                    {/* <Button variant="outline" className="bg-transparent" onClick={handleGithub}>
+                    <Button variant="outline" className="bg-transparent" onClick={handleGithub}>
                         <Github className="w-4 h-4" />
-                    </Button> */}
+                    </Button>
                     {status === "authenticated" ? (
                         <Button variant="outline" className="bg-transparent" onClick={handleDashboard}>
                             Dashboard
