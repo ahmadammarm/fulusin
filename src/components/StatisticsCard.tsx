@@ -17,7 +17,7 @@ interface StatisticCardProps {
 }
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
 
-    const [isShow, setIsShow] = useState<boolean>(false);
+    const [isShow, setIsShow] = useState<boolean>(true);
 
     const statsQuery = useQuery<BalanceStatistics>({
         queryKey: ['overview', 'statistics', from, to],
@@ -44,7 +44,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
 
     const balance = income - expense;
 
-    const handleShowAmounts = () => {
+    const handleHideAmounts = () => {
         setIsShow(!isShow);
     }
 
@@ -52,7 +52,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
         <div className="relative w-full px-5">
             <div className="mb-3 flex justify-end">
                 <Button
-                    onClick={handleShowAmounts}
+                    onClick={handleHideAmounts}
                     className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
                 >
                     {isShow ? (
