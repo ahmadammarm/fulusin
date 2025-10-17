@@ -57,12 +57,12 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                 >
                     {isShow ? (
                         <>
-                            <Eye className="h-4 w-4" />
+                            <EyeOff className="h-4 w-4" />
                             <span>Hide Balance</span>
                         </>
                     ) : (
                         <>
-                            <EyeOff className="h-4 w-4" />
+                            <Eye className="h-4 w-4" />
                             <span>Show Balance</span>
                         </>
                     )}
