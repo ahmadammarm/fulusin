@@ -50,7 +50,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
 
     return (
         <div className="relative w-full px-5">
-            <div className="mb-3 flex justify-end">
+            <div className="mb-3 flex justify-start">
                 <Button
                     onClick={handleHideAmounts}
                     className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
