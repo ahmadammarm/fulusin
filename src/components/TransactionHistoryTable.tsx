@@ -131,7 +131,8 @@ export default function TransactionHistoryTable() {
             const response = await axios.get(`/api/transaction-history`);
             return response.data;
         },
-        refetchOnWindowFocus: false
+        refetchOnWindowFocus: false,
+        staleTime: 1000 * 60 * 5,
     });
 
     const handleExportCsv = (data: any[]) => {
