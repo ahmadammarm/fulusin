@@ -19,6 +19,7 @@
         email     String   @unique
         name      String
         password  String?
+        profileImage String?
         createdAt DateTime @default(now())
         updatedAt DateTime @updatedAt
 
