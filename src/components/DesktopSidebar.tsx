@@ -91,7 +91,7 @@ export default function DesktopSidebar() {
                                         Manage
                                     </Link>
                                 </li>
-                                <li>
+                                {/* <li>
                                     <Link
                                         href="/dashboard/education"
                                         className={`block rounded px-3 py-2 transition-colors ${pathname.startsWith("/dashboard/education")
@@ -101,7 +101,7 @@ export default function DesktopSidebar() {
                                     >
                                         Education
                                     </Link>
-                                </li>
+                                </li> */}
                             </ul>
                         </nav>
                     </SidebarGroup>
