@@ -28,14 +28,29 @@ export default function HistorySection({ currencySettings }: { currencySettings:
     }, [currencySettings.currency]);
 
     const historyData = useQuery<GetHistoryDataResponseType>({
-        queryKey: ["overview", "history", timeframe],
-        queryFn: async () => fetch(`/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`)
-            .then((res) => res.json())
-    })
+        queryKey: ["overview", "history", timeframe, period.month, period.year],
+        queryFn: async () => {
+            const res = await fetch(
+                `/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`
+            );
+
+            const json = await res.json();
+
+            // console.log("Raw fetch response:", json);
+
+            if (!Array.isArray(json)) {
+                // console.warn("API did not return array:", json);
+                return [];
+            }
+
+            return json;
+        }
+    });
+
 
     const dataAvailable = historyData.data && historyData.data.length > 0;
 
-
+    console.log(historyData.data)
 
     return (
         <div className="container">
