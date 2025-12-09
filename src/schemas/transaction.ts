@@ -1,7 +1,7 @@
 import z from "zod";
 
 export const CreateTransactionSchema = z.object({
-    description: z.string().min(1).max(100).optional(),
+    description: z.string().max(100).optional(),
     amount: z.number().positive().multipleOf(0.01),
     date: z.date(),
 
