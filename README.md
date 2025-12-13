@@ -4,7 +4,7 @@ Fulusin is a web-based financial tracking platform designed to help individuals 
 
 ## Tech Stack
 
-- **Framework**: Next.js 15
+- **Framework**: Next.js 16
 - **Language**: TypeScript
 - **Styling**: TailwindCSS
 - **UI Components**: shadcn/ui
