@@ -134,8 +134,8 @@ export default function HistorySection({ currencySettings }: { currencySettings:
                                         tickLine={false}
                                         axisLine={false}
                                     />
-                                    <Bar dataKey={"income"} label="income" fill="url(#incomeBar)" radius={4} className="cursor-pointer" />
-                                    <Bar dataKey={"expense"} label="expense" fill="url(#expenseBar)" radius={4} className="cursor-pointer" />
+                                    <Bar dataKey={"income"} fill="url(#incomeBar)" radius={4} className="cursor-pointer" />
+                                    <Bar dataKey={"expense"} fill="url(#expenseBar)" radius={4} className="cursor-pointer" />
                                     <Tooltip cursor={{ opacity: 0.1 }} content={(props) => (
                                         <CustomTooltip {...props} formatter={formatter} />
                                     )} />
