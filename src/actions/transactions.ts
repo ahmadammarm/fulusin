@@ -1,17 +1,25 @@
-"use server"
+"use server";
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
+import {
+    CreateTransactionSchema,
+    CreateTransactionSchemaType,
+} from "@/schemas/transaction";
 import { redirect } from "next/navigation";
+import { startOfDay } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 
+const TIMEZONE = "Asia/Jakarta";
 
-
-function normalizeDate(date: Date) {
-    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+function normalizeDateToUTC(date: Date): Date {
+    const localStart = startOfDay(date);
+    return fromZonedTime(localStart, TIMEZONE);
 }
 
-export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
+export async function CreateTransactionAction(
+    form: CreateTransactionSchemaType
+) {
     const parsedBody = CreateTransactionSchema.safeParse(form);
     if (!parsedBody.success) {
         throw new Error("Invalid data");
@@ -20,12 +28,12 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     const session = await auth();
     const user = session?.user;
     if (!user) {
-        redirect("sign-in");
+        redirect("/sign-in");
     }
 
     const { amount, category, date, description, type } = parsedBody.data;
 
-    const normalizedDate = normalizeDate(new Date(date));
+    const normalizedDate = normalizeDateToUTC(new Date(date));
 
     const categoryRow = await prisma.category.findFirst({
         where: {
@@ -43,7 +51,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             data: {
                 userId: user.id,
                 amount,
-                date: normalizedDate, 
+                date: normalizedDate,
                 description: description || "",
                 type,
                 category: categoryRow.name,
@@ -69,11 +77,11 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 expense: type === "expense" ? amount : 0,
             },
             update: {
-                expense: {
-                    increment: type === "expense" ? amount : 0,
-                },
                 income: {
                     increment: type === "income" ? amount : 0,
+                },
+                expense: {
+                    increment: type === "expense" ? amount : 0,
                 },
             },
         }),
@@ -94,11 +102,11 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 expense: type === "expense" ? amount : 0,
             },
             update: {
-                expense: {
-                    increment: type === "expense" ? amount : 0,
-                },
                 income: {
                     increment: type === "income" ? amount : 0,
+                },
+                expense: {
+                    increment: type === "expense" ? amount : 0,
                 },
             },
         }),

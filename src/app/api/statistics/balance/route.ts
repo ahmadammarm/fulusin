@@ -49,25 +49,22 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
+        const timezone = "Asia/Jakarta";
 
-        const indonesiaTimezone = "Asia/Jakarta";
+        const startLocal = startOfDay(from);
+        const endLocal = endOfDay(to);
 
+        const startUTC = fromZonedTime(startLocal, timezone);
+        const endUTC = fromZonedTime(endLocal, timezone);
 
-        const startIndonesia = startOfDay(from);
-        const endIndonesia = endOfDay(to);
-
-
-        const startUTC = fromZonedTime(startIndonesia, indonesiaTimezone);
-        const endUTC = fromZonedTime(endIndonesia, indonesiaTimezone);
-
-        const totale = await prisma.transaction.groupBy({
+        const total = await prisma.transaction.groupBy({
             by: ["type"],
             where: {
                 userId,
                 date: {
                     gte: startUTC,
                     lte: endUTC,
-                }
+                },
             },
             _sum: {
                 amount: true,
@@ -75,8 +72,8 @@ async function getBalanceStatistics(userId: string, from: Date, to: Date) {
         });
 
         return {
-            expense: totale.find((t: any) => t.type === "expense")?._sum.amount || 0,
-            income: totale.find((t: any) => t.type === "income")?._sum.amount || 0,
+            expense: total.find(t => t.type === "expense")?._sum.amount ?? 0,
+            income: total.find(t => t.type === "income")?._sum.amount ?? 0,
         };
     } catch (error) {
         console.error("Error in getBalanceStatistics:", error);
