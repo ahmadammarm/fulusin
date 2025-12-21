@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
+import { WIB_OFFSET } from "@/lib/wib";
 import { overviewQuerySchema } from "@/schemas/overview";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
-import { fromZonedTime } from "date-fns-tz";
-import { startOfDay, endOfDay, startOfMonth } from "date-fns";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -49,15 +48,38 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
-        const timezone = "Asia/Jakarta";
 
-        const fromDate = from.getDate() === 1 ? startOfMonth(from) : from;
+        const fromWIB = new Date(from.getTime() + WIB_OFFSET);
+        const toWIB = new Date(to.getTime() + WIB_OFFSET);
 
-        const startLocal = startOfDay(fromDate);
-        const endLocal = endOfDay(to);
+        // console.log("Original dates:", {
+        //     from: from.toISOString(),
+        //     to: to.toISOString()
+        // });
 
-        const startUTC = fromZonedTime(startLocal, timezone);
-        const endUTC = fromZonedTime(endLocal, timezone);
+        // console.log("WIB dates:", {
+        //     from: fromWIB.toISOString(),
+        //     to: toWIB.toISOString()
+        // });
+
+        const startUTC = new Date(Date.UTC(
+            fromWIB.getUTCFullYear(),
+            fromWIB.getUTCMonth(),
+            fromWIB.getUTCDate(),
+            0, 0, 0, 0
+        ));
+
+        const endUTC = new Date(Date.UTC(
+            toWIB.getUTCFullYear(),
+            toWIB.getUTCMonth(),
+            toWIB.getUTCDate(),
+            23, 59, 59, 999
+        ));
+
+        // console.log("Query date range (UTC normalized):", {
+        //     from: startUTC.toISOString(),
+        //     to: endUTC.toISOString()
+        // });
 
         const total = await prisma.transaction.groupBy({
             by: ["type"],
