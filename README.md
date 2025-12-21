@@ -110,5 +110,38 @@ npm run build
 npm start
 ```
 
-### This project is open for contributions. Feel free to submit issues or pull requests. Thanks
+## This project is open for contributions. Feel free to submit issues or pull requests.
+### How to Contribute?
+Please follow the workflow below to keep the codebase clean and consistent.
+
+### Branch Strategy
+
+- main → Production branch
+- develop → Active development branch (staging env)
+- feature/* → New features
+- refactor/* New improvements without remove old functionallity
+
+### Contribution Steps
+
+1. Clone the repository:
+```sh
+git clone https://github.com/ahmadammarm/fulusin.git
+```
+
+2. Checkout to the develop branch
+```sh
+git checkout develop
+```
+
+3. Create a new branch
+```sh
+git checkout -b feature/your-feature-name
+```
+
+4. Make your changes
+5. Commit with a clear and descriptive message
+6. Push your new branch
+7. Open a Pull Request to the develop branch
+
+Do not submit pull requests directly to the main branch!
 
