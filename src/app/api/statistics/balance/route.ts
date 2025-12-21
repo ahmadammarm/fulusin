@@ -5,7 +5,7 @@ import { overviewQuerySchema } from "@/schemas/overview";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 import { fromZonedTime } from "date-fns-tz";
-import { startOfDay, endOfDay } from "date-fns";
+import { startOfDay, endOfDay, startOfMonth } from "date-fns";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -51,7 +51,9 @@ async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
         const timezone = "Asia/Jakarta";
 
-        const startLocal = startOfDay(from);
+        const fromDate = from.getDate() === 1 ? startOfMonth(from) : from;
+
+        const startLocal = startOfDay(fromDate);
         const endLocal = endOfDay(to);
 
         const startUTC = fromZonedTime(startLocal, timezone);
