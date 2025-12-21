@@ -91,17 +91,17 @@ export default function DesktopSidebar() {
                                         Manage
                                     </Link>
                                 </li>
-                                {/* <li>
+                                <li>
                                     <Link
-                                        href="/dashboard/education"
-                                        className={`block rounded px-3 py-2 transition-colors ${pathname.startsWith("/dashboard/education")
+                                        href="/dashboard/simulations"
+                                        className={`block rounded px-3 py-2 transition-colors ${pathname.startsWith("/dashboard/simulations")
                                             ? "bg-teal-700 text-white font-medium"
                                             : "hover:bg-muted"
                                             }`}
                                     >
-                                        Education
+                                        Simulations
                                     </Link>
-                                </li> */}
+                                </li>
                             </ul>
                         </nav>
                     </SidebarGroup>

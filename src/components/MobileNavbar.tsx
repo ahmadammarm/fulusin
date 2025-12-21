@@ -14,7 +14,7 @@ const NavbarItems = [
     { label: "Dashboard", href: "/dashboard" },
     { label: "Transactions", href: "/dashboard/transactions" },
     { label: "Manage", href: "/dashboard/manage" },
-    // { label: "Education", href: "/dashboard/education" },
+    { label: "Simulations", href: "/dashboard/simulations" },
 ]
 
 const NavbarItemFuntion = ({ label, link, clickCallback }: { label: string; link: string; clickCallback: () => void }) => {
