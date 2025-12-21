@@ -2,20 +2,11 @@
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { WIB_OFFSET } from "@/lib/wib";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
 import { redirect } from "next/navigation";
 
 function normalizeDate(date: Date) {
-
-    const dateWIB = new Date(date.getTime() + WIB_OFFSET);
-
-    return new Date(Date.UTC(
-        dateWIB.getUTCFullYear(),
-        dateWIB.getUTCMonth(),
-        dateWIB.getUTCDate(),
-        0, 0, 0, 0
-    ));
+    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
 }
 
 export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
@@ -33,8 +24,6 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     const { amount, category, date, description, type } = parsedBody.data;
 
     const normalizedDate = normalizeDate(new Date(date));
-
-    console.log("Transaction date (normalized UTC):", normalizedDate.toISOString());
 
     const categoryRow = await prisma.category.findFirst({
         where: {

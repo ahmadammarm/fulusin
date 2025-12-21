@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { WIB_OFFSET } from "@/lib/wib";
 import { overviewQuerySchema } from "@/schemas/overview";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
@@ -48,35 +47,26 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
-
-        const fromWIB = new Date(from.getTime() + WIB_OFFSET);
-        const toWIB = new Date(to.getTime() + WIB_OFFSET);
-
-        // console.log("Original dates:", {
-        //     from: from.toISOString(),
-        //     to: to.toISOString()
-        // });
-
-        // console.log("WIB dates:", {
-        //     from: fromWIB.toISOString(),
-        //     to: toWIB.toISOString()
-        // });
-
         const startUTC = new Date(Date.UTC(
-            fromWIB.getUTCFullYear(),
-            fromWIB.getUTCMonth(),
-            fromWIB.getUTCDate(),
+            from.getFullYear(),
+            from.getMonth(),
+            from.getDate(),
             0, 0, 0, 0
         ));
 
         const endUTC = new Date(Date.UTC(
-            toWIB.getUTCFullYear(),
-            toWIB.getUTCMonth(),
-            toWIB.getUTCDate(),
+            to.getFullYear(),
+            to.getMonth(),
+            to.getDate(),
             23, 59, 59, 999
         ));
 
-        // console.log("Query date range (UTC normalized):", {
+        // console.log("Input dates:", {
+        //     from: from.toISOString(),
+        //     to: to.toISOString()
+        // });
+
+        // console.log("Query date range:", {
         //     from: startUTC.toISOString(),
         //     to: endUTC.toISOString()
         // });
