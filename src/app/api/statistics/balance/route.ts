@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const user = session?.user;
 
     if (!user) {
-        redirect("/sign-in");
+        redirect("/auth/sign-in");
     }
 
     try {
