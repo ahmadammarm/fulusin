@@ -86,8 +86,8 @@ async function getBalanceStatistics(userId: string, from: Date, to: Date) {
         });
 
         return {
-            expense: total.find(t => t.type === "expense")?._sum.amount ?? 0,
-            income: total.find(t => t.type === "income")?._sum.amount ?? 0,
+            expense: total.find((t: any) => t.type === "expense")?._sum.amount ?? 0,
+            income: total.find((t: any) => t.type === "income")?._sum.amount ?? 0,
         };
     } catch (error) {
         console.error("Error in getBalanceStatistics:", error);
