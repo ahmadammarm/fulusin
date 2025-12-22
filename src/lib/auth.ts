@@ -38,7 +38,7 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
 
     pages: {
-        signIn: "/sign-in",
+        signIn: "/auth/sign-in",
     },
 
     providers: [
@@ -200,7 +200,7 @@ export const authOptions: NextAuthOptions = {
                     user: undefined,
                 };
             }
-            
+
             session.user = {
                 id: token.id as string,
                 name: token.name as string,
