@@ -25,7 +25,7 @@ export default function DesktopSidebar() {
 
     useEffect(() => {
         if (status === "unauthenticated") {
-            router.push("/auth/sign-in");
+            router.push("/sign-in");
         }
     }, [status, router]);
 
