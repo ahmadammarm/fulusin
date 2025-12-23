@@ -60,7 +60,7 @@ export const authOptions: NextAuthOptions = {
 
                 if (!user) throw new Error("Incorrect email");
 
-                if(!user.password) {
+                if (!user.password) {
                     throw new Error("Email is already exist with google authentication")
                 }
 
@@ -174,14 +174,12 @@ export const authOptions: NextAuthOptions = {
                 token.id = user.id;
                 token.name = user.name;
                 token.email = user.email;
-
                 token.expiresAt = Math.floor(Date.now() / 1000) + 24 * 60 * 60;
             }
 
             if (typeof token.expiresAt === "number" && Date.now() / 1000 > token.expiresAt) {
-                return {};
+                return {} as any;
             }
-
 
             if (account && account.provider === "google") {
                 token.accessToken = account.access_token;
@@ -191,12 +189,8 @@ export const authOptions: NextAuthOptions = {
         },
 
         async session({ session, token }) {
-
-            if (!token?.id) {
-                return {
-                    ...session,
-                    user: undefined,
-                };
+            if (!token?.id || Object.keys(token).length === 0) {
+                throw new Error("Session expired");
             }
 
             session.user = {

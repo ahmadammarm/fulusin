@@ -8,10 +8,12 @@ import { useSession } from "next-auth/react";
 
 export default function Header() {
     const router = useRouter();
-    const { status } = useSession();
+    const { data: session, status } = useSession();
 
     const handleSignin = () => router.push('/sign-in');
     const handleDashboard = () => router.push('/dashboard');
+
+    const isAuthenticated = status === "authenticated" && session?.user?.id;
 
     return (
         <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
@@ -20,7 +22,7 @@ export default function Header() {
                     <Logo />
                 </div>
                 <div className="flex items-center space-x-4">
-                    {status === "loading" ? null : status === "authenticated" ? (
+                    {status === "loading" ? null : isAuthenticated ? (
                         <Button variant="outline" className="bg-transparent" onClick={handleDashboard}>
                             Dashboard
                             <ArrowRight className="w-4 h-4 ml-2" />
