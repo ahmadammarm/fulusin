@@ -19,7 +19,6 @@ import { Calendar } from "./ui/calendar";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateTransactionAction } from "@/actions/transactions";
 import { toast } from "sonner";
-import { DatetoUTCDate } from "@/lib/dateHelper";
 
 interface Props {
     trigger: ReactNode;
@@ -34,7 +33,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
         resolver: zodResolver(CreateTransactionSchema),
         defaultValues: {
             type,
-            date: new Date(),
+            date: format(new Date(), "yyyy-MM-dd")
         },
     })
 
@@ -55,7 +54,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
             form.reset({
                 amount: 0,
                 description: '',
-                date: new Date(),
+                date: format(new Date(), "yyyy-MM-dd"),
                 category: '',
                 type
             });
@@ -73,7 +72,7 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
     const onSubmit = useCallback((data: CreateTransactionSchemaType) => {
         mutate({
             ...data,
-            date: DatetoUTCDate(data.date)
+            date: format(data.date, "yyyy-MM-dd"),
         });
     }, [mutate]);
 
@@ -153,11 +152,11 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                                 <PopoverContent className="w-auto p-0">
                                                     <Calendar
                                                         mode="single"
-                                                        selected={field.value}
+                                                        selected={new Date(field.value)}
                                                         onSelect={(value) => {
                                                             if (!value) return;
                                                             console.log(value);
-                                                            field.onChange(value);
+                                                            field.onChange(format(value, "yyyy-MM-dd"));
                                                         }}
                                                         initialFocus
                                                     />

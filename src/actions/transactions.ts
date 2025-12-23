@@ -4,10 +4,10 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
 import { redirect } from "next/navigation";
+import { startOfDay } from "date-fns";
+import { fromZonedTime } from "date-fns-tz";
 
-function normalizeDate(date: Date) {
-    return new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-}
+const TIMEZONE = "Asia/Jakarta";
 
 export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
     const parsedBody = CreateTransactionSchema.safeParse(form);
@@ -23,7 +23,12 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
 
     const { amount, category, date, description, type } = parsedBody.data;
 
-    const normalizedDate = normalizeDate(new Date(date));
+    const transactionDate = new Date(date);
+
+    const normalizedDateForHistory = fromZonedTime(
+        startOfDay(transactionDate),
+        TIMEZONE
+    );
 
     const categoryRow = await prisma.category.findFirst({
         where: {
@@ -41,7 +46,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             data: {
                 userId: user.id,
                 amount,
-                date: normalizedDate,
+                date: transactionDate,
                 description: description || "",
                 type,
                 category: categoryRow.name,
@@ -53,16 +58,16 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             where: {
                 userId_day_month_year: {
                     userId: user.id,
-                    day: normalizedDate.getUTCDate(),
-                    month: normalizedDate.getUTCMonth() + 1,
-                    year: normalizedDate.getUTCFullYear(),
+                    day: normalizedDateForHistory.getUTCDate(),
+                    month: normalizedDateForHistory.getUTCMonth() + 1,
+                    year: normalizedDateForHistory.getUTCFullYear(),
                 },
             },
             create: {
                 userId: user.id,
-                day: normalizedDate.getUTCDate(),
-                month: normalizedDate.getUTCMonth() + 1,
-                year: normalizedDate.getUTCFullYear(),
+                day: normalizedDateForHistory.getUTCDate(),
+                month: normalizedDateForHistory.getUTCMonth() + 1,
+                year: normalizedDateForHistory.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
@@ -80,14 +85,14 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             where: {
                 userId_month_year: {
                     userId: user.id,
-                    month: normalizedDate.getUTCMonth() + 1,
-                    year: normalizedDate.getUTCFullYear(),
+                    month: normalizedDateForHistory.getUTCMonth() + 1,
+                    year: normalizedDateForHistory.getUTCFullYear(),
                 },
             },
             create: {
                 userId: user.id,
-                month: normalizedDate.getUTCMonth() + 1,
-                year: normalizedDate.getUTCFullYear(),
+                month: normalizedDateForHistory.getUTCMonth() + 1,
+                year: normalizedDateForHistory.getUTCFullYear(),
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
