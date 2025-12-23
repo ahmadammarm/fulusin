@@ -179,7 +179,7 @@ export const authOptions: NextAuthOptions = {
             }
 
             if (typeof token.expiresAt === "number" && Date.now() / 1000 > token.expiresAt) {
-                return null;
+                return {};
             }
 
 
@@ -193,7 +193,10 @@ export const authOptions: NextAuthOptions = {
         async session({ session, token }) {
 
             if (!token?.id) {
-                return null;
+                return {
+                    ...session,
+                    user: undefined,
+                };
             }
 
             session.user = {
