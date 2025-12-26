@@ -22,6 +22,9 @@ export default function HistoryPeriodSelector({
     const historyPeriods = useQuery<GetHistoryPeriodResponseType>({
         queryKey: ["overview", "history-periods"],
         queryFn: async () => fetch("/api/history-period").then((res) => res.json()),
+        staleTime: 0,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 
     return (
