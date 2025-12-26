@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { useQuery } from "@tanstack/react-query";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
     ColumnDef,
@@ -133,6 +133,11 @@ export default function TransactionHistoryTable() {
         },
         refetchOnWindowFocus: false,
         staleTime: 1000 * 60 * 5,
+    });
+
+    const queryClient = new QueryClient();
+    queryClient.invalidateQueries({
+        queryKey: ["transactionHistory"]
     });
 
     const handleExportCsv = (data: any[]) => {
