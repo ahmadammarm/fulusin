@@ -1,4 +1,4 @@
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 import { Button } from "./ui/button";
 import { TrashIcon } from "lucide-react";
 import CategoryDeleteDialog from "./CategoryDeleteDialog";

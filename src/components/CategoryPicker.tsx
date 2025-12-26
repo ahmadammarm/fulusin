@@ -1,7 +1,7 @@
 "use client"
 
 import { TransactionType } from "@/lib/types"
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 import { useQuery } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";

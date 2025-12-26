@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CategoryDelete } from "@/actions/categories";
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { toast } from "sonner";

@@ -8,7 +8,7 @@ import CreateCategoryDialog from "./CreateCategoryDialog";
 import { Button } from "./ui/button";
 import { Separator } from "./ui/separator";
 import { cn } from "@/lib/utils";
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 import CategoryCard from '@/components/CategoryCard';
 
 interface CategoryListProps {

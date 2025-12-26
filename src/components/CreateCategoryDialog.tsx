@@ -17,7 +17,7 @@ import data from '@emoji-mart/data';
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateCategoryAction } from "@/actions/categories";
 import { toast } from "sonner";
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 
 interface Props {
     type: TransactionType;

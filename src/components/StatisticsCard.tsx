@@ -1,7 +1,7 @@
 "use client";
 
-import { CurrencySettings } from "@prisma/client";
-import { useQuery } from "@tanstack/react-query";
+import { CurrencySettings } from "../../src/generated/prisma/client";
+import { QueryClient, useQuery } from "@tanstack/react-query";
 import { BalanceStatistics } from '../app/api/statistics/balance/route';
 import { useMemo, useState } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
@@ -15,6 +15,11 @@ interface StatisticCardProps {
     to: Date;
     currencySettings: CurrencySettings;
 }
+
+function formatDate(date: Date) {
+    return date.toLocaleDateString("en-CA");
+}
+
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
 
     const [isShow, setIsShow] = useState<boolean>(true);
@@ -23,16 +28,23 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
         queryKey: ['overview', 'statistics', from, to],
         queryFn: async () => {
             const response = await fetch(
-                `/api/statistics/balance?from=${from.toISOString()}&to=${to.toISOString()}`
+                `/api/statistics/balance?from=${formatDate(from)}&to=${formatDate(to)}`,
+                { cache: "no-store" }
             );
             if (!response.ok) {
                 throw new Error('Failed to fetch statistics');
             }
             return response.json();
         },
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
-        staleTime: 1000 * 60 * 5,
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+        refetchOnReconnect: true,
+    });
+
+    const queryClient = new QueryClient();
+
+    queryClient.invalidateQueries({
+        queryKey: ["overview", "statistics"],
     });
 
     const formatter = useMemo(() => {

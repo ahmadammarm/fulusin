@@ -25,7 +25,7 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { Currencies, Currency } from "@/lib/currencies"
 import { useMutation, useQuery } from "@tanstack/react-query"
 import SkeletonWrapper from "./SkeletonWrapper"
-import { CurrencySettings } from "@prisma/client"
+import { CurrencySettings } from "../../src/generated/prisma/client"
 import { UpdateUserCurrencyAction } from "@/actions/currencySettings"
 import { toast } from "sonner"
 

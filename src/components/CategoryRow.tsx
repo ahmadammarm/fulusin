@@ -1,4 +1,4 @@
-import { Category } from "@prisma/client";
+import { Category } from "../../src/generated/prisma/client";
 
 export default function CategoryRow({ category }: { category: Category }) {
     return (

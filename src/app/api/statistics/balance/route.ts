@@ -47,37 +47,19 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
-        const startUTC = new Date(Date.UTC(
-            from.getFullYear(),
-            from.getMonth(),
-            from.getDate(),
-            0, 0, 0, 0
-        ));
+        const start = new Date(from);
+        start.setHours(0, 0, 0, 0);
 
-        const endUTC = new Date(Date.UTC(
-            to.getFullYear(),
-            to.getMonth(),
-            to.getDate(),
-            23, 59, 59, 999
-        ));
-
-        // console.log("Input dates:", {
-        //     from: from.toISOString(),
-        //     to: to.toISOString()
-        // });
-
-        // console.log("Query date range:", {
-        //     from: startUTC.toISOString(),
-        //     to: endUTC.toISOString()
-        // });
+        const end = new Date(to);
+        end.setHours(23, 59, 59, 999);
 
         const total = await prisma.transaction.groupBy({
             by: ["type"],
             where: {
                 userId,
                 date: {
-                    gte: startUTC,
-                    lte: endUTC,
+                    gte: start,
+                    lte: end,
                 },
             },
             _sum: {

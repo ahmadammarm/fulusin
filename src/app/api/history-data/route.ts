@@ -1,120 +1,109 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import prisma from '@/lib/prisma';
-import { getHistoryDataSchema } from './../../../schemas/historyData';
+import prisma from "@/lib/prisma";
 import { auth } from "@/lib/auth";
-import { HistoryData, Period, Timeframe } from '@/lib/types';
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
-import { getDaysInMonth } from 'date-fns';
+import { getDaysInMonth } from "date-fns";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
     const user = session?.user;
 
     if (!user) {
-        redirect('/sign-in');
+        redirect("/sign-in");
     }
 
     try {
         const { searchParams } = new URL(request.url);
-        const timeframe = searchParams.get('timeframe');
-        const year = searchParams.get('year');
-        const month = searchParams.get('month');
+        const timeframe = searchParams.get("timeframe");
+        const year = Number(searchParams.get("year"));
+        const month = Number(searchParams.get("month"));
 
-        // console.log("API timeframe param =", timeframe);
+        let data: any[] = [];
 
-        const queryParams = getHistoryDataSchema.safeParse({
-            timeframe,
-            month,
-            year
-        });
-
-        if (!queryParams.success) {
-            return NextResponse.json({ error: queryParams.error.message }, { status: 400 });
+        if (timeframe === "year") {
+            data = await getYearHistoryFromTransaction(user.id, year);
         }
 
-        const data = await getHistoryData(
-            user.id,
-            queryParams.data.timeframe,
-            {
-                month: queryParams.data.month,
-                year: queryParams.data.year
-            }
-        );
-
-        // console.log("API returning data =", data);
+        if (timeframe === "month") {
+            data = await getMonthHistoryFromTransaction(user.id, year, month);
+        }
 
         return NextResponse.json(data);
 
     } catch (error: any) {
-        return NextResponse.json({
-            error: error.message || "An error occurred while fetching history data."
-        }, { status: 500 });
+        return NextResponse.json(
+            { error: error.message },
+            { status: 500 }
+        );
     }
 }
 
-export type GetHistoryDataResponseType = Awaited<ReturnType<typeof getHistoryData>>;
+export type GetHistoryDataResponseType = Awaited<ReturnType<typeof getMonthHistoryFromTransaction>> | Awaited<ReturnType<typeof getYearHistoryFromTransaction>>;
 
-async function getYearHistoryData(userId: string, year: number) {
-    const result = await prisma.yearHistory.groupBy({
-        by: ["month"],
-        where: { userId, year },
-        _sum: { income: true, expense: true },
-        orderBy: { month: "asc" }
+async function getYearHistoryFromTransaction(userId: string, year: number) {
+    const transactions = await prisma.transaction.findMany({
+        where: {
+            userId,
+            date: {
+                gte: new Date(year, 0, 1),
+                lte: new Date(year, 11, 31, 23, 59, 59),
+            },
+        },
     });
 
-    const history: HistoryData[] = [];
+    const history = Array.from({ length: 12 }, (_, i) => ({
+        year,
+        month: i + 1,
+        income: 0,
+        expense: 0,
+    }));
 
-    for (let i = 0; i < 12; i++) {
-        const row = result.find((r: any) => r.month === i + 1);
-        history.push({
-            income: row?._sum.income ?? 0,
-            expense: row?._sum.expense ?? 0,
-            year,
-            month: i + 1
-        });
+    for (const trx of transactions) {
+        const monthIndex = trx.date.getMonth();
+        if (trx.type === "income") {
+            history[monthIndex].income += trx.amount;
+        } else {
+            history[monthIndex].expense += trx.amount;
+        }
     }
 
     return history;
 }
 
-async function getMonthHistoryData(userId: string, year: number, month: number) {
-    const result = await prisma.monthHistory.groupBy({
-        by: ["day"],
-        where: { userId, year, month },
-        _sum: { income: true, expense: true },
-        orderBy: [{ day: "asc" }]
-    });
-
-    const history: HistoryData[] = [];
+async function getMonthHistoryFromTransaction(
+    userId: string,
+    year: number,
+    month: number
+) {
     const daysInMonth = getDaysInMonth(new Date(year, month - 1));
 
-    for (let i = 1; i <= daysInMonth; i++) {
-        const row = result.find((r: any) => r.day === i);
-        history.push({
-            income: row?._sum.income ?? 0,
-            expense: row?._sum.expense ?? 0,
-            year,
-            month,
-            day: i
-        });
+    const transactions = await prisma.transaction.findMany({
+        where: {
+            userId,
+            date: {
+                gte: new Date(year, month - 1, 1),
+                lte: new Date(year, month - 1, daysInMonth, 23, 59, 59),
+            },
+        },
+    });
+
+    const history = Array.from({ length: daysInMonth }, (_, i) => ({
+        year,
+        month,
+        day: i + 1,
+        income: 0,
+        expense: 0,
+    }));
+
+    for (const trx of transactions) {
+        const dayIndex = trx.date.getDate() - 1;
+        if (trx.type === "income") {
+            history[dayIndex].income += trx.amount;
+        } else {
+            history[dayIndex].expense += trx.amount;
+        }
     }
 
     return history;
-}
-
-async function getHistoryData(userId: string, timeframe: Timeframe, period: Period) {
-    console.log("📌 getHistoryData received timeframe =", timeframe);
-
-    switch (timeframe) {
-        case "year":
-            return await getYearHistoryData(userId, period.year);
-
-        case "month":
-            return await getMonthHistoryData(userId, period.year, period.month);
-
-        default:
-            // console.warn("Invalid timeframe received:", timeframe);
-            return [];
-    }
 }

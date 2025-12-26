@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import { DatetoUTCDate } from "@/lib/dateHelper";
-import { CurrencySettings } from "@prisma/client"
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import SkeletonWrapper from "./SkeletonWrapper";
@@ -10,6 +9,7 @@ import { GetCategoriesStatisticsResponseType } from "@/app/api/statistics/catego
 import { Card, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Progress } from "./ui/progress";
+import { CurrencySettings } from "../../src/generated/prisma/client";
 
 interface CategoriesStatisticsProps {
     currencySettings: CurrencySettings;

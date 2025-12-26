@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import { CurrencySettings } from "@prisma/client";
+import { CurrencySettings } from "../../src/generated/prisma/client";
 import { differenceInDays, startOfMonth } from "date-fns";
 import { useState } from "react";
 import { DateRangePicker } from "@/components/ui/date-range-picker";

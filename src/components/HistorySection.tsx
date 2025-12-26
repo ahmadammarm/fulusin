@@ -1,13 +1,14 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
 import { Timeframe } from "@/lib/types"
-import { CurrencySettings } from "@prisma/client"
-import { useMemo, useState } from "react"
+import { CurrencySettings } from "../../src/generated/prisma/client"
+import { useEffect, useMemo, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card"
 import { Badge } from "./ui/badge"
 import HistoryPeriodSelector from "./HistoryPeriodSelector"
-import { useQuery } from "@tanstack/react-query"
+import { QueryClient, useQuery } from "@tanstack/react-query"
 import { GetHistoryDataResponseType } from "@/app/api/history-data/route"
 import SkeletonWrapper from "./SkeletonWrapper"
 import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -31,26 +32,54 @@ export default function HistorySection({ currencySettings }: { currencySettings:
         queryKey: ["overview", "history", timeframe, period.month, period.year],
         queryFn: async () => {
             const res = await fetch(
-                `/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`
+                `/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`,
+                { cache: "no-store" }
             );
 
-            const json = await res.json();
-
-            // console.log("Raw fetch response:", json);
-
-            if (!Array.isArray(json)) {
-                // console.warn("API did not return array:", json);
-                return [];
+            if (!res.ok) {
+                throw new Error("Failed to fetch history data");
             }
 
-            return json;
-        }
+            return res.json();
+        },
+        staleTime: 0,
+        refetchOnWindowFocus: true,
+    });
+
+    const queryClient = new QueryClient();
+
+    queryClient.invalidateQueries({
+        queryKey: ["history-data"]
     });
 
 
-    const dataAvailable = historyData.data && historyData.data.length > 0;
+    const dataAvailable = useMemo(() => {
+        return historyData.data?.some(
+            (d) => d.income > 0 || d.expense > 0
+        );
+    }, [historyData.data]);
 
-    console.log(historyData.data)
+    console.log(historyData.data);
+
+    const chartData = useMemo(() => {
+        if (!historyData.data) return [];
+
+        return historyData.data.map((item: any) => ({
+            ...item,
+            label:
+                timeframe === "year"
+                    ? new Date(item.year, item.month - 1).toLocaleString("default", { month: "short" })
+                    : item.day?.toString().padStart(2, "0"),
+        }));
+    }, [historyData.data, timeframe]);
+
+    useEffect(() => {
+        setPeriod({
+            month: new Date().getMonth() + 1,
+            year: new Date().getFullYear(),
+        });
+    }, [timeframe]);
+
 
     return (
         <div className="container">
@@ -87,7 +116,7 @@ export default function HistorySection({ currencySettings }: { currencySettings:
                             {dataAvailable && <ResponsiveContainer width={"100%"} height={300}>
                                 <BarChart
                                     height={300}
-                                    data={historyData.data}
+                                    data={chartData}
                                     barCategoryGap={10}
                                 >
                                     <defs>
@@ -119,14 +148,7 @@ export default function HistorySection({ currencySettings }: { currencySettings:
                                         tickLine={false}
                                         axisLine={false}
                                         padding={{ left: 5, right: 5 }}
-                                        dataKey={(data) => {
-                                            if (timeframe === "year") {
-                                                // Perbaikan: month - 1 agar sesuai dengan bulan sebenarnya
-                                                return new Date(data.year, data.month - 1).toLocaleString('default', { month: 'long' });
-                                            }
-                                            // Perbaikan: month - 1 agar tanggal sesuai
-                                            return new Date(data.year, data.month - 1, data.day || 1).toLocaleDateString('default', { day: "2-digit" });
-                                        }}
+                                        dataKey="label"
                                     />
                                     <YAxis
                                         stroke="#888888"
@@ -142,7 +164,7 @@ export default function HistorySection({ currencySettings }: { currencySettings:
                                 </BarChart>
                             </ResponsiveContainer>}
                             {!dataAvailable && (
-                                <Card className="flex h-[300px] flex-col items-center justify-center bg-background">
+                                <Card className="flex h-75 flex-col items-center justify-center bg-background">
                                     No data available for the selected period.
                                     <p className="text-sm text-muted-foreground">
                                         Try select a differeng period or create a new transaction.

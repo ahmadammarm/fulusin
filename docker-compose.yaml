@@ -8,7 +8,6 @@ services:
       - .env
     command: >
       sh -c "
-        pnpm dlx prisma generate &&
         pnpm dlx prisma migrate deploy &&
         pnpm start
       "
