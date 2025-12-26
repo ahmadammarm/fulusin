@@ -37,8 +37,8 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
             return response.json();
         },
         staleTime: 0,
-        refetchOnWindowFocus: true,
-        refetchOnReconnect: true,
+        refetchOnWindowFocus: false,
+        refetchOnReconnect: false,
     });
 
     const queryClient = new QueryClient();

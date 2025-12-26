@@ -43,7 +43,7 @@ export default function HistorySection({ currencySettings }: { currencySettings:
             return res.json();
         },
         staleTime: 0,
-        refetchOnWindowFocus: true,
+        refetchOnWindowFocus: false,
     });
 
     const queryClient = new QueryClient();
