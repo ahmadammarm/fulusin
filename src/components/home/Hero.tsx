@@ -1,16 +1,21 @@
 "use client"
 
 import { TrendingUp } from "lucide-react";
-import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 export default function Hero() {
 
+    const { data: session, status } = useSession()
     const router = useRouter();
 
     const handleTrackingNow = () => {
-        router.push('/sign-in')
+        if (status === "authenticated" && session?.user?.id) {
+            router.push('/dasboard')
+        } else {
+            router.push('/sign-in')
+        }
     }
 
     return (

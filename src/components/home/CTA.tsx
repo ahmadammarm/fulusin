@@ -9,7 +9,7 @@ export default function CTA() {
 
     const router = useRouter();
 
-    const { status } = useSession();
+    const { data: session, status } = useSession();
 
     const handleSigninRedirect = () => {
         router.push('/sign-in')
@@ -28,7 +28,7 @@ export default function CTA() {
                 <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
                     Join thousands of users who have already taken control of their finances with Fulusin
                 </p>
-                {status === "authenticated" ? (
+                {status === "authenticated" && session?.user?.id ? (
                     <Button size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 text-lg px-12 py-4" onClick={handleDashboardRedirect}>
                         Go to Dashboard
                     </Button>
