@@ -12,7 +12,7 @@ export default function Hero() {
 
     const handleTrackingNow = () => {
         if (status === "authenticated" && session?.user?.id) {
-            router.push('/dasboard')
+            router.push('/dashboard')
         } else {
             router.push('/sign-in')
         }
