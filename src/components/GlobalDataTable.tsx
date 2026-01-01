@@ -145,142 +145,138 @@ export default function GlobalDataTable<TData extends Record<string, any>>({
         <div className="w-full space-y-4">
             {/* Top Bar: Search, Filters, Actions */}
             <div className="flex flex-wrap items-center justify-between gap-4">
-            <div className="flex flex-1 flex-wrap items-center gap-2">
-                {searchable && (
-                <Input
-                    placeholder={searchPlaceholder}
-                    value={globalFilter}
-                    onChange={(e) => setGlobalFilter(e.target.value)}
-                    className="max-w-sm"
-                />
-                )}
-                {additionalFilters?.(table)}
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-                {exportable && (
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                    const exportData = table.getFilteredRowModel().rows.map(row => row.original);
-                    handleExportCsv(exportData);
-                    }}
-                >
-                    <DownloadIcon className="mr-2 h-4 w-4" />
-                    Export CSV
-                </Button>
-                )}
-                {additionalActions?.(table)}
-            </div>
+                <div className="flex flex-1 flex-wrap items-center gap-2">
+                    {searchable && (
+                        <Input
+                            placeholder={searchPlaceholder}
+                            value={globalFilter}
+                            onChange={(e) => setGlobalFilter(e.target.value)}
+                            className="max-w-sm"
+                        />
+                    )}
+                    {additionalFilters?.(table)}
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                    {exportable && (
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                                const exportData = table.getFilteredRowModel().rows.map(row => row.original);
+                                handleExportCsv(exportData);
+                            }}
+                        >
+                            <DownloadIcon className="mr-2 h-4 w-4" />
+                            Export CSV
+                        </Button>
+                    )}
+                    {additionalActions?.(table)}
+                </div>
             </div>
 
             {/* Table */}
             <SkeletonWrapper isLoading={isFetching}>
-            <div className="rounded-md border overflow-hidden">
-                <Table>
-                <TableHeader>
-                    {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow key={headerGroup.id}>
-                        <TableHead className="w-12 text-center">No</TableHead>
-                        {headerGroup.headers.map((header) => (
-                        <TableHead key={header.id}>
-                            {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                            )}
-                        </TableHead>
-                        ))}
-                    </TableRow>
-                    ))}
-                </TableHeader>
-                <TableBody>
-                    {table.getRowModel().rows?.length ? (
-                    table.getRowModel().rows.map((row) => (
-                        <TableRow
-                        key={row.id}
-                        data-state={row.getIsSelected() && "selected"}
-                        onClick={() => onRowClick?.(row.original)}
-                        className={onRowClick ? "cursor-pointer" : ""}
-                        >
-                        <TableCell className="w-12 text-center">
-                            {table.getState().pagination.pageIndex * table.getState().pagination.pageSize + row.index + 1}
-                        </TableCell>
-                        {row.getVisibleCells().map((cell) => (
-                            <TableCell key={cell.id}>
-                            {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                            )}
-                            </TableCell>
-                        ))}
-                        </TableRow>
-                    ))
-                    ) : (
-                    <TableRow>
-                        <TableCell
-                        colSpan={columns.length + 1}
-                        className="h-24 text-center"
-                        >
-                        No results found.
-                        </TableCell>
-                    </TableRow>
-                    )}
-                </TableBody>
-                </Table>
-            </div>
-
-            {/* Pagination */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="flex items-center gap-2">
-                    <p className="text-sm text-muted-foreground">
-                        Rows per page
-                    </p>
-                    <Select
-                        value={`${table.getState().pagination.pageSize}`}
-                        onValueChange={(value) => {
-                            table.setPageSize(Number(value));
-                        }}
-                    >
-                        <SelectTrigger className="h-8 w-[70px]">
-                            <SelectValue placeholder={table.getState().pagination.pageSize} />
-                        </SelectTrigger>
-                        <SelectContent side="top">
-                            {[5, 10, 20, 30, 50].map((pageSize) => (
-                                <SelectItem key={pageSize} value={`${pageSize}`}>
-                                    {pageSize}
-                                </SelectItem>
+                <div className="rounded-md border overflow-hidden">
+                    <Table>
+                        <TableHeader>
+                            {table.getHeaderGroups().map((headerGroup) => (
+                                <TableRow key={headerGroup.id}>
+                                    {headerGroup.headers.map((header) => (
+                                        <TableHead key={header.id}>
+                                            {header.isPlaceholder
+                                                ? null
+                                                : flexRender(
+                                                    header.column.columnDef.header,
+                                                    header.getContext()
+                                                )}
+                                        </TableHead>
+                                    ))}
+                                </TableRow>
                             ))}
-                        </SelectContent>
-                    </Select>
+                        </TableHeader>
+                        <TableBody>
+                            {table.getRowModel().rows?.length ? (
+                                table.getRowModel().rows.map((row) => (
+                                    <TableRow
+                                        key={row.id}
+                                        data-state={row.getIsSelected() && "selected"}
+                                        onClick={() => onRowClick?.(row.original)}
+                                        className={onRowClick ? "cursor-pointer" : ""}
+                                    >
+                                        {row.getVisibleCells().map((cell) => (
+                                            <TableCell key={cell.id}>
+                                                {flexRender(
+                                                    cell.column.columnDef.cell,
+                                                    cell.getContext()
+                                                )}
+                                            </TableCell>
+                                        ))}
+                                    </TableRow>
+                                ))
+                            ) : (
+                                <TableRow>
+                                    <TableCell
+                                        colSpan={columns.length + 1}
+                                        className="h-24 text-center"
+                                    >
+                                        No results found.
+                                    </TableCell>
+                                </TableRow>
+                            )}
+                        </TableBody>
+                    </Table>
                 </div>
 
-                <div className="flex items-center gap-2">
-                    <div className="text-sm text-muted-foreground">
-                        Page {currentPage + 1} of {pageCount || 1}
+                {/* Pagination */}
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2">
+                        <p className="text-sm text-muted-foreground">
+                            Rows per page
+                        </p>
+                        <Select
+                            value={`${table.getState().pagination.pageSize}`}
+                            onValueChange={(value) => {
+                                table.setPageSize(Number(value));
+                            }}
+                        >
+                            <SelectTrigger className="h-8 w-[70px]">
+                                <SelectValue placeholder={table.getState().pagination.pageSize} />
+                            </SelectTrigger>
+                            <SelectContent side="top">
+                                {[5, 10, 20, 30, 50].map((pageSize) => (
+                                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                                        {pageSize}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <div className="text-sm text-muted-foreground">
+                            Page {currentPage + 1} of {pageCount || 1}
+                        </div>
+                    </div>
+
+                    <div className="flex items-center gap-1">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.previousPage()}
+                            disabled={!table.getCanPreviousPage()}
+                        >
+                            <ChevronLeft className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => table.nextPage()}
+                            disabled={!table.getCanNextPage()}
+                        >
+                            <ChevronRight className="h-4 w-4" />
+                        </Button>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-1">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.previousPage()}
-                        disabled={!table.getCanPreviousPage()}
-                    >
-                        <ChevronLeft className="h-4 w-4" />
-                    </Button>
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => table.nextPage()}
-                        disabled={!table.getCanNextPage()}
-                    >
-                        <ChevronRight className="h-4 w-4" />
-                    </Button>
-                </div>
-            </div>
             </SkeletonWrapper>
         </div>
     );
