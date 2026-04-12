@@ -1,4 +1,5 @@
 import Logo from "../Logo";
+import Link from "next/link";
 
 export default function Footer() {
     return (
@@ -14,6 +15,17 @@ export default function Footer() {
             <div className="container mx-auto text-center">
                 <p className="text-muted-foreground">
                     &copy; {new Date().getFullYear()} Fulusin. All rights reserved.
+                </p>
+                <p className="text-muted-foreground text-sm mt-4">
+                    Developed by{" "}
+                    <Link
+                        href="https://ahmadammar.my.id"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="bg-gradient-to-r from-teal-500 to-teal-600 bg-clip-text text-transparent hover:underline"
+                    >
+                        Ahmad Ammar
+                    </Link>
                 </p>
             </div>
         </footer>
