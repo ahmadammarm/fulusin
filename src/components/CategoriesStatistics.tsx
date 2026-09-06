@@ -15,11 +15,12 @@ interface CategoriesStatisticsProps {
     currencySettings: CurrencySettings;
     from: Date;
     to: Date;
-    selectedCategory?: string;
+    selectedIncomeCategory?: string;
+    selectedExpenseCategory?: string;
 }
 
 
-export default function CategoriesStatistics({ currencySettings, from, to, selectedCategory = "all" }: CategoriesStatisticsProps) {
+export default function CategoriesStatistics({ currencySettings, from, to, selectedIncomeCategory = "all", selectedExpenseCategory = "all" }: CategoriesStatisticsProps) {
 
     const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
         queryKey: ["overview", "statistics", "categories", from.toISOString(), to.toISOString()],
@@ -38,21 +39,31 @@ export default function CategoriesStatistics({ currencySettings, from, to, selec
         return GetFormatterForCurrency(currencySettings?.currency);
     }, [currencySettings?.currency]);
 
-    const displayedData = useMemo(() => {
+    const displayedIncomeData = useMemo(() => {
         if (!statisticsQuery.data) return [];
-        if (!selectedCategory || selectedCategory === "all") {
-            return statisticsQuery.data;
+        const incomeData = statisticsQuery.data.filter((item: any) => item.type === "income");
+        if (!selectedIncomeCategory || selectedIncomeCategory === "all") {
+            return incomeData;
         }
-        return statisticsQuery.data.filter((item: any) => item.category === selectedCategory);
-    }, [statisticsQuery.data, selectedCategory]);
+        return incomeData.filter((item: any) => item.category === selectedIncomeCategory);
+    }, [statisticsQuery.data, selectedIncomeCategory]);
+
+    const displayedExpenseData = useMemo(() => {
+        if (!statisticsQuery.data) return [];
+        const expenseData = statisticsQuery.data.filter((item: any) => item.type === "expense");
+        if (!selectedExpenseCategory || selectedExpenseCategory === "all") {
+            return expenseData;
+        }
+        return expenseData.filter((item: any) => item.category === selectedExpenseCategory);
+    }, [statisticsQuery.data, selectedExpenseCategory]);
 
     return (
         <div className="flex w-full flex-wrap gap-2 md:flex-nowrap px-5 py-5">
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="income" data={displayedData} />
+                <CategoriesStatisticsCard formatter={formatter} type="income" data={displayedIncomeData} />
             </SkeletonWrapper>
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="expense" data={displayedData} />
+                <CategoriesStatisticsCard formatter={formatter} type="expense" data={displayedExpenseData} />
             </SkeletonWrapper>
         </div>
     )
