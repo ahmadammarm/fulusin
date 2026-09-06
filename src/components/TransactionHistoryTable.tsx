@@ -17,6 +17,7 @@ import { useState, useMemo } from "react";
 import { DataTableFacetedFilter } from "./data-table/FacetedFilter";
 import { DataTableViewOptions } from "./data-table/ColumnToggle";
 import GlobalDataTable from "./GlobalDataTable";
+import ImportCsvModal from "./ImportCsvModal";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 
@@ -165,13 +166,13 @@ export default function TransactionHistoryTable() {
             pageSize={10}
             additionalFilters={(table) => (
                 <>
-                    {/* {table.getColumn("category") && (
+                    {table.getColumn("category") && (
                         <DataTableFacetedFilter
                             column={table.getColumn("category")}
                             title="Category"
                             options={categoriesOption}
                         />
-                    )} */}
+                    )}
                     {table.getColumn("type") && (
                         <DataTableFacetedFilter
                             column={table.getColumn("type")}
@@ -185,7 +186,10 @@ export default function TransactionHistoryTable() {
                 </>
             )}
             additionalActions={(table) => (
-                <DataTableViewOptions table={table} />
+                <>
+                    <ImportCsvModal />
+                    <DataTableViewOptions table={table} />
+                </>
             )}
         />
     );

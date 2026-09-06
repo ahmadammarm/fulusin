@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client"
 
 import { useQuery } from "@tanstack/react-query";
@@ -14,6 +14,7 @@ import {
     SortingState,
     useReactTable,
     PaginationState,
+    Table as ReactTable,
 } from "@tanstack/react-table"
 import {
     Table,
@@ -47,12 +48,12 @@ interface GlobalDataTableProps<TData> {
     exportable?: boolean;
     exportFilename?: string;
     pageSize?: number;
-    additionalFilters?: (table: any) => React.ReactNode;
-    additionalActions?: (table: any) => React.ReactNode;
+    additionalFilters?: (table: ReactTable<TData>) => React.ReactNode;
+    additionalActions?: (table: ReactTable<TData>) => React.ReactNode;
     onRowClick?: (row: TData) => void;
 }
 
-export default function GlobalDataTable<TData extends Record<string, any>>({
+export default function GlobalDataTable<TData extends Record<string, unknown>>({
     columns,
     apiRoute,
     queryKey,
@@ -86,14 +87,14 @@ export default function GlobalDataTable<TData extends Record<string, any>>({
     });
 
     // CSV Export handler
-    const handleExportCsv = (data: any[]) => {
+    const handleExportCsv = (data: TData[]) => {
         const csvConfig = mkConfig({
             fieldSeparator: ",",
             decimalSeparator: ".",
             useKeysAsHeaders: true,
             filename: `${exportFilename}.csv`
         });
-        const csv = generateCsv(csvConfig)(data);
+        const csv = generateCsv(csvConfig)(data as Record<string, string | number | boolean>[]);
         download(csvConfig)(csv);
     };
 

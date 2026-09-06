@@ -15,10 +15,11 @@ interface CategoriesStatisticsProps {
     currencySettings: CurrencySettings;
     from: Date;
     to: Date;
+    selectedCategory?: string;
 }
 
 
-export default function CategoriesStatistics({ currencySettings, from, to }: CategoriesStatisticsProps) {
+export default function CategoriesStatistics({ currencySettings, from, to, selectedCategory = "all" }: CategoriesStatisticsProps) {
 
     const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
         queryKey: ["overview", "statistics", "categories", from.toISOString(), to.toISOString()],
@@ -37,13 +38,21 @@ export default function CategoriesStatistics({ currencySettings, from, to }: Cat
         return GetFormatterForCurrency(currencySettings?.currency);
     }, [currencySettings?.currency]);
 
+    const displayedData = useMemo(() => {
+        if (!statisticsQuery.data) return [];
+        if (!selectedCategory || selectedCategory === "all") {
+            return statisticsQuery.data;
+        }
+        return statisticsQuery.data.filter((item: any) => item.category === selectedCategory);
+    }, [statisticsQuery.data, selectedCategory]);
+
     return (
         <div className="flex w-full flex-wrap gap-2 md:flex-nowrap px-5 py-5">
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="income" data={statisticsQuery.data || []} />
+                <CategoriesStatisticsCard formatter={formatter} type="income" data={displayedData} />
             </SkeletonWrapper>
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="expense" data={statisticsQuery.data || []} />
+                <CategoriesStatisticsCard formatter={formatter} type="expense" data={displayedData} />
             </SkeletonWrapper>
         </div>
     )

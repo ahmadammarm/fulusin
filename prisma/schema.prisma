@@ -14,111 +14,158 @@ datasource db {
 }
 
 model User {
-        id        String   @id @default(uuid())
-        email     String   @unique
-        name      String
-        password  String?
-        profileImage String?
-        createdAt DateTime @default(now())
-        updatedAt DateTime @updatedAt
+    id           String   @id @default(uuid())
+    email        String   @unique
+    name         String
+    password     String?
+    profileImage String?
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
 
-        accounts Account[]
-        sessions Session[]
+    accounts Account[]
+    sessions Session[]
 
-        currencySettings CurrencySettings?
-        categories       Category[]
-        transactions     Transaction[]
-        monthHistories   MonthHistory[]
-        yearHistories    YearHistory[]
-    }
+    currencySettings      CurrencySettings?
+    categories            Category[]
+    transactions          Transaction[]
+    monthHistories        MonthHistory[]
+    yearHistories         YearHistory[]
+    budgets               Budget[]
+    goals                 Goal[]
+    recurringTransactions RecurringTransaction[]
+}
 
-    model Account {
-        id                String  @id @default(uuid())
-        userId            String
-        type              String
-        provider          String
-        providerAccountId String
-        refresh_token     String? @db.Text
-        access_token      String? @db.Text
-        expires_at        Int?
-        token_type        String?
-        scope             String?
-        id_token          String? @db.Text
-        session_state     String?
+model Account {
+    id                String  @id @default(uuid())
+    userId            String
+    type              String
+    provider          String
+    providerAccountId String
+    refresh_token     String? @db.Text
+    access_token      String? @db.Text
+    expires_at        Int?
+    token_type        String?
+    scope             String?
+    id_token          String? @db.Text
+    session_state     String?
 
-        user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-        @@unique([provider, providerAccountId])
-    }
+    @@unique([provider, providerAccountId])
+}
 
-    model Session {
-        id           String   @id @default(uuid())
-        sessionToken String   @unique
-        userId       String
-        expires      DateTime
+model Session {
+    id           String   @id @default(uuid())
+    sessionToken String   @unique
+    userId       String
+    expires      DateTime
 
-        user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-    }
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
 
-    model CurrencySettings {
-        userId   String @id
-        currency String @default("USD")
+model CurrencySettings {
+    userId   String @id
+    currency String @default("USD")
 
-        user User @relation(fields: [userId], references: [id])
-    }
+    user User @relation(fields: [userId], references: [id])
+}
 
-    model Category {
-        name      String
-        userId    String
-        icon      String
-        type      String   @default("income")
-        createdAt DateTime @default(now())
+model Category {
+    name      String
+    userId    String
+    icon      String
+    type      String   @default("income")
+    createdAt DateTime @default(now())
 
-        user         User          @relation(fields: [userId], references: [id])
-        transactions Transaction[] @relation("CategoryTransactions")
+    user         User          @relation(fields: [userId], references: [id])
+    transactions Transaction[] @relation("CategoryTransactions")
 
-        @@id([userId, name, type])
-        @@unique([userId, name, type])
-    }
+    @@id([userId, name, type])
+    @@unique([userId, name, type])
+}
 
-    model Transaction {
-        id        String   @id @default(uuid())
-        createdAt DateTime @default(now())
-        updatedAt DateTime @updatedAt
+model Transaction {
+    id        String   @id @default(uuid())
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-        amount       Float
-        description  String?
-        date         DateTime
-        userId       String
-        type         String   @default("income")
-        category     String
-        categoryIcon String
+    amount       Float
+    description  String?
+    date         DateTime
+    userId       String
+    type         String   @default("income")
+    category     String
+    categoryIcon String
 
-        user        User     @relation(fields: [userId], references: [id])
-        categoryRel Category @relation("CategoryTransactions", fields: [userId, category, type], references: [userId, name, type])
-    }
+    user        User     @relation(fields: [userId], references: [id])
+    categoryRel Category @relation("CategoryTransactions", fields: [userId, category, type], references: [userId, name, type])
+}
 
-    model MonthHistory {
-        userId  String
-        day     Int
-        month   Int
-        year    Int
-        income  Float  @default(0)
-        expense Float  @default(0)
+model MonthHistory {
+    userId  String
+    day     Int
+    month   Int
+    year    Int
+    income  Float  @default(0)
+    expense Float  @default(0)
 
-        user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id])
 
-        @@id([userId, day, month, year])
-    }
+    @@id([userId, day, month, year])
+}
 
-    model YearHistory {
-        userId  String
-        month   Int
-        year    Int
-        income  Float  @default(0)
-        expense Float  @default(0)
+model YearHistory {
+    userId  String
+    month   Int
+    year    Int
+    income  Float  @default(0)
+    expense Float  @default(0)
 
-        user User @relation(fields: [userId], references: [id])
+    user User @relation(fields: [userId], references: [id])
 
-        @@id([userId, month, year])
-    }
+    @@id([userId, month, year])
+}
+
+model Budget {
+    id        String   @id @default(uuid())
+    userId    String
+    category  String
+    amount    Float
+    month     Int
+    year      Int
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    user      User     @relation(fields: [userId], references: [id])
+    
+    @@unique([userId, category, month, year])
+}
+
+model Goal {
+    id            String   @id @default(uuid())
+    userId        String
+    name          String
+    targetAmount  Float
+    currentAmount Float    @default(0)
+    deadline      DateTime?
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+
+    user          User     @relation(fields: [userId], references: [id])
+}
+
+model RecurringTransaction {
+    id           String   @id @default(uuid())
+    userId       String
+    amount       Float
+    description  String?
+    type         String   @default("expense")
+    category     String
+    categoryIcon String
+    frequency    String   // "daily", "weekly", "monthly", "yearly"
+    nextDate     DateTime
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    user         User     @relation(fields: [userId], references: [id])
+}
