@@ -30,9 +30,9 @@ export default function ManagePage() {
 
     return (
         <div className="min-h-full bg-background pb-12">
-            {/* Page Header banner with mobile navbar clearance */}
+            {/* Page Header banner */}
             <div className="border-b bg-card">
-                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-10 py-6 sm:py-8">
+                <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <div>
                             <div className="flex items-center gap-2.5">

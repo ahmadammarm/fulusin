@@ -5,7 +5,7 @@ import CreateTransactionDialog from "@/components/CreateTransactionDialog";
 import { Button } from "@/components/ui/button";
 import { ArrowDownLeft, ArrowUpRight, Plus, ReceiptText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { CurrencySettings } from "../../../src/generated/prisma/client";
+import { CurrencySettings } from "@/generated/prisma/client";
 
 export default function TransactionHistoryPage() {
     const currencyQuery = useQuery<CurrencySettings>({
@@ -21,9 +21,9 @@ export default function TransactionHistoryPage() {
 
     return (
         <div className="min-h-full bg-background pb-12">
-            {/* Header banner with mobile navbar clearance */}
+            {/* Header banner */}
             <div className="border-b bg-card">
-                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-12 py-6 sm:py-8">
+                <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="min-w-0">
                             <div className="flex items-center gap-2.5">

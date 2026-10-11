@@ -29,7 +29,7 @@ export default async function DashboardPage() {
         <div className="min-h-full bg-background pb-12">
             {/* Unified Command Header */}
             <div className="border-b bg-card">
-                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-12 py-6 sm:py-8">
+                <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="min-w-0">
                             <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
