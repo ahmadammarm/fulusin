@@ -112,7 +112,7 @@ export default function CategoryDeleteDialog({ trigger, category }: CategoryDele
                             </div>
 
                             <p className="text-xs leading-relaxed text-muted-foreground">
-                                This action cannot be undone. Transactions linked to this category may lose their reference or cause errors if dependent on this record.
+                                Categories with recorded transactions cannot be deleted. Please delete or reassign related transactions first.
                             </p>
                         </div>
                     </AlertDialogDescription>

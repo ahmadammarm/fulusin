@@ -3,10 +3,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
-import { startOfDay } from "date-fns";
-import { fromZonedTime } from "date-fns-tz";
-
-const TIMEZONE = "Asia/Jakarta";
+import { getNormalizedHistoryDate } from "@/lib/dateHelper";
 
 export async function BulkCreateTransactionsAction(transactions: CreateTransactionSchemaType[]) {
     const session = await auth();
@@ -58,11 +55,7 @@ export async function BulkCreateTransactionsAction(transactions: CreateTransacti
         }
 
         const transactionDate = new Date(t.date);
-        const normalizedDate = fromZonedTime(startOfDay(transactionDate), TIMEZONE);
-        
-        const day = normalizedDate.getUTCDate();
-        const month = normalizedDate.getUTCMonth() + 1;
-        const year = normalizedDate.getUTCFullYear();
+        const { day, month, year } = getNormalizedHistoryDate(transactionDate);
 
         transactionsToInsert.push({
             userId: user.id,

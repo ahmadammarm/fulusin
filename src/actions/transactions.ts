@@ -4,10 +4,7 @@ import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
 import { redirect } from "next/navigation";
-import { startOfDay } from "date-fns";
-import { fromZonedTime } from "date-fns-tz";
-
-const TIMEZONE = "Asia/Jakarta";
+import { getNormalizedHistoryDate } from "@/lib/dateHelper";
 
 export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
     const parsedBody = CreateTransactionSchema.safeParse(form);
@@ -24,11 +21,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     const { amount, category, date, description, type } = parsedBody.data;
 
     const transactionDate = new Date(date);
-
-    const normalizedDateForHistory = fromZonedTime(
-        startOfDay(transactionDate),
-        TIMEZONE
-    );
+    const { day, month, year } = getNormalizedHistoryDate(transactionDate);
 
     const categoryRow = await prisma.category.findFirst({
         where: {
@@ -58,16 +51,16 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             where: {
                 userId_day_month_year: {
                     userId: user.id,
-                    day: normalizedDateForHistory.getUTCDate(),
-                    month: normalizedDateForHistory.getUTCMonth() + 1,
-                    year: normalizedDateForHistory.getUTCFullYear(),
+                    day,
+                    month,
+                    year,
                 },
             },
             create: {
                 userId: user.id,
-                day: normalizedDateForHistory.getUTCDate(),
-                month: normalizedDateForHistory.getUTCMonth() + 1,
-                year: normalizedDateForHistory.getUTCFullYear(),
+                day,
+                month,
+                year,
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },
@@ -85,14 +78,14 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             where: {
                 userId_month_year: {
                     userId: user.id,
-                    month: normalizedDateForHistory.getUTCMonth() + 1,
-                    year: normalizedDateForHistory.getUTCFullYear(),
+                    month,
+                    year,
                 },
             },
             create: {
                 userId: user.id,
-                month: normalizedDateForHistory.getUTCMonth() + 1,
-                year: normalizedDateForHistory.getUTCFullYear(),
+                month,
+                year,
                 income: type === "income" ? amount : 0,
                 expense: type === "expense" ? amount : 0,
             },

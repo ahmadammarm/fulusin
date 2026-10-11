@@ -1,160 +1,139 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use server";
+"use server"
 
-import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth"
+import prisma from "@/lib/prisma"
+import { redirect } from "next/navigation"
+import { getNormalizedHistoryDate } from "@/lib/dateHelper"
 
 export async function TransactionDelete(id: string) {
-    const session = await auth();
-    const user = session?.user;
+    const session = await auth()
+    const user = session?.user
 
     if (!user) {
-        redirect("/sign-in");
+        redirect("/sign-in")
     }
 
     try {
         const transaction = await prisma.transaction.findUnique({
             where: { id },
-        });
+        })
 
         if (!transaction || transaction.userId !== user.id) {
-            throw new Error("Transaction not found or unauthorized");
+            throw new Error("Transaction not found or unauthorized")
         }
 
+        const { day, month, year } = getNormalizedHistoryDate(transaction.date)
+
         await prisma.$transaction(async (tx: any) => {
+            // 1. Delete the transaction record
             await tx.transaction.delete({
                 where: { id },
-            });
+            })
 
-            const day = transaction.date.getDate();
-            const month = transaction.date.getMonth() + 1;
-            const year = transaction.date.getFullYear();
-
-            console.log("Processing transaction:", {
-                id: transaction.id,
-                date: transaction.date,
-                day,
-                month,
-                year,
-                type: transaction.type,
-                amount: transaction.amount
-            });
-
-            const existingMonthHistory = await tx.monthHistory.findMany({
+            // 2. Decrement or prune MonthHistory using compound unique key
+            const monthHistoryRecord = await tx.monthHistory.findUnique({
                 where: {
-                    userId: user.id,
-                    day,
-                    month,
-                    year,
-                },
-            });
-
-            console.log("Found monthHistory records:", existingMonthHistory);
-
-            if (existingMonthHistory.length > 0) {
-                const monthUpdateResult = await tx.monthHistory.updateMany({
-                    where: {
+                    userId_day_month_year: {
                         userId: user.id,
                         day,
                         month,
                         year,
                     },
-                    data: {
-                        ...(transaction.type === "income" && {
-                            income: { decrement: transaction.amount },
-                        }),
-                        ...(transaction.type === "expense" && {
-                            expense: { decrement: transaction.amount },
-                        }),
-                    },
-                });
-
-                console.log("MonthHistory update result:", monthUpdateResult);
-
-                const monthRecords = await tx.monthHistory.findMany({
-                    where: {
-                        userId: user.id,
-                        month,
-                        year,
-                    },
-                });
-
-                const allZero = monthRecords.every((r: any) => r.income === 0 && r.expense === 0);
-                console.log("All month records are zero:", allZero);
-
-                if (allZero) {
-                    const deleteResult = await tx.monthHistory.deleteMany({
-                        where: {
-                            userId: user.id,
-                            month,
-                            year,
-                        },
-                    });
-                    console.log("Deleted month history records:", deleteResult);
-                }
-            } else {
-                console.log("No monthHistory records found to update");
-            }
-
-            const existingYearHistory = await tx.yearHistory.findMany({
-                where: {
-                    userId: user.id,
-                    month,
-                    year,
                 },
-            });
+            })
 
-            console.log("Found yearHistory records:", existingYearHistory);
+            if (monthHistoryRecord) {
+                const updatedIncome = transaction.type === "income"
+                    ? Math.max(0, monthHistoryRecord.income - transaction.amount)
+                    : monthHistoryRecord.income
+                const updatedExpense = transaction.type === "expense"
+                    ? Math.max(0, monthHistoryRecord.expense - transaction.amount)
+                    : monthHistoryRecord.expense
 
-            if (existingYearHistory.length > 0) {
-                const yearUpdateResult = await tx.yearHistory.updateMany({
-                    where: {
+                const isMonthRecordZero = updatedIncome <= 0.0001 && updatedExpense <= 0.0001
+
+                if (isMonthRecordZero) {
+                    await tx.monthHistory.delete({
+                        where: {
+                            userId_day_month_year: {
+                                userId: user.id,
+                                day,
+                                month,
+                                year,
+                            },
+                        },
+                    })
+                } else {
+                    await tx.monthHistory.update({
+                        where: {
+                            userId_day_month_year: {
+                                userId: user.id,
+                                day,
+                                month,
+                                year,
+                            },
+                        },
+                        data: {
+                            income: updatedIncome,
+                            expense: updatedExpense,
+                        },
+                    })
+                }
+            }
+
+            // 3. Decrement or prune YearHistory using compound unique key
+            const yearHistoryRecord = await tx.yearHistory.findUnique({
+                where: {
+                    userId_month_year: {
                         userId: user.id,
                         month,
                         year,
                     },
-                    data: {
-                        ...(transaction.type === "income" && {
-                            income: { decrement: transaction.amount },
-                        }),
-                        ...(transaction.type === "expense" && {
-                            expense: { decrement: transaction.amount },
-                        }),
-                    },
-                });
+                },
+            })
 
-                console.log("YearHistory update result:", yearUpdateResult);
+            if (yearHistoryRecord) {
+                const updatedYearIncome = transaction.type === "income"
+                    ? Math.max(0, yearHistoryRecord.income - transaction.amount)
+                    : yearHistoryRecord.income
+                const updatedYearExpense = transaction.type === "expense"
+                    ? Math.max(0, yearHistoryRecord.expense - transaction.amount)
+                    : yearHistoryRecord.expense
 
-                const yearRecords = await tx.yearHistory.findMany({
-                    where: {
-                        userId: user.id,
-                        year,
-                    },
-                });
+                const isYearRecordZero = updatedYearIncome <= 0.0001 && updatedYearExpense <= 0.0001
 
-                const allYearZero = yearRecords.every((r: any) => r.income === 0 && r.expense === 0);
-                console.log("All year records are zero:", allYearZero);
-
-                if (allYearZero) {
-                    const deleteYearResult = await tx.yearHistory.deleteMany({
+                if (isYearRecordZero) {
+                    await tx.yearHistory.delete({
                         where: {
-                            userId: user.id,
-                            year,
+                            userId_month_year: {
+                                userId: user.id,
+                                month,
+                                year,
+                            },
                         },
-                    });
-                    console.log("Deleted year history records:", deleteYearResult);
+                    })
+                } else {
+                    await tx.yearHistory.update({
+                        where: {
+                            userId_month_year: {
+                                userId: user.id,
+                                month,
+                                year,
+                            },
+                        },
+                        data: {
+                            income: updatedYearIncome,
+                            expense: updatedYearExpense,
+                        },
+                    })
                 }
-            } else {
-                console.log("No yearHistory records found to update");
             }
-        });
+        })
 
-        console.log("Transaction deleted successfully");
-        return { success: true };
-
+        return { success: true }
     } catch (error: any) {
-        console.error("Error deleting transaction:", error);
-        throw new Error(`Failed to delete transaction: ${error.message}`);
+        console.error("Error deleting transaction:", error)
+        throw new Error(error.message || "Failed to delete transaction")
     }
 }

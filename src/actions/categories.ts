@@ -46,12 +46,29 @@ export async function CategoryDelete(form: CategoryDeleteSchemaType) {
         redirect('/sign-in');
     }
 
+    const { name, type } = parsedBody.data;
+
+    // Guard: Prevent foreign key constraint violation if active transactions reference this category
+    const transactionCount = await prisma.transaction.count({
+        where: {
+            userId: user.id,
+            category: name,
+            type,
+        },
+    });
+
+    if (transactionCount > 0) {
+        throw new Error(
+            `Cannot delete category "${name}" because it is currently used by ${transactionCount} transaction${transactionCount === 1 ? "" : "s"}. Please delete or reassign those transactions first.`
+        );
+    }
+
     return await prisma.category.delete({
         where: {
             userId_name_type: {
                 userId: user.id,
-                name: parsedBody.data.name,
-                type: parsedBody.data.type,
+                name,
+                type,
             }
         }
     })
