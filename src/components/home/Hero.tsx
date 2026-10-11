@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ArrowRight, CheckCircle2, ChevronRight } from "lucide-react"
+import { ArrowRight, ChevronRight } from "lucide-react"
 import { Button } from "../ui/button"
 import { Badge } from "../ui/badge"
 import { useRouter } from "next/navigation"
@@ -121,26 +121,6 @@ export default function Hero() {
                             <span>Explore Features</span>
                             <ChevronRight className="h-4 w-4 text-muted-foreground" />
                         </Button>
-                    </div>
-
-                    {/* Feature Proof Points */}
-                    <div className="pt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-500" />
-                            PostgreSQL ACID Atomicity
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-500" />
-                            Pre-Aggregated O(1) Speed
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-500" />
-                            Bank Statement CSV Ingestion
-                        </span>
-                        <span className="flex items-center gap-1.5">
-                            <CheckCircle2 className="h-3.5 w-3.5 text-teal-500" />
-                            Zero Data Selling
-                        </span>
                     </div>
                 </div>
 
