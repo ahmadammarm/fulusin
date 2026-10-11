@@ -61,7 +61,7 @@ export default function CTA() {
                         </div>
 
                         {/* Trust proof points */}
-                        <div className="pt-4 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                        <div className="pt-4 hidden sm:flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
                             <span className="flex items-center gap-1.5">
                                 <CheckCircle2 className="h-3.5 w-3.5 text-teal-500" />
                                 Instant setup in 60 seconds

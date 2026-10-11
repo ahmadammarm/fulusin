@@ -83,16 +83,7 @@ export default function Header() {
                 </div>
 
                 {/* Mobile Menu Trigger */}
-                <div className="flex sm:hidden items-center gap-2">
-                    {isAuthenticated && (
-                        <Button
-                            size="sm"
-                            className="h-8 px-3 text-xs bg-teal-600 text-white"
-                            onClick={handleDashboard}
-                        >
-                            Dashboard
-                        </Button>
-                    )}
+                <div className="flex sm:hidden items-center">
                     <button
                         type="button"
                         onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
