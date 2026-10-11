@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { cn } from '@/lib/utils';
-import { useCallback } from 'react';
-import CountUp from 'react-countup';
-
+import { cn } from "@/lib/utils";
+import { useCallback } from "react";
+import CountUp from "react-countup";
 
 export default function CustomTooltip({ active, payload, formatter }: any) {
     if (!active || !payload || payload.length === 0) {
@@ -10,46 +9,84 @@ export default function CustomTooltip({ active, payload, formatter }: any) {
     }
 
     const data = payload[0].payload;
-    const { income, expense } = data;
+    const { income, expense, label } = data;
+    const balance = income - expense;
 
     return (
-        <div className="min-w-[300px] rounded border bg-background p-4">
-            <TooltipRow formatter={formatter} label="Income" value={income} bgColor="bg-emerald-500" textColor="text-emerald-500" />
-            <TooltipRow formatter={formatter} label="Expense" value={expense} bgColor="bg-red-500" textColor="text-red-500" />
-            <TooltipRow formatter={formatter} label="Balance" value={income - expense} bgColor="bg-gray-500" textColor="text-foreground" />
+        <div className="min-w-[240px] rounded-xl border border-border/80 bg-popover/95 backdrop-blur-md p-3.5 shadow-lg space-y-2.5">
+            {label && (
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground pb-1 border-b border-border/60">
+                    Period: {label}
+                </p>
+            )}
+            <div className="space-y-1.5">
+                <TooltipRow
+                    formatter={formatter}
+                    label="Income"
+                    value={income}
+                    dotColor="bg-emerald-500"
+                    textColor="text-emerald-600 dark:text-emerald-400"
+                />
+                <TooltipRow
+                    formatter={formatter}
+                    label="Expense"
+                    value={expense}
+                    dotColor="bg-rose-500"
+                    textColor="text-rose-600 dark:text-rose-400"
+                />
+                <div className="pt-1 border-t border-border/40">
+                    <TooltipRow
+                        formatter={formatter}
+                        label="Net Balance"
+                        value={balance}
+                        dotColor={balance >= 0 ? "bg-teal-500" : "bg-rose-500"}
+                        textColor={
+                            balance >= 0
+                                ? "text-teal-600 dark:text-teal-400 font-bold"
+                                : "text-rose-600 dark:text-rose-400 font-bold"
+                        }
+                    />
+                </div>
+            </div>
         </div>
-    )
+    );
 }
 
 function TooltipRow({
     label,
     value,
     formatter,
-    bgColor,
-    textColor
+    dotColor,
+    textColor,
 }: {
     label: string;
     value: number;
     formatter: Intl.NumberFormat;
-    bgColor: string;
+    dotColor: string;
     textColor: string;
 }) {
-
-    const formatingFn = useCallback((value: number) => {
-        return formatter.format(value);
-    }, [formatter]);
+    const formatFunction = useCallback(
+        (val: number) => {
+            return formatter.format(val);
+        },
+        [formatter]
+    );
 
     return (
-        <div className="flex items-center gap-2">
-            <div className={cn("h-4 w-4 rounded-full", bgColor)} />
-            <div className="w-full justify-between">
-                <p className="text-sm text-muted-foreground">
-                    {label}
-                </p>
-                <div className={cn("text-sm font-medium", textColor)}>
-                    <CountUp duration={0.5} preserveValue end={value} decimals={0} formattingFn={formatingFn} className="text-sm font-medium" />
-                </div>
+        <div className="flex items-center justify-between text-xs gap-3">
+            <div className="flex items-center gap-2">
+                <span className={cn("h-2 w-2 rounded-full shrink-0", dotColor)} />
+                <span className="text-muted-foreground">{label}</span>
+            </div>
+            <div className={cn("font-mono font-medium", textColor)}>
+                <CountUp
+                    duration={0.4}
+                    preserveValue
+                    end={value}
+                    decimals={0}
+                    formattingFn={formatFunction}
+                />
             </div>
         </div>
-    )
+    );
 }

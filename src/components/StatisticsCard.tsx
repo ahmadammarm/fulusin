@@ -1,8 +1,8 @@
 "use client";
 
 import { CurrencySettings } from "../../src/generated/prisma/client";
-import { QueryClient, useQuery } from "@tanstack/react-query";
-import { BalanceStatistics } from '../app/api/statistics/balance/route';
+import { useQuery } from "@tanstack/react-query";
+import { BalanceStatistics } from "../app/api/statistics/balance/route";
 import { useMemo, useState } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import SkeletonWrapper from "./SkeletonWrapper";
@@ -21,30 +21,23 @@ function formatDate(date: Date) {
 }
 
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
-
     const [isShow, setIsShow] = useState<boolean>(true);
 
     const statsQuery = useQuery<BalanceStatistics>({
-        queryKey: ['overview', 'statistics', from, to],
+        queryKey: ["overview", "statistics", from, to],
         queryFn: async () => {
             const response = await fetch(
                 `/api/statistics/balance?from=${formatDate(from)}&to=${formatDate(to)}`,
                 { cache: "no-store" }
             );
             if (!response.ok) {
-                throw new Error('Failed to fetch statistics');
+                throw new Error("Failed to fetch statistics");
             }
             return response.json();
         },
-        staleTime: 0,
+        staleTime: 1000 * 60,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
-    });
-
-    const queryClient = new QueryClient();
-
-    queryClient.invalidateQueries({
-        queryKey: ["overview", "statistics"],
     });
 
     const formatter = useMemo(() => {
@@ -53,81 +46,96 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
 
     const income = statsQuery.data?.income || 0;
     const expense = statsQuery.data?.expense || 0;
-
     const balance = income - expense;
 
-    const handleHideAmounts = () => {
-        setIsShow(!isShow);
-    }
+    const handleToggleHide = () => {
+        setIsShow((prev) => !prev);
+    };
 
     return (
-        <div className="relative w-full px-5">
-            <div className="mb-3 flex justify-start">
+        <div className="w-full space-y-3">
+            {/* Header controls */}
+            <div className="flex items-center justify-between">
+                <p className="text-xs font-medium text-muted-foreground">
+                    KPI Metrics
+                </p>
                 <Button
-                    onClick={handleHideAmounts}
-                    className="flex items-center gap-2 rounded-lg bg-slate-800 px-4 py-2 text-sm text-slate-300 transition-colors hover:bg-slate-700"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleToggleHide}
+                    className="h-8 px-2.5 text-xs text-muted-foreground hover:text-foreground border-border/80 gap-1.5"
                 >
                     {isShow ? (
                         <>
-                            <EyeOff className="h-4 w-4" />
+                            <EyeOff className="h-3.5 w-3.5" />
                             <span>Hide Amounts</span>
                         </>
                     ) : (
                         <>
-                            <Eye className="h-4 w-4" />
+                            <Eye className="h-3.5 w-3.5" />
                             <span>Show Amounts</span>
                         </>
                     )}
                 </Button>
             </div>
-            <div className="grid w-full grid-cols-1 gap-4 md:grid-cols-3">
+
+            {/* Precision KPI Cards */}
+            <div className="grid w-full grid-cols-1 gap-3 sm:gap-4 md:grid-cols-3">
                 <SkeletonWrapper isLoading={statsQuery.isFetching}>
                     <StatisticsCardItem
                         formatter={formatter}
-                        title="Income Total"
+                        title="Total Income"
                         value={isShow ? income : 0}
                         isHidden={!isShow}
                         icon={
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-emerald-400/10">
-                                <TrendingUp className="h-7 w-7 text-emerald-500" />
+                            <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
+                                <TrendingUp className="h-5 w-5" />
                             </div>
                         }
-                        valueClass="text-emerald-300"
-                        cardBackground="bg-emerald-950/90 shadow-md"
+                        valueClass="text-emerald-600 dark:text-emerald-400"
+                        cardBorderClass="hover:border-emerald-500/30"
+                        subtitle="Gross inflow this period"
                     />
                 </SkeletonWrapper>
+
                 <SkeletonWrapper isLoading={statsQuery.isFetching}>
                     <StatisticsCardItem
                         formatter={formatter}
-                        title="Expense Total"
+                        title="Total Expense"
                         value={isShow ? expense : 0}
                         isHidden={!isShow}
                         icon={
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-red-400/10">
-                                <TrendingDown className="h-7 w-7 text-red-500" />
+                            <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
+                                <TrendingDown className="h-5 w-5" />
                             </div>
                         }
-                        valueClass="text-red-300"
-                        cardBackground="bg-red-950/90 shadow-md"
+                        valueClass="text-rose-600 dark:text-rose-400"
+                        cardBorderClass="hover:border-rose-500/30"
+                        subtitle="Gross outflow this period"
                     />
                 </SkeletonWrapper>
+
                 <SkeletonWrapper isLoading={statsQuery.isFetching}>
                     <StatisticsCardItem
                         formatter={formatter}
-                        title="Balance"
+                        title="Net Balance"
                         value={isShow ? balance : 0}
                         isHidden={!isShow}
                         icon={
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-blue-400/10">
-                                <Wallet className="h-7 w-7 text-blue-500" />
+                            <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">
+                                <Wallet className="h-5 w-5" />
                             </div>
                         }
-                        valueClass="text-blue-300"
-                        cardBackground="bg-blue-950/90 shadow-md"
+                        valueClass={
+                            balance >= 0
+                                ? "text-teal-600 dark:text-teal-400"
+                                : "text-rose-600 dark:text-rose-400"
+                        }
+                        cardBorderClass="hover:border-teal-500/30"
+                        subtitle={balance >= 0 ? "Positive cash reserve" : "Net deficit this period"}
                     />
                 </SkeletonWrapper>
             </div>
         </div>
-    )
+    );
 }
-

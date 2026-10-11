@@ -1,165 +1,266 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
 import { TransactionType } from "@/lib/types";
-import { ReactNode, useCallback, useState } from "react"
-import { Dialog, DialogClose, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
+import { ReactNode, useCallback, useMemo, useState } from "react";
+import {
+    Dialog,
+    DialogClose,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+} from "./ui/dialog";
 import { cn } from "@/lib/utils";
 import { useForm } from "react-hook-form";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "./ui/form";
 import { Input } from "./ui/input";
 import CategoryPicker from "./CategoryPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { format } from "date-fns";
-import { CalendarIcon, Loader2 } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateTransactionAction } from "@/actions/transactions";
 import { toast } from "sonner";
+import { Currencies } from "@/lib/currencies";
 
 interface Props {
     trigger: ReactNode;
-    type: TransactionType
+    type: TransactionType;
+    currency?: string;
 }
 
-export default function CreateTransactionDialog({ trigger, type }: Props) {
+export default function CreateTransactionDialog({ trigger, type, currency = "USD" }: Props) {
+    const [open, setOpen] = useState(false);
+    const isIncome = type === "income";
 
-    const [open, setOpen] = useState(false)
+    const currencyLabel = useMemo(() => {
+        if (!currency) return "USD";
+        const found = Currencies.find((c) => c.value === currency);
+        if (found) {
+            const symbol = found.label.split(" ")[0];
+            return symbol || currency;
+        }
+        return currency;
+    }, [currency]);
 
     const form = useForm<CreateTransactionSchemaType>({
         resolver: zodResolver(CreateTransactionSchema),
         defaultValues: {
             type,
-            date: format(new Date(), "yyyy-MM-dd")
+            amount: 0,
+            description: "",
+            date: format(new Date(), "yyyy-MM-dd"),
+            category: "",
         },
-    })
+    });
 
-    const handleCategoryChange = useCallback((category: string) => {
-        form.setValue("category", category);
-    }, [form]);
-
+    const handleCategoryChange = useCallback(
+        (category: string) => {
+            form.setValue("category", category, { shouldValidate: true });
+        },
+        [form]
+    );
 
     const queryClient = useQueryClient();
 
     const { mutate, isPending } = useMutation({
         mutationFn: CreateTransactionAction,
         onSuccess: () => {
-            toast.success("Transaction created successfully!", {
-                id: "create-transaction-success"
-            });
+            toast.success(
+                `${isIncome ? "Income" : "Expense"} transaction created successfully!`,
+                {
+                    id: "create-transaction-success",
+                }
+            );
 
             form.reset({
                 amount: 0,
-                description: '',
+                description: "",
                 date: format(new Date(), "yyyy-MM-dd"),
-                category: '',
-                type
+                category: "",
+                type,
             });
 
             queryClient.invalidateQueries({
-                queryKey: ['overview'],
-                exact: false
+                queryKey: ["overview"],
+                exact: false,
             });
 
             queryClient.invalidateQueries({
-                queryKey: ['transactionHistory'],
+                queryKey: ["transactionHistory"],
             });
 
-
-            setOpen(prev => !prev);
-        }
+            setOpen(false);
+        },
+        onError: (error: Error) => {
+            toast.error(`Failed to record transaction: ${error.message}`, {
+                id: "create-transaction-error",
+            });
+        },
     });
 
-    const onSubmit = useCallback((data: CreateTransactionSchemaType) => {
-        mutate({
-            ...data,
-            date: format(data.date, "yyyy-MM-dd"),
-        });
-    }, [mutate]);
-
+    const onSubmit = useCallback(
+        (data: CreateTransactionSchemaType) => {
+            mutate(data);
+        },
+        [mutate]
+    );
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-                {trigger}
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader className="mb-5">
-                    <DialogTitle>
-                        Create a new <span className={cn("m-1", type === "income" ? "text-green-500" : "text-red-500")}>{type === "income" ? "Income" : "Expense"}</span> transaction
-                    </DialogTitle>
-                </DialogHeader>
-                <Form {...form}>
-                    <form className="space-y-4">
-                        <FormField
-                            control={form.control}
-                            name="description"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Description</FormLabel>
-                                    <FormControl>
-                                        <Input defaultValue={''} {...field} placeholder="Enter a description (optional)" />
-                                    </FormControl>
-                                    {/* <FormDescription>
-                                        Transaction description (optional)
-                                    </FormDescription> */}
-                                </FormItem>
+            <DialogTrigger asChild>{trigger}</DialogTrigger>
+            <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg rounded-2xl border-border/80 bg-card p-5 sm:p-6 shadow-xl max-h-[92vh] overflow-y-auto">
+                <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-4">
+                    <div className="flex items-center gap-2.5 min-w-0 pr-8">
+                        <div
+                            className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-xl border shrink-0",
+                                isIncome
+                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                    : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
                             )}
-                        />
+                        >
+                            {isIncome ? (
+                                <ArrowDownLeft className="h-4 w-4" />
+                            ) : (
+                                <ArrowUpRight className="h-4 w-4" />
+                            )}
+                        </div>
+                        <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">
+                            {isIncome ? "New Income" : "New Expense"}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
+                        {isIncome
+                            ? "Record incoming cash flow, salary, freelance, or investment payout."
+                            : "Record outgoing funds, bills, utilities, or everyday expenditures."}
+                    </DialogDescription>
+                </DialogHeader>
+
+                <Form {...form}>
+                    <form className="space-y-4 pt-3" onSubmit={form.handleSubmit(onSubmit)}>
+                        {/* Hero Amount Field with Dynamic User Currency */}
                         <FormField
                             control={form.control}
                             name="amount"
                             render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Amount <span className="text-red-500 font-bold">*</span></FormLabel>
+                                <FormItem className="space-y-1.5">
+                                    <div className="flex items-center justify-between">
+                                        <FormLabel className="text-xs font-semibold text-foreground uppercase tracking-wider">
+                                            Amount <span className="text-rose-500">*</span>
+                                        </FormLabel>
+                                        <span className="text-[11px] text-muted-foreground font-mono">
+                                            Currency: {currency}
+                                        </span>
+                                    </div>
                                     <FormControl>
-                                        <Input defaultValue={0} type="number" {...field} onChange={(e) => field.onChange(e.target.valueAsNumber)} />
+                                        <div className="relative">
+                                            <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                                                <span className="inline-flex items-center justify-center min-w-8 px-2 py-1 rounded-lg bg-muted text-xs font-mono font-bold text-foreground border border-border/80">
+                                                    {currencyLabel}
+                                                </span>
+                                            </div>
+                                            <Input
+                                                type="number"
+                                                step="0.01"
+                                                min="0.01"
+                                                placeholder="0.00"
+                                                className="h-12 sm:h-14 pl-14 sm:pl-16 pr-4 text-xl sm:text-2xl font-mono font-bold tracking-tight bg-muted/20 border-border/80 focus-visible:ring-1"
+                                                value={field.value === 0 ? "" : field.value}
+                                                onChange={(e) => {
+                                                    const val = parseFloat(e.target.value);
+                                                    field.onChange(isNaN(val) ? 0 : val);
+                                                }}
+                                            />
+                                        </div>
                                     </FormControl>
-                                    {/* <FormDescription>
-                                        Transaction amount (required)
-                                    </FormDescription> */}
+                                    <FormMessage className="text-xs" />
                                 </FormItem>
                             )}
                         />
-                        <div className="flex items-center gap-2 justify-between mt-3">
+
+                        {/* Description Field */}
+                        <FormField
+                            control={form.control}
+                            name="description"
+                            render={({ field }) => (
+                                <FormItem className="space-y-1.5">
+                                    <FormLabel className="text-xs font-semibold text-foreground">
+                                        Description
+                                    </FormLabel>
+                                    <FormControl>
+                                        <Input
+                                            {...field}
+                                            placeholder="e.g. Client retainer, Groceries, Cloud hosting"
+                                            className="h-10 text-xs sm:text-sm bg-background border-border/80"
+                                        />
+                                    </FormControl>
+                                    <FormMessage className="text-xs" />
+                                </FormItem>
+                            )}
+                        />
+
+                        {/* Category & Date Pickers in Responsive Grid */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 pt-1">
                             <FormField
                                 control={form.control}
                                 name="category"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className="whitespace-nowrap">Category <span className="text-red-500 font-bold">*</span></FormLabel>
-                                        <FormControl className="flex-1">
-                                            <CategoryPicker type={type} onChange={handleCategoryChange} />
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-semibold text-foreground">
+                                            Category <span className="text-rose-500">*</span>
+                                        </FormLabel>
+                                        <FormControl>
+                                            <CategoryPicker
+                                                type={type}
+                                                onChange={handleCategoryChange}
+                                                value={field.value}
+                                            />
                                         </FormControl>
+                                        <FormMessage className="text-xs" />
                                     </FormItem>
                                 )}
                             />
+
                             <FormField
                                 control={form.control}
                                 name="date"
                                 render={({ field }) => (
-                                    <FormItem className="flex flex-col">
-                                        <FormLabel className="whitespace-nowrap">Transaction Date <span className="text-red-500 font-bold">*</span></FormLabel>
-                                        <FormControl className="flex-1">
+                                    <FormItem className="space-y-1.5">
+                                        <FormLabel className="text-xs font-semibold text-foreground">
+                                            Transaction Date <span className="text-rose-500">*</span>
+                                        </FormLabel>
+                                        <FormControl>
                                             <Popover>
                                                 <PopoverTrigger asChild>
-                                                    <FormControl>
-                                                        <Button variant={"outline"} className={cn("w-[200px] pl-3 text-left font-normal", !field.value && "text-muted-foreground")}>
-                                                            {field.value ? (format(field.value, "PPP")) : "Select date"}
-                                                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                                        </Button>
-                                                    </FormControl>
+                                                    <Button
+                                                        variant="outline"
+                                                        className={cn(
+                                                            "w-full h-10 px-3 bg-card border-border/80 text-xs sm:text-sm font-normal justify-between truncate",
+                                                            !field.value && "text-muted-foreground"
+                                                        )}
+                                                    >
+                                                        <span className="truncate">
+                                                            {field.value
+                                                                ? format(new Date(field.value), "PPP")
+                                                                : "Select date"}
+                                                        </span>
+                                                        <CalendarIcon className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                                                    </Button>
                                                 </PopoverTrigger>
-                                                <PopoverContent className="w-auto p-0">
+                                                <PopoverContent className="w-auto p-0" align="start">
                                                     <Calendar
                                                         mode="single"
                                                         selected={new Date(field.value)}
                                                         onSelect={(value) => {
                                                             if (!value) return;
-                                                            console.log(value);
                                                             field.onChange(format(value, "yyyy-MM-dd"));
                                                         }}
                                                         initialFocus
@@ -167,25 +268,48 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                                                 </PopoverContent>
                                             </Popover>
                                         </FormControl>
+                                        <FormMessage className="text-xs" />
                                     </FormItem>
                                 )}
                             />
                         </div>
+
+                        {/* Dialog Footer Actions */}
+                        <DialogFooter className="pt-4 border-t border-border/60 flex flex-col-reverse sm:flex-row gap-2 sm:gap-2.5">
+                            <DialogClose asChild>
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() => form.reset()}
+                                    disabled={isPending}
+                                    className="w-full sm:w-auto h-10 text-xs sm:text-sm border-border/80"
+                                >
+                                    Cancel
+                                </Button>
+                            </DialogClose>
+                            <Button
+                                type="submit"
+                                disabled={isPending}
+                                className={cn(
+                                    "w-full sm:w-auto h-10 px-5 text-xs sm:text-sm font-semibold text-white gap-2 shadow-xs",
+                                    isIncome
+                                        ? "bg-emerald-600 hover:bg-emerald-700"
+                                        : "bg-rose-600 hover:bg-rose-700"
+                                )}
+                            >
+                                {isPending ? (
+                                    <>
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                        <span>Recording...</span>
+                                    </>
+                                ) : (
+                                    <span>{isIncome ? "Record Income" : "Record Expense"}</span>
+                                )}
+                            </Button>
+                        </DialogFooter>
                     </form>
                 </Form>
-                <DialogFooter>
-                    <DialogClose asChild>
-                        <Button type="button" variant={"secondary"} onClick={() => {
-                            form.reset();
-                        }}>
-                            Cancel
-                        </Button>
-                    </DialogClose>
-                    <Button onClick={form.handleSubmit(onSubmit)} disabled={isPending}>
-                        {isPending ? <Loader2 /> : "Save"}
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
-    )
+    );
 }

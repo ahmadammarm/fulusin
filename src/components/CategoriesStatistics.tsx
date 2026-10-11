@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
+
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import { DatetoUTCDate } from "@/lib/dateHelper";
 import { useQuery } from "@tanstack/react-query";
@@ -6,31 +8,37 @@ import { useMemo } from "react";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { TransactionType } from "@/lib/types";
 import { GetCategoriesStatisticsResponseType } from "@/app/api/statistics/categories/route";
-import { Card, CardHeader, CardTitle } from "./ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
 import { Progress } from "./ui/progress";
 import { CurrencySettings } from "../../src/generated/prisma/client";
+import { Badge } from "./ui/badge";
+import { ArrowDownLeft, ArrowUpRight, Inbox } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface CategoriesStatisticsProps {
     currencySettings: CurrencySettings;
     from: Date;
     to: Date;
-    selectedIncomeCategory?: string;
-    selectedExpenseCategory?: string;
 }
 
-
-export default function CategoriesStatistics({ currencySettings, from, to, selectedIncomeCategory = "all", selectedExpenseCategory = "all" }: CategoriesStatisticsProps) {
-
+export default function CategoriesStatistics({
+    currencySettings,
+    from,
+    to,
+}: CategoriesStatisticsProps) {
     const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
         queryKey: ["overview", "statistics", "categories", from.toISOString(), to.toISOString()],
         queryFn: async () => {
-            const response = await fetch(`/api/statistics/categories?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`);
+            const response = await fetch(
+                `/api/statistics/categories?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`
+            );
             if (!response.ok) {
-                throw new Error('Failed to fetch categories statistics');
+                throw new Error("Failed to fetch categories statistics");
             }
             return response.json();
         },
+        staleTime: 1000 * 60,
         refetchOnWindowFocus: false,
         refetchOnReconnect: false,
     });
@@ -39,85 +47,154 @@ export default function CategoriesStatistics({ currencySettings, from, to, selec
         return GetFormatterForCurrency(currencySettings?.currency);
     }, [currencySettings?.currency]);
 
-    const displayedIncomeData = useMemo(() => {
+    const incomeData = useMemo(() => {
         if (!statisticsQuery.data) return [];
-        const incomeData = statisticsQuery.data.filter((item: any) => item.type === "income");
-        if (!selectedIncomeCategory || selectedIncomeCategory === "all") {
-            return incomeData;
-        }
-        return incomeData.filter((item: any) => item.category === selectedIncomeCategory);
-    }, [statisticsQuery.data, selectedIncomeCategory]);
+        return statisticsQuery.data.filter((item: any) => item.type === "income");
+    }, [statisticsQuery.data]);
 
-    const displayedExpenseData = useMemo(() => {
+    const expenseData = useMemo(() => {
         if (!statisticsQuery.data) return [];
-        const expenseData = statisticsQuery.data.filter((item: any) => item.type === "expense");
-        if (!selectedExpenseCategory || selectedExpenseCategory === "all") {
-            return expenseData;
-        }
-        return expenseData.filter((item: any) => item.category === selectedExpenseCategory);
-    }, [statisticsQuery.data, selectedExpenseCategory]);
+        return statisticsQuery.data.filter((item: any) => item.type === "expense");
+    }, [statisticsQuery.data]);
 
     return (
-        <div className="flex w-full flex-wrap gap-2 md:flex-nowrap px-5 py-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="income" data={displayedIncomeData} />
+                <CategoriesStatisticsCard
+                    formatter={formatter}
+                    type="income"
+                    data={incomeData}
+                />
             </SkeletonWrapper>
             <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard formatter={formatter} type="expense" data={displayedExpenseData} />
+                <CategoriesStatisticsCard
+                    formatter={formatter}
+                    type="expense"
+                    data={expenseData}
+                />
             </SkeletonWrapper>
         </div>
-    )
+    );
 }
 
-function CategoriesStatisticsCard({ formatter, type, data }: { formatter: Intl.NumberFormat, type: TransactionType, data: GetCategoriesStatisticsResponseType }) {
+function CategoriesStatisticsCard({
+    formatter,
+    type,
+    data,
+}: {
+    formatter: Intl.NumberFormat;
+    type: TransactionType;
+    data: GetCategoriesStatisticsResponseType;
+}) {
     const filteredData = data.filter((item: any) => item.type === type);
-    const total = filteredData.reduce((sum: any, item: { _sum: { amount: any; }; }) => sum + (item._sum.amount || 0), 0);
+    const total = filteredData.reduce(
+        (sum: any, item: { _sum: { amount: any } }) => sum + (item._sum.amount || 0),
+        0
+    );
+
+    const isIncome = type === "income";
 
     return (
-        <Card className="h-80 w-full">
-            <CardHeader>
-                <CardTitle className="grid grid-flow-row justify-between gap-2 text-xl md:text-2xl text-gray-200 md:grid-flow-col">
-                    {type === "income" ? "Income by Categories" : "Expense by Categories"}
-                </CardTitle>
+        <Card className="rounded-2xl border border-border/80 bg-card shadow-xs flex flex-col h-[380px] overflow-hidden">
+            <CardHeader className="p-5 pb-3 border-b border-border/60">
+                <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                        <div
+                            className={cn(
+                                "flex h-9 w-9 items-center justify-center rounded-xl border shrink-0",
+                                isIncome
+                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
+                                    : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
+                            )}
+                        >
+                            {isIncome ? (
+                                <ArrowDownLeft className="h-4 w-4" />
+                            ) : (
+                                <ArrowUpRight className="h-4 w-4" />
+                            )}
+                        </div>
+                        <div className="min-w-0">
+                            <CardTitle className="text-base sm:text-lg font-bold tracking-tight text-foreground truncate">
+                                {isIncome ? "Income Channels" : "Expense Channels"}
+                            </CardTitle>
+                            <p className="text-[11px] text-muted-foreground truncate">
+                                {isIncome ? "Inflow allocation by category" : "Outflow allocation by category"}
+                            </p>
+                        </div>
+                    </div>
+
+                    <Badge
+                        variant="outline"
+                        className={cn(
+                            "font-mono text-xs font-semibold px-2.5 py-0.5 shrink-0",
+                            isIncome
+                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
+                                : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30"
+                        )}
+                    >
+                        {formatter.format(total)}
+                    </Badge>
+                </div>
             </CardHeader>
-            <div className="flex items-center justify-between gap-2">
-                {filteredData.length === 0 && (
-                    <div className="flex h-60 w-full flex-col items-center justify-center px-4 md:px-2">
-                        <p className="text-muted-foreground">No data available for this period</p>
-                        <p className="text-sm text-muted-foreground text-center">
-                            Try selecting a different period or add a new {""}
-                            {type === "income" ? "income" : "expense"} transaction
+
+            <CardContent className="p-0 flex-1 min-h-0">
+                {filteredData.length === 0 ? (
+                    <div className="flex h-full flex-col items-center justify-center p-6 text-center">
+                        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted/60 text-muted-foreground mb-3">
+                            <Inbox className="h-6 w-6" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground">
+                            No transactions recorded
+                        </p>
+                        <p className="text-xs text-muted-foreground max-w-xs mt-1">
+                            No {isIncome ? "income" : "expense"} activity found for the selected date range.
                         </p>
                     </div>
-                )}
-                {filteredData.length > 0 && (
-                    <ScrollArea className="h-60 w-full px-4">
-                        <div className="flex w-full flex-col gap-4 p-4">
+                ) : (
+                    <ScrollArea className="h-[290px] px-5 py-3">
+                        <div className="space-y-3.5 pr-2">
                             {filteredData.map((item: any) => {
                                 const amount = item._sum.amount || 0;
                                 const percentage = total > 0 ? (amount / total) * 100 : 0;
 
                                 return (
-                                    <div className="flex flex-col gap-2" key={item.category}>
-                                        <div className="flex items-center justify-between">
-                                            <span className="flex items-center text-gray-600">
-                                                {item.categoryIcon} {item.category}
-                                                <span className="ml-2 text-sm text-muted-foreground">
-                                                    ({percentage === 100 ? "100%" : `${percentage.toFixed(2)}%`})%
+                                    <div
+                                        key={item.category}
+                                        className="space-y-1.5 p-2 rounded-xl hover:bg-muted/40 transition-colors"
+                                    >
+                                        <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
+                                            <div className="flex items-center gap-2 min-w-0">
+                                                <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-xs shrink-0">
+                                                    {item.categoryIcon}
                                                 </span>
-                                            </span>
-                                            <span className="text-sm text-gray-400">
+                                                <span className="font-medium text-foreground truncate">
+                                                    {item.category}
+                                                </span>
+                                                <span className="font-mono text-[11px] text-muted-foreground shrink-0">
+                                                    ({percentage === 100 ? "100%" : `${percentage.toFixed(1)}%`})
+                                                </span>
+                                            </div>
+                                            <span className="font-mono font-semibold text-foreground shrink-0">
                                                 {formatter.format(amount)}
                                             </span>
                                         </div>
-                                        <Progress value={percentage} indicator={type === "income" ? "bg-emerald-500" : "bg-red-500"} />
+
+                                        <Progress
+                                            value={percentage}
+                                            className="h-1.5 bg-muted"
+                                            indicator={
+                                                isIncome
+                                                    ? "bg-emerald-500 dark:bg-emerald-400"
+                                                    : "bg-rose-500 dark:bg-rose-400"
+                                            }
+                                        />
                                     </div>
-                                )
+                                );
                             })}
                         </div>
                     </ScrollArea>
                 )}
-            </div>
+            </CardContent>
         </Card>
-    )
+    );
 }

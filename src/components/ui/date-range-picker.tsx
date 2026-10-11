@@ -36,6 +36,8 @@ export interface DateRangePickerProps {
     locale?: string
     /** Option for showing compare feature */
     showCompare?: boolean
+    /** Additional CSS classes for trigger button */
+    className?: string
 }
 
 const formatDate = (date: Date, locale: string = 'en-us'): string => {
@@ -94,7 +96,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
     onUpdate,
     align = 'end',
     locale = 'en-US',
-    showCompare = true
+    showCompare = true,
+    className
 }): JSX.Element => {
         const [isOpen, setIsOpen] = useState(false)
 
@@ -339,9 +342,16 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                 }}
             >
                 <PopoverTrigger asChild>
-                    <Button size={'lg'} variant="outline">
-                        <div className="text-right">
-                            <div className="py-1">
+                    <Button
+                        size={'lg'}
+                        variant="outline"
+                        className={cn(
+                            "h-9 px-3 justify-between font-normal bg-card border-border/80 text-xs sm:text-sm",
+                            className
+                        )}
+                    >
+                        <div className="text-left sm:text-right">
+                            <div className="py-0.5">
                                 <div>{`${formatDate(range.from, locale)}${range.to != null ? ' - ' + formatDate(range.to, locale) : ''
                                     }`}</div>
                             </div>
@@ -356,12 +366,12 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                                 </div>
                             )}
                         </div>
-                        <div className="pl-1 opacity-60 -mr-2 scale-125">
-                            {isOpen ? (<ChevronUpIcon width={24} />) : (<ChevronDownIcon width={24} />)}
+                        <div className="pl-1 opacity-60 ml-2">
+                            {isOpen ? (<ChevronUpIcon width={16} height={16} />) : (<ChevronDownIcon width={16} height={16} />)}
                         </div>
                     </Button>
                 </PopoverTrigger>
-                <PopoverContent align={align} className="w-auto">
+                <PopoverContent align={align} className="w-auto max-w-[calc(100vw-2rem)] p-0">
                     <div className="flex py-2">
                         <div className="flex">
                             <div className="flex flex-col">

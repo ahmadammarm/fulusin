@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
 import { CurrencySettings } from "../../src/generated/prisma/client";
 import { differenceInDays, startOfMonth } from "date-fns";
@@ -9,81 +9,29 @@ import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { toast } from "sonner";
 import StatisticsCard from "./StatisticsCard";
 import CategoriesStatistics from "./CategoriesStatistics";
-import { useQuery } from "@tanstack/react-query";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Filter } from "lucide-react";
 
 export default function OverviewSection({ currencySettings }: { currencySettings: CurrencySettings }) {
-
-    const [dateRange, setDateRange] = useState<{ from: Date, to: Date }>({
+    const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
         from: startOfMonth(new Date()),
         to: new Date(),
     });
-    const [selectedIncomeCategory, setSelectedIncomeCategory] = useState<string>("all");
-    const [selectedExpenseCategory, setSelectedExpenseCategory] = useState<string>("all");
-
-    const categoriesQuery = useQuery<{ income: { name: string; icon: string; type: string }[], expense: { name: string; icon: string; type: string }[] }>({
-        queryKey: ["categories"],
-        queryFn: async () => {
-            const [incomeRes, expenseRes] = await Promise.all([
-                fetch("/api/categories?type=income"),
-                fetch("/api/categories?type=expense")
-            ]);
-
-            const income = incomeRes.ok ? await incomeRes.json() : [];
-            const expense = expenseRes.ok ? await expenseRes.json() : [];
-
-            return { income, expense };
-        },
-        refetchOnWindowFocus: false,
-    });
 
     return (
-        <>
-            <div className="container flex flex-wrap items-end justify-between gap-3 py-6 px-5">
-                <h2 className="ml-3 text-3xl font-bold">
-                    Overview
-                </h2>
-                <div className="flex flex-wrap items-center gap-3">
-                    <div className="flex gap-2">
-                        <Select value={selectedIncomeCategory} onValueChange={setSelectedIncomeCategory}>
-                            <SelectTrigger className="w-[180px] h-9 bg-background">
-                                <Filter className="h-4 w-4 text-muted-foreground mr-1 shrink-0" />
-                                <SelectValue placeholder="Income Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Incomes</SelectItem>
-                                {categoriesQuery.data?.income.map((category) => (
-                                    <SelectItem key={category.name} value={category.name}>
-                                        <span className="flex items-center gap-2">
-                                            <span>{category.icon}</span>
-                                            <span>{category.name}</span>
-                                        </span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
+        <section className="container mx-auto px-4 sm:px-6 pt-6">
+            {/* Overview Toolbar: Clean Header + Right-Aligned Date Range Picker */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-5 border-b border-border/60">
+                <div>
+                    <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-foreground">
+                        Financial Summary
+                    </h2>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                        Overview of your balances and category distribution across the selected timeframe.
+                    </p>
+                </div>
 
-                        <Select value={selectedExpenseCategory} onValueChange={setSelectedExpenseCategory}>
-                            <SelectTrigger className="w-[180px] h-9 bg-background">
-                                <Filter className="h-4 w-4 text-muted-foreground mr-1 shrink-0" />
-                                <SelectValue placeholder="Expense Category" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                <SelectItem value="all">All Expenses</SelectItem>
-                                {categoriesQuery.data?.expense.map((category) => (
-                                    <SelectItem key={category.name} value={category.name}>
-                                        <span className="flex items-center gap-2">
-                                            <span>{category.icon}</span>
-                                            <span>{category.name}</span>
-                                        </span>
-                                    </SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                    </div>
-
+                <div className="w-full sm:w-auto shrink-0">
                     <DateRangePicker
+                        className="w-full sm:w-auto"
                         initialDateFrom={dateRange.from}
                         initialDateTo={dateRange.to}
                         showCompare={false}
@@ -91,7 +39,9 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                             const { from, to } = values.range;
                             if (!from || !to) return;
                             if (differenceInDays(to, from) > MAX_DATE_RANGE_DAYS) {
-                                toast.error(`The selected date range is too big. Max allowed is ${MAX_DATE_RANGE_DAYS} days.`,)
+                                toast.error(
+                                    `The selected date range is too big. Max allowed is ${MAX_DATE_RANGE_DAYS} days.`
+                                );
                                 return;
                             }
                             setDateRange({ from, to });
@@ -99,10 +49,16 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                     />
                 </div>
             </div>
-            <div className="container flex flex-col w-full gap-2">
+
+            {/* Metrics & Category Sections */}
+            <div className="flex flex-col w-full gap-6 mt-6">
                 <StatisticsCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
-                <CategoriesStatistics currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} selectedIncomeCategory={selectedIncomeCategory} selectedExpenseCategory={selectedExpenseCategory} />
+                <CategoriesStatistics
+                    currencySettings={currencySettings}
+                    from={dateRange.from}
+                    to={dateRange.to}
+                />
             </div>
-        </>
-    )
+        </section>
+    );
 }

@@ -1,11 +1,24 @@
-"use client"
+"use client";
 
-import TransactionHistoryTable from "@/components/TransactionHistoryTable"
-import CreateTransactionDialog from "@/components/CreateTransactionDialog"
-import { Button } from "@/components/ui/button"
-import { ArrowDownLeft, ArrowUpRight, Plus, ReceiptText } from "lucide-react"
+import TransactionHistoryTable from "@/components/TransactionHistoryTable";
+import CreateTransactionDialog from "@/components/CreateTransactionDialog";
+import { Button } from "@/components/ui/button";
+import { ArrowDownLeft, ArrowUpRight, Plus, ReceiptText } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { CurrencySettings } from "../../../src/generated/prisma/client";
 
 export default function TransactionHistoryPage() {
+    const currencyQuery = useQuery<CurrencySettings>({
+        queryKey: ["currencySettings"],
+        queryFn: async () => {
+            const res = await fetch("/api/currency-setting");
+            if (!res.ok) throw new Error("Failed to fetch currency");
+            return res.json();
+        },
+    });
+
+    const currency = currencyQuery.data?.currency || "USD";
+
     return (
         <div className="min-h-full bg-background pb-12">
             {/* Header banner with mobile navbar clearance */}
@@ -27,12 +40,12 @@ export default function TransactionHistoryPage() {
                         </div>
 
                         {/* Quick action buttons */}
-                        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-center shrink-0">
+                        <div className="grid grid-cols-2 sm:flex items-center gap-2.5 w-full sm:w-auto shrink-0">
                             <CreateTransactionDialog
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
@@ -40,12 +53,13 @@ export default function TransactionHistoryPage() {
                                     </Button>
                                 }
                                 type="income"
+                                currency={currency}
                             />
                             <CreateTransactionDialog
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
@@ -53,6 +67,7 @@ export default function TransactionHistoryPage() {
                                     </Button>
                                 }
                                 type="expense"
+                                currency={currency}
                             />
                         </div>
                     </div>
@@ -64,5 +79,5 @@ export default function TransactionHistoryPage() {
                 <TransactionHistoryTable />
             </div>
         </div>
-    )
+    );
 }
