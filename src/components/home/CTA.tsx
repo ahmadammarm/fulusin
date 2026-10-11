@@ -20,23 +20,17 @@ export default function CTA() {
     }
 
     return (
-        <section className="py-20 md:py-28 bg-card/40 border-b border-border/60 relative overflow-hidden">
-            {/* Ambient background glow */}
-            <div className="absolute inset-0 bg-gradient-to-b from-teal-500/5 via-teal-500/10 to-transparent pointer-events-none -z-10" />
-
+        <section className="py-20 md:py-28 bg-card/40 border-b border-border/60">
             <div className="container mx-auto px-4 sm:px-6">
-                <div className="max-w-4xl mx-auto rounded-3xl border border-teal-500/30 bg-card p-8 sm:p-12 md:p-16 text-center shadow-lg relative overflow-hidden">
-                    {/* Top ambient highlight */}
-                    <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-96 h-48 bg-teal-500/20 blur-3xl rounded-full pointer-events-none" />
-
-                    <div className="relative space-y-6 max-w-2xl mx-auto">
+                <div className="max-w-4xl mx-auto rounded-3xl border border-border/80 bg-card p-8 sm:p-12 md:p-16 text-center shadow-sm">
+                    <div className="space-y-6 max-w-2xl mx-auto">
                         <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
                             <span>Zero Cost Onboarding</span>
                         </div>
 
                         <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground leading-[1.15]">
                             Take control of your finances with{" "}
-                            <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">
+                            <span className="text-teal-600 dark:text-teal-400">
                                 total confidence.
                             </span>
                         </h2>

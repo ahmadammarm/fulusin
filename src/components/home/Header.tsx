@@ -27,24 +27,24 @@ export default function Header() {
 
     return (
         <header className="sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-md">
-            <div className="container mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+            <div className="container mx-auto px-4 sm:px-6 h-16 relative flex items-center justify-between">
                 {/* Brand Logo */}
-                <div className="flex items-center gap-8">
+                <div className="flex items-center">
                     <Logo />
-
-                    {/* Desktop Navigation Links */}
-                    <nav className="hidden md:flex items-center gap-6">
-                        {navLinks.map((link) => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
-                    </nav>
                 </div>
+
+                {/* Centered Desktop Navigation Links */}
+                <nav className="hidden md:flex items-center gap-7 absolute left-1/2 -translate-x-1/2">
+                    {navLinks.map((link) => (
+                        <Link
+                            key={link.href}
+                            href={link.href}
+                            className="text-xs sm:text-sm font-medium text-muted-foreground hover:text-teal-600 dark:hover:text-teal-400 transition-colors"
+                        >
+                            {link.label}
+                        </Link>
+                    ))}
+                </nav>
 
                 {/* Right Action Buttons */}
                 <div className="hidden sm:flex items-center gap-3">

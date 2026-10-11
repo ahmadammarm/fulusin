@@ -89,7 +89,7 @@ export default function Hero() {
                     {/* Main Headline */}
                     <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight text-foreground leading-[1.1] sm:leading-[1.15]">
                         Master your cash flow,{" "}
-                        <span className="bg-gradient-to-r from-teal-500 via-teal-400 to-emerald-500 bg-clip-text text-transparent">
+                        <span className="text-teal-600 dark:text-teal-400">
                             period by period.
                         </span>
                     </h1>

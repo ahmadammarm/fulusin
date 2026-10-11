@@ -15,7 +15,7 @@ export default function Features() {
                     </div>
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                         Built like a database engine,{" "}
-                        <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">
+                        <span className="text-teal-600 dark:text-teal-400">
                             designed for humans.
                         </span>
                     </h2>
