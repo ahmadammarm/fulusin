@@ -1,94 +1,188 @@
-import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar, PieChart, TrendingUp, Users, Shield, Zap } from "lucide-react"
+"use client"
 
+import { Badge } from "@/components/ui/badge"
+import { Clock, Database, FileSpreadsheet, Layers, ShieldCheck } from "lucide-react"
 
 export default function Features() {
+
     return (
-        <section className="py-20 px-4 bg-card/30">
-            <div className="container mx-auto">
-                <div className="text-center mb-16">
-                    <h2 className="text-4xl font-bold mb-4 text-foreground">
-                        Everything You Need to <span className="text-teal-500">Succeed</span>
+        <section id="features" className="py-20 md:py-28 bg-card/40 border-y border-border/60 relative">
+            <div className="container mx-auto px-4 sm:px-6">
+                {/* Section Header */}
+                <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
+                        <span>Architected For Precision</span>
+                    </div>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+                        Built like a database engine,{" "}
+                        <span className="bg-gradient-to-r from-teal-500 to-emerald-500 bg-clip-text text-transparent">
+                            designed for humans.
+                        </span>
                     </h2>
-                    <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-                        Powerful features designed to help you understand and optimize your financial habits
+                    <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                        Every feature in Fulusin is engineered to eliminate calculation latency, protect relational
+                        data integrity, and provide absolute clarity over your personal cash flow.
                     </p>
                 </div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <Card className="bg-card border-border hover:border-teal-500/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-500/30 transition-colors">
-                                <Calendar className="w-6 h-6 text-teal-500" />
+                {/* Bento Grid Layout */}
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+                    {/* Bento Tile 1: Pre-Aggregated History (Span 2 cols on lg) */}
+                    <div className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                    <Database className="h-5 w-5" />
+                                </div>
+                                <Badge variant="outline" className="text-[11px] font-mono border-teal-500/30 text-teal-600 dark:text-teal-400 bg-teal-500/5">
+                                    O(1) Chart Queries
+                                </Badge>
                             </div>
-                            <CardTitle className="text-foreground">Period-Based Tracking</CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Organize your finances by custom time periods - monthly or annual analysis
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                            <h3 className="text-xl font-bold text-foreground">
+                                Atomic Pre-Aggregated History
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Never wait for slow table scans. Fulusin atomically synchronizes daily and monthly balance
+                                summaries at transaction write-time, enabling sub-millisecond dashboard renders even with tens of thousands of records.
+                            </p>
+                        </div>
 
-                    <Card className="bg-card border-border hover:border-accent/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                <PieChart className="w-6 h-6 text-primary" />
+                        {/* Interactive Widget Visualization */}
+                        <div className="mt-6 pt-4 border-t border-border/60">
+                            <div className="rounded-xl bg-muted/40 p-4 border border-border/60 font-mono text-xs space-y-2">
+                                <div className="flex items-center justify-between text-muted-foreground pb-1 border-b border-border/40">
+                                    <span>TABLE: MonthHistory</span>
+                                    <span className="text-emerald-600 dark:text-emerald-400">STATUS: ACID Synced</span>
+                                </div>
+                                <div className="grid grid-cols-3 gap-2 text-center pt-1">
+                                    <div className="bg-background/80 rounded-lg p-2 border border-border/40">
+                                        <p className="text-[10px] text-muted-foreground uppercase">Day</p>
+                                        <p className="font-bold text-foreground">11</p>
+                                    </div>
+                                    <div className="bg-background/80 rounded-lg p-2 border border-border/40">
+                                        <p className="text-[10px] text-emerald-600 dark:text-emerald-400 uppercase">Inflow</p>
+                                        <p className="font-bold text-emerald-600 dark:text-emerald-400">+$2,450.00</p>
+                                    </div>
+                                    <div className="bg-background/80 rounded-lg p-2 border border-border/40">
+                                        <p className="text-[10px] text-rose-600 dark:text-rose-400 uppercase">Outflow</p>
+                                        <p className="font-bold text-rose-600 dark:text-rose-400">-$385.20</p>
+                                    </div>
+                                </div>
                             </div>
-                            <CardTitle className="text-foreground">Smart Analytics</CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Get detailed insights into spending patterns with interactive charts and reports
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <Card className="bg-card border-border hover:border-teal-500/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-500/30 transition-colors">
-                                <TrendingUp className="w-6 h-6 text-teal-500" />
+                    {/* Bento Tile 2: CSV Bulk Ingestion (Span 2 cols on md, 2 on lg) */}
+                    <div className="md:col-span-1 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                    <FileSpreadsheet className="h-5 w-5" />
+                                </div>
+                                <Badge variant="outline" className="text-[11px] font-mono border-border">
+                                    Batch Processing
+                                </Badge>
                             </div>
-                            <CardTitle className="text-foreground">Goal Setting</CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Set and track financial goals with progress monitoring and achievement rewards
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                            <h3 className="text-xl font-bold text-foreground">
+                                High-Speed Bank Statement Import
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Upload months of bank activity in a single CSV file. Fulusin automatically extracts dates,
+                                amounts, categories, and descriptions, verifying each line through validation schemas.
+                            </p>
+                        </div>
 
-                    <Card className="bg-card border-border hover:border-accent/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                <Shield className="w-6 h-6 text-primary" />
+                        {/* Interactive Visual Cue */}
+                        <div className="mt-6 pt-4 border-t border-border/60">
+                            <div className="flex items-center justify-between rounded-xl bg-muted/40 p-3 border border-border/60 text-xs">
+                                <div className="flex items-center gap-2.5">
+                                    <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                                    <span className="font-medium text-foreground">bca_october_statement.csv</span>
+                                </div>
+                                <span className="font-mono text-muted-foreground">148 rows processed</span>
                             </div>
-                            <CardTitle className="text-foreground">Secure & Private</CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Your data is protected with privacy controls
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                        </div>
+                    </div>
 
-                    <Card className="bg-card border-border hover:border-teal-500/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-teal-500/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-teal-500/30 transition-colors">
-                                <Users className="w-6 h-6 text-teal-500" />
+                    {/* Bento Tile 3: Custom Category Channels (Span 2 cols on lg) */}
+                    <div className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                    <Layers className="h-5 w-5" />
+                                </div>
+                                <Badge variant="outline" className="text-[11px] font-mono border-border">
+                                    Foreign Key Protection
+                                </Badge>
                             </div>
-                            <CardTitle className="text-foreground">Multi-User Support</CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                Share budgets with family members or manage multiple financial accounts
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                            <h3 className="text-xl font-bold text-foreground">
+                                Custom Category Channels
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Organize cash flows by your lifestyle. Create bespoke categories with custom icons,
+                                inspect transaction counts, and rely on relational safeguards that prevent orphaned data.
+                            </p>
+                        </div>
 
-                    <Card className="bg-card border-border hover:border-accent/50 transition-all duration-300 group">
-                        <CardHeader>
-                            <div className="w-12 h-12 bg-primary/20 rounded-lg flex items-center justify-center mb-4 group-hover:bg-primary/30 transition-colors">
-                                <Zap className="w-6 h-6 text-primary" />
+                        <div className="mt-6 grid grid-cols-2 gap-2 text-xs">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                                <span>💼</span>
+                                <span className="font-medium text-foreground truncate">Engineering Retainer</span>
                             </div>
-                            <CardTitle className="text-foreground">
-                                Fast & Intuitive
-                            </CardTitle>
-                            <CardDescription className="text-muted-foreground">
-                                User-friendly design for quick setup and effortless navigation
-                            </CardDescription>
-                        </CardHeader>
-                    </Card>
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                                <span>🥑</span>
+                                <span className="font-medium text-foreground truncate">Organic Groceries</span>
+                            </div>
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                                <span>💻</span>
+                                <span className="font-medium text-foreground truncate">Cloud & Dev Tools</span>
+                            </div>
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                                <span>☕</span>
+                                <span className="font-medium text-foreground truncate">Coffee & Workspace</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Bento Tile 4: Timezone Normalized Accounting (Span 1 col on lg) */}
+                    <div className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                        <div className="space-y-3">
+                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <Clock className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground">
+                                Timezone Anchored
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Midnight shifts will never corrupt your monthly sums. Every date is anchored to your exact timezone before aggregation.
+                            </p>
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-border/60">
+                            <span className="font-mono text-xs text-teal-600 dark:text-teal-400 bg-teal-500/10 px-2.5 py-1 rounded-md border border-teal-500/20">
+                                Asia/Jakarta (WIB)
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Bento Tile 5: Bank-Grade Privacy & Relational Integrity (Span 1 col on lg) */}
+                    <div className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                        <div className="space-y-3">
+                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <ShieldCheck className="h-5 w-5" />
+                            </div>
+                            <h3 className="text-xl font-bold text-foreground">
+                                Zero Data Selling
+                            </h3>
+                            <p className="text-sm text-muted-foreground leading-relaxed">
+                                Your ledger belongs to you. Zero trackers, zero financial data reselling, and instant CSV export anytime.
+                            </p>
+                        </div>
+                        <div className="mt-6 pt-4 border-t border-border/60">
+                            <span className="font-mono text-xs text-muted-foreground">
+                                Self-Hosted PostgreSQL
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

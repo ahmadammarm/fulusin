@@ -24,7 +24,7 @@ export default async function RootLayout({
     const session = await getServerSession(authOptions);
 
     return (
-        <html lang="en">
+        <html lang="en" className="scroll-smooth" suppressHydrationWarning>
             <body
                 className={`${poppins.className} antialiased`}
             >
