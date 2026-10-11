@@ -417,18 +417,21 @@ export default function TransactionHistoryTable() {
         <div className="w-full space-y-6">
             {/* 1. Summary KPI Metrics Banner */}
             <SkeletonWrapper isLoading={transactionsQuery.isLoading || currencyQuery.isLoading}>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
                     {/* Card 1: Total Records */}
-                    <Card className="border border-border/70 shadow-2xs">
-                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Card className="border border-border/70 shadow-2xs overflow-hidden">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
                                     Total Records
                                 </p>
-                                <p className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1">
+                                <p
+                                    className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1 truncate"
+                                    title={String(kpiMetrics.totalCount)}
+                                >
                                     {kpiMetrics.totalCount}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                                     Recorded entries
                                 </p>
                             </div>
@@ -439,16 +442,19 @@ export default function TransactionHistoryTable() {
                     </Card>
 
                     {/* Card 2: Total Inflow */}
-                    <Card className="border border-border/70 shadow-2xs">
-                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                    <Card className="border border-border/70 shadow-2xs overflow-hidden">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider truncate">
                                     Total Inflow
                                 </p>
-                                <p className="text-lg sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 truncate max-w-[140px] sm:max-w-none">
+                                <p
+                                    className="text-xl sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 truncate"
+                                    title={`+${formatter.format(kpiMetrics.totalInflow)}`}
+                                >
                                     +{formatter.format(kpiMetrics.totalInflow)}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                                     {kpiMetrics.incomeCount} income transactions
                                 </p>
                             </div>
@@ -459,16 +465,19 @@ export default function TransactionHistoryTable() {
                     </Card>
 
                     {/* Card 3: Total Outflow */}
-                    <Card className="border border-border/70 shadow-2xs">
-                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
+                    <Card className="border border-border/70 shadow-2xs overflow-hidden">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider truncate">
                                     Total Outflow
                                 </p>
-                                <p className="text-lg sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-1 truncate max-w-[140px] sm:max-w-none">
+                                <p
+                                    className="text-xl sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-1 truncate"
+                                    title={`-${formatter.format(kpiMetrics.totalOutflow)}`}
+                                >
                                     -{formatter.format(kpiMetrics.totalOutflow)}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                                     {kpiMetrics.expenseCount} expense transactions
                                 </p>
                             </div>
@@ -479,23 +488,24 @@ export default function TransactionHistoryTable() {
                     </Card>
 
                     {/* Card 4: Net Balance */}
-                    <Card className="border border-border/70 shadow-2xs">
-                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
-                            <div>
-                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                    <Card className="border border-border/70 shadow-2xs overflow-hidden">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-3 min-w-0">
+                            <div className="min-w-0 flex-1">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider truncate">
                                     Net Cash Flow
                                 </p>
                                 <p
                                     className={cn(
-                                        "text-lg sm:text-2xl font-bold font-mono mt-1 truncate max-w-[140px] sm:max-w-none",
+                                        "text-xl sm:text-2xl font-bold font-mono mt-1 truncate",
                                         kpiMetrics.netCashFlow >= 0
                                             ? "text-teal-600 dark:text-teal-400"
                                             : "text-rose-600 dark:text-rose-400"
                                     )}
+                                    title={`${kpiMetrics.netCashFlow >= 0 ? "+" : ""}${formatter.format(kpiMetrics.netCashFlow)}`}
                                 >
                                     {kpiMetrics.netCashFlow >= 0 ? "+" : ""}{formatter.format(kpiMetrics.netCashFlow)}
                                 </p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                <p className="text-[11px] text-muted-foreground mt-0.5 truncate">
                                     Current net position
                                 </p>
                             </div>
@@ -509,11 +519,11 @@ export default function TransactionHistoryTable() {
 
             {/* 2. Unified Command Toolbar */}
             <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:p-4 shadow-2xs">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                <div className="flex flex-col 2xl:flex-row 2xl:items-center justify-between gap-3 sm:gap-4">
                     {/* Left side: Search input & Type Tabs */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1 min-w-0 w-full 2xl:w-auto">
                         {/* Search Input */}
-                        <div className="relative w-full sm:w-72">
+                        <div className="relative w-full sm:w-72 lg:w-80 shrink-0">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search by category, note, date..."
@@ -533,12 +543,12 @@ export default function TransactionHistoryTable() {
                         </div>
 
                         {/* Segmented Type Tabs */}
-                        <div className="inline-flex h-9 items-center rounded-lg bg-muted/60 p-1 text-muted-foreground self-start sm:self-auto">
+                        <div className="inline-flex h-9 items-center rounded-lg bg-muted/60 p-1 text-muted-foreground self-start sm:self-auto shrink-0 overflow-x-auto max-w-full">
                             <button
                                 type="button"
                                 onClick={() => setTypeFilter("all")}
                                 className={cn(
-                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all whitespace-nowrap",
                                     typeFilter === "all"
                                         ? "bg-background text-foreground shadow-2xs"
                                         : "hover:text-foreground"
@@ -553,7 +563,7 @@ export default function TransactionHistoryTable() {
                                 type="button"
                                 onClick={() => setTypeFilter("income")}
                                 className={cn(
-                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all whitespace-nowrap",
                                     typeFilter === "income"
                                         ? "bg-background text-emerald-600 dark:text-emerald-400 shadow-2xs"
                                         : "hover:text-foreground"
@@ -568,7 +578,7 @@ export default function TransactionHistoryTable() {
                                 type="button"
                                 onClick={() => setTypeFilter("expense")}
                                 className={cn(
-                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all whitespace-nowrap",
                                     typeFilter === "expense"
                                         ? "bg-background text-rose-600 dark:text-rose-400 shadow-2xs"
                                         : "hover:text-foreground"
@@ -583,7 +593,7 @@ export default function TransactionHistoryTable() {
                     </div>
 
                     {/* Right side: Filters, Import, Export & Column Visibility */}
-                    <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                    <div className="flex flex-wrap items-center gap-2 w-full 2xl:w-auto justify-start 2xl:justify-end">
                         {table.getColumn("category") && (
                             <DataTableFacetedFilter
                                 column={table.getColumn("category")}
@@ -599,7 +609,7 @@ export default function TransactionHistoryTable() {
                             size="sm"
                             onClick={handleExportCsv}
                             disabled={filteredRowsCount === 0}
-                            className="h-8 gap-1.5 text-xs"
+                            className="h-8 gap-1.5 text-xs shrink-0"
                         >
                             <Download className="h-3.5 w-3.5" />
                             <span>Export CSV</span>
@@ -638,7 +648,7 @@ export default function TransactionHistoryTable() {
             <SkeletonWrapper isLoading={transactionsQuery.isLoading}>
                 <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
                     <div className="overflow-x-auto">
-                        <Table>
+                        <Table className="min-w-[720px] lg:min-w-full">
                             <TableHeader className="bg-muted/30 border-b border-border/60">
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <TableRow key={headerGroup.id} className="hover:bg-transparent">

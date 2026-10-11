@@ -10,14 +10,14 @@ export default function TransactionHistoryPage() {
         <div className="min-h-full bg-background pb-12">
             {/* Header banner with mobile navbar clearance */}
             <div className="border-b bg-card">
-                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-10 py-6 sm:py-8">
+                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-12 py-6 sm:py-8">
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                        <div>
+                        <div className="min-w-0">
                             <div className="flex items-center gap-2.5">
-                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400 shrink-0">
                                     <ReceiptText className="h-5 w-5" />
                                 </div>
-                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground truncate">
                                     All Transactions
                                 </h1>
                             </div>
@@ -27,12 +27,12 @@ export default function TransactionHistoryPage() {
                         </div>
 
                         {/* Quick action buttons */}
-                        <div className="flex items-center gap-2.5 self-start md:self-center">
+                        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-center shrink-0">
                             <CreateTransactionDialog
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm"
+                                        className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
@@ -45,7 +45,7 @@ export default function TransactionHistoryPage() {
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm"
+                                        className="h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
