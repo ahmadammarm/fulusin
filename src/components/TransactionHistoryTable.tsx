@@ -1,31 +1,82 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { GetTransactionHistoryResponse } from "@/app/api/transaction-history/route";
-import { DataTableColumnHeader } from "./data-table/ColumnHeader";
-import { cn } from "@/lib/utils";
-import { MoreHorizontal, TrashIcon } from "lucide-react";
-import { Button } from "./ui/button";
+"use client"
+
+import { useMemo, useState } from "react"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
+import {
+    ColumnDef,
+    ColumnFiltersState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    PaginationState,
+    SortingState,
+    useReactTable,
+} from "@tanstack/react-table"
+import { GetTransactionHistoryResponse } from "@/app/api/transaction-history/route"
+import { CurrencySettings } from "../../src/generated/prisma/client"
+import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
+import { format } from "date-fns"
+import {
+    ArrowDownLeft,
+    ArrowUpRight,
+    ChevronLeft,
+    ChevronRight,
+    ChevronsLeft,
+    ChevronsRight,
+    Download,
+    Filter,
+    FolderPlus,
+    MoreHorizontal,
+    ReceiptText,
+    Search,
+    Trash2,
+    Wallet,
+    X,
+} from "lucide-react"
+import { Button } from "./ui/button"
+import { Input } from "./ui/input"
+import { Badge } from "./ui/badge"
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "./ui/select"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "./ui/table"
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuLabel,
     DropdownMenuSeparator,
-    DropdownMenuTrigger
-} from "./ui/dropdown-menu";
-import TransactionDeleteDialog from "./TransactionDeleteDialog";
-import { useState, useMemo } from "react";
-import { DataTableFacetedFilter } from "./data-table/FacetedFilter";
-import { DataTableViewOptions } from "./data-table/ColumnToggle";
-import GlobalDataTable from "./GlobalDataTable";
-import ImportCsvModal from "./ImportCsvModal";
-import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
+    DropdownMenuTrigger,
+} from "./ui/dropdown-menu"
+import { DataTableColumnHeader } from "./data-table/ColumnHeader"
+import { DataTableFacetedFilter } from "./data-table/FacetedFilter"
+import { DataTableViewOptions } from "./data-table/ColumnToggle"
+import TransactionDeleteDialog from "./TransactionDeleteDialog"
+import ImportCsvModal from "./ImportCsvModal"
+import SkeletonWrapper from "./SkeletonWrapper"
+import { Card, CardContent } from "./ui/card"
+import { download, generateCsv, mkConfig } from "export-to-csv"
+import { cn } from "@/lib/utils"
 
-type TransactionHistoryRow = GetTransactionHistoryResponse[0];
+type TransactionHistoryRow = GetTransactionHistoryResponse[0]
 
-// Row Actions Component
+// Row Actions Menu
 const RowActions = ({ transaction }: { transaction: TransactionHistoryRow }) => {
-    const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState<boolean>(false);
+    const [isOpenDeleteDialog, setIsOpenDeleteDialog] = useState<boolean>(false)
 
     return (
         <>
@@ -36,161 +87,720 @@ const RowActions = ({ transaction }: { transaction: TransactionHistoryRow }) => 
             />
             <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="h-8 w-8 p-0">
+                    <Button variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground">
                         <span className="sr-only">Open menu</span>
                         <MoreHorizontal className="h-4 w-4" />
                     </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuContent align="end" className="w-40">
+                    <DropdownMenuLabel className="text-xs text-muted-foreground font-normal">
+                        Actions
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                        className="flex items-center gap-2"
-                        onSelect={() => setIsOpenDeleteDialog((prev) => !prev)}
+                        className="text-destructive focus:text-destructive flex items-center gap-2 cursor-pointer text-xs"
+                        onSelect={() => setIsOpenDeleteDialog(true)}
                     >
-                        <TrashIcon className="h-4 w-4 text-muted-foreground" />
-                        Delete
+                        <Trash2 className="h-3.5 w-3.5" />
+                        <span>Delete</span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
         </>
-    );
-};
-
-// Column Definitions
-export const transactionColumns: ColumnDef<TransactionHistoryRow>[] = [
-    {
-        accessorKey: "category",
-        header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Category" />
-        ),
-        filterFn: (row, columnId, filterValue) => {
-            return filterValue.includes(row.getValue(columnId));
-        },
-        cell: ({ row }) => (
-            <div className="flex gap-2 capitalize">
-                {row.original.categoryIcon}
-                <div className="capitalize">{row.original.category}</div>
-            </div>
-        ),
-    },
-    {
-        accessorKey: "description",
-        header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Description" />
-        ),
-        cell: ({ row }) => (
-            <div className="capitalize">{row.original.description}</div>
-        ),
-    },
-    {
-        accessorKey: "date",
-        header: "Date",
-        cell: ({ row }) => {
-            const date = new Date(row.original.date);
-            const formattedDate = date.toISOString().slice(0, 10);
-            return <div className="text-muted-foreground">{formattedDate}</div>;
-        },
-    },
-    {
-        accessorKey: "type",
-        header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Type" />
-        ),
-        filterFn: (row, columnId, filterValue) => {
-            return filterValue.includes(row.getValue(columnId));
-        },
-        cell: ({ row }) => (
-            <div
-                className={cn(
-                    "capitalize rounded-lg text-center p-2",
-                    row.original.type === "income" &&
-                    "bg-emerald-400/10 text-emerald-500",
-                    row.original.type === "expense" && "bg-red-400/10 text-red-500"
-                )}
-            >
-                {row.original.type}
-            </div>
-        ),
-    },
-    {
-        accessorKey: "amount",
-        header: ({ column }) => (
-            <DataTableColumnHeader column={column} title="Amount" />
-        ),
-        cell: ({ row }) => (
-            <p className="text-md rounded-lg bg-gray-400/5 p-2 text-center font-medium">
-                {row.original.formattedAmount}
-            </p>
-        ),
-    },
-    {
-        id: "actions",
-        enableHiding: false,
-        cell: ({ row }) => <RowActions transaction={row.original} />,
-    },
-];
+    )
+}
 
 export default function TransactionHistoryTable() {
-    const transactionHistory = useQuery<GetTransactionHistoryResponse>({
+    const [sorting, setSorting] = useState<SortingState>([
+        { id: "date", desc: true },
+    ])
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+    const [globalFilter, setGlobalFilter] = useState("")
+    const [typeFilter, setTypeFilter] = useState<string>("all")
+    const [pagination, setPagination] = useState<PaginationState>({
+        pageIndex: 0,
+        pageSize: 10,
+    })
+
+    // Fetch transaction history
+    const transactionsQuery = useQuery<GetTransactionHistoryResponse>({
         queryKey: ["transactionHistory"],
         queryFn: async () => {
-            const response = await axios.get(`/api/transaction-history`);
-            return response.data;
+            const response = await axios.get("/api/transaction-history")
+            return response.data
         },
         refetchOnWindowFocus: false,
         staleTime: 1000 * 60 * 5,
-    });
+    })
 
+    // Fetch currency settings to format summary KPI cards
+    const currencyQuery = useQuery<CurrencySettings>({
+        queryKey: ["currencySettings"],
+        queryFn: async () => {
+            const res = await fetch("/api/currency-setting")
+            if (!res.ok) throw new Error("Failed to fetch currency")
+            return res.json()
+        },
+        refetchOnWindowFocus: false,
+    })
+
+    const currencyCode = currencyQuery.data?.currency || "USD"
+
+    const formatter = useMemo(() => {
+        try {
+            return GetFormatterForCurrency(currencyCode)
+        } catch {
+            return new Intl.NumberFormat("en-US", {
+                style: "currency",
+                currency: currencyCode,
+            })
+        }
+    }, [currencyCode])
+
+    const transactions = transactionsQuery.data || []
+
+    // Calculate Summary KPIs
+    const kpiMetrics = useMemo(() => {
+        let totalInflow = 0
+        let totalOutflow = 0
+        let incomeCount = 0
+        let expenseCount = 0
+
+        transactions.forEach((t) => {
+            if (t.type === "income") {
+                totalInflow += t.amount
+                incomeCount += 1
+            } else {
+                totalOutflow += t.amount
+                expenseCount += 1
+            }
+        })
+
+        const netCashFlow = totalInflow - totalOutflow
+
+        return {
+            totalCount: transactions.length,
+            incomeCount,
+            expenseCount,
+            totalInflow,
+            totalOutflow,
+            netCashFlow,
+        }
+    }, [transactions])
+
+    // Generate unique category filter options with emoji icons
     const categoriesOption = useMemo(() => {
-        const categoriesMap = new Map();
-        transactionHistory.data?.forEach((transaction) => {
-            categoriesMap.set(transaction.category, {
-                label: `${transaction.categoryIcon} ${transaction.category}`,
-                value: transaction.category,
-            });
-        });
-        const uniqueCategories = new Set(categoriesMap.values());
-        return Array.from(uniqueCategories);
-    }, [transactionHistory.data]);
+        const categoriesMap = new Map<string, { label: string; value: string }>()
+        transactions.forEach((tx) => {
+            if (!categoriesMap.has(tx.category)) {
+                categoriesMap.set(tx.category, {
+                    label: `${tx.categoryIcon} ${tx.category}`,
+                    value: tx.category,
+                })
+            }
+        })
+        return Array.from(categoriesMap.values()).sort((a, b) => a.value.localeCompare(b.value))
+    }, [transactions])
+
+    // Column Definitions for Modern Financial Ledger
+    const columns: ColumnDef<TransactionHistoryRow>[] = useMemo(
+        () => [
+            {
+                accessorKey: "category",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title="Category" />
+                ),
+                filterFn: (row, columnId, filterValue) => {
+                    return filterValue.includes(row.getValue(columnId))
+                },
+                cell: ({ row }) => {
+                    const isIncome = row.original.type === "income"
+                    return (
+                        <div className="flex items-center gap-3">
+                            <span
+                                className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/60 text-lg border border-border/50 shrink-0 shadow-2xs"
+                                role="img"
+                                aria-label={row.original.category}
+                            >
+                                {row.original.categoryIcon}
+                            </span>
+                            <div className="flex flex-col">
+                                <span className="font-semibold text-sm text-foreground tracking-tight">
+                                    {row.original.category}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground capitalize flex items-center gap-1 sm:hidden">
+                                    <span
+                                        className={cn(
+                                            "inline-block h-1.5 w-1.5 rounded-full",
+                                            isIncome ? "bg-emerald-500" : "bg-rose-500"
+                                        )}
+                                    />
+                                    {row.original.type}
+                                </span>
+                            </div>
+                        </div>
+                    )
+                },
+            },
+            {
+                accessorKey: "description",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title="Description" />
+                ),
+                cell: ({ row }) => {
+                    const desc = row.original.description?.trim()
+                    return desc ? (
+                        <span className="text-sm text-foreground/90 max-w-[220px] lg:max-w-[340px] truncate block font-normal" title={desc}>
+                            {desc}
+                        </span>
+                    ) : (
+                        <span className="text-xs text-muted-foreground/60 italic">
+                            No description
+                        </span>
+                    )
+                },
+            },
+            {
+                accessorKey: "date",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title="Date" />
+                ),
+                cell: ({ row }) => {
+                    const parsedDate = new Date(row.original.date)
+                    const formattedDisplayDate = format(parsedDate, "yyyy-MM-dd")
+                    return (
+                        <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
+                            {formattedDisplayDate}
+                        </span>
+                    )
+                },
+            },
+            {
+                accessorKey: "type",
+                header: ({ column }) => (
+                    <DataTableColumnHeader column={column} title="Type" />
+                ),
+                filterFn: (row, columnId, filterValue) => {
+                    return filterValue.includes(row.getValue(columnId))
+                },
+                cell: ({ row }) => {
+                    const isIncome = row.original.type === "income"
+                    return (
+                        <Badge
+                            variant="secondary"
+                            className={cn(
+                                "text-xs font-medium px-2 py-0.5 rounded-md gap-1.5 border capitalize",
+                                isIncome
+                                    ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                                    : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
+                            )}
+                        >
+                            {isIncome ? (
+                                <ArrowDownLeft className="h-3 w-3" />
+                            ) : (
+                                <ArrowUpRight className="h-3 w-3" />
+                            )}
+                            <span>{row.original.type}</span>
+                        </Badge>
+                    )
+                },
+            },
+            {
+                accessorKey: "amount",
+                header: ({ column }) => (
+                    <div className="text-right">
+                        <DataTableColumnHeader column={column} title="Amount" className="justify-end" />
+                    </div>
+                ),
+                cell: ({ row }) => {
+                    const isIncome = row.original.type === "income"
+                    return (
+                        <div className="text-right font-mono font-semibold text-sm">
+                            <span
+                                className={cn(
+                                    "tracking-tight",
+                                    isIncome
+                                        ? "text-emerald-600 dark:text-emerald-400"
+                                        : "text-rose-600 dark:text-rose-400"
+                                )}
+                            >
+                                {isIncome ? "+" : "-"}{row.original.formattedAmount}
+                            </span>
+                        </div>
+                    )
+                },
+            },
+            {
+                id: "actions",
+                enableHiding: false,
+                cell: ({ row }) => (
+                    <div className="flex justify-end">
+                        <RowActions transaction={row.original} />
+                    </div>
+                ),
+            },
+        ],
+        []
+    )
+
+    // Filter transactions by active type tab
+    const filteredByTabTransactions = useMemo(() => {
+        if (typeFilter === "all") return transactions
+        return transactions.filter((t) => t.type === typeFilter)
+    }, [transactions, typeFilter])
+
+    const table = useReactTable({
+        data: filteredByTabTransactions,
+        columns,
+        getCoreRowModel: getCoreRowModel(),
+        state: {
+            sorting,
+            columnFilters,
+            globalFilter,
+            pagination,
+        },
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        onGlobalFilterChange: setGlobalFilter,
+        onPaginationChange: setPagination,
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        globalFilterFn: (row, _columnId, filterValue) => {
+            const search = String(filterValue).toLowerCase().trim()
+            if (!search) return true
+
+            const category = String(row.original.category || "").toLowerCase()
+            const description = String(row.original.description || "").toLowerCase()
+            const formattedAmount = String(row.original.formattedAmount || "").toLowerCase()
+            const type = String(row.original.type || "").toLowerCase()
+            const date = String(format(new Date(row.original.date), "yyyy-MM-dd")).toLowerCase()
+
+            return (
+                category.includes(search) ||
+                description.includes(search) ||
+                formattedAmount.includes(search) ||
+                type.includes(search) ||
+                date.includes(search)
+            )
+        },
+    })
+
+    // CSV Export Handler
+    const handleExportCsv = () => {
+        const rowsToExport = table.getFilteredRowModel().rows.map((row) => ({
+            Date: format(new Date(row.original.date), "yyyy-MM-dd"),
+            Category: row.original.category,
+            Type: row.original.type,
+            Amount: row.original.amount,
+            FormattedAmount: row.original.formattedAmount,
+            Description: row.original.description || "",
+        }))
+
+        if (rowsToExport.length === 0) return
+
+        const csvConfig = mkConfig({
+            fieldSeparator: ",",
+            decimalSeparator: ".",
+            useKeysAsHeaders: true,
+            filename: `fulusin_transactions_${format(new Date(), "yyyyMMdd_HHmmss")}`,
+        })
+        const csv = generateCsv(csvConfig)(rowsToExport)
+        download(csvConfig)(csv)
+    }
+
+    const pageCount = table.getPageCount()
+    const currentPage = table.getState().pagination.pageIndex
+    const filteredRowsCount = table.getFilteredRowModel().rows.length
 
     return (
-        <GlobalDataTable
-            columns={transactionColumns}
-            apiRoute="/api/transaction-history"
-            queryKey={["transactionHistory"]}
-            searchable={true}
-            searchPlaceholder="Search transactions..."
-            exportable={true}
-            exportFilename="transaction_history"
-            pageSize={10}
-            additionalFilters={(table) => (
-                <>
-                    {table.getColumn("category") && (
-                        <DataTableFacetedFilter
-                            column={table.getColumn("category")}
-                            title="Category"
-                            options={categoriesOption}
-                        />
+        <div className="w-full space-y-6">
+            {/* 1. Summary KPI Metrics Banner */}
+            <SkeletonWrapper isLoading={transactionsQuery.isLoading || currencyQuery.isLoading}>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    {/* Card 1: Total Records */}
+                    <Card className="border border-border/70 shadow-2xs">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Total Records
+                                </p>
+                                <p className="text-xl sm:text-2xl font-bold font-mono text-foreground mt-1">
+                                    {kpiMetrics.totalCount}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    Recorded entries
+                                </p>
+                            </div>
+                            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
+                                <ReceiptText className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 2: Total Inflow */}
+                    <Card className="border border-border/70 shadow-2xs">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                                    Total Inflow
+                                </p>
+                                <p className="text-lg sm:text-2xl font-bold font-mono text-emerald-600 dark:text-emerald-400 mt-1 truncate max-w-[140px] sm:max-w-none">
+                                    +{formatter.format(kpiMetrics.totalInflow)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    {kpiMetrics.incomeCount} income transactions
+                                </p>
+                            </div>
+                            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 shrink-0">
+                                <ArrowDownLeft className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 3: Total Outflow */}
+                    <Card className="border border-border/70 shadow-2xs">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-semibold text-rose-600 dark:text-rose-400 uppercase tracking-wider">
+                                    Total Outflow
+                                </p>
+                                <p className="text-lg sm:text-2xl font-bold font-mono text-rose-600 dark:text-rose-400 mt-1 truncate max-w-[140px] sm:max-w-none">
+                                    -{formatter.format(kpiMetrics.totalOutflow)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    {kpiMetrics.expenseCount} expense transactions
+                                </p>
+                            </div>
+                            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 shrink-0">
+                                <ArrowUpRight className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    {/* Card 4: Net Balance */}
+                    <Card className="border border-border/70 shadow-2xs">
+                        <CardContent className="p-4 sm:p-5 flex items-center justify-between">
+                            <div>
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                    Net Cash Flow
+                                </p>
+                                <p
+                                    className={cn(
+                                        "text-lg sm:text-2xl font-bold font-mono mt-1 truncate max-w-[140px] sm:max-w-none",
+                                        kpiMetrics.netCashFlow >= 0
+                                            ? "text-teal-600 dark:text-teal-400"
+                                            : "text-rose-600 dark:text-rose-400"
+                                    )}
+                                >
+                                    {kpiMetrics.netCashFlow >= 0 ? "+" : ""}{formatter.format(kpiMetrics.netCashFlow)}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5">
+                                    Current net position
+                                </p>
+                            </div>
+                            <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shrink-0">
+                                <Wallet className="h-5 w-5 sm:h-6 sm:w-6" />
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </SkeletonWrapper>
+
+            {/* 2. Unified Command Toolbar */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:p-4 shadow-2xs">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+                    {/* Left side: Search input & Type Tabs */}
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 flex-1">
+                        {/* Search Input */}
+                        <div className="relative w-full sm:w-72">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                                placeholder="Search by category, note, date..."
+                                value={globalFilter}
+                                onChange={(e) => setGlobalFilter(e.target.value)}
+                                className="pl-9 pr-8 h-9 text-xs sm:text-sm bg-background border-input"
+                            />
+                            {globalFilter && (
+                                <button
+                                    type="button"
+                                    onClick={() => setGlobalFilter("")}
+                                    className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                >
+                                    <X className="h-3.5 w-3.5" />
+                                </button>
+                            )}
+                        </div>
+
+                        {/* Segmented Type Tabs */}
+                        <div className="inline-flex h-9 items-center rounded-lg bg-muted/60 p-1 text-muted-foreground self-start sm:self-auto">
+                            <button
+                                type="button"
+                                onClick={() => setTypeFilter("all")}
+                                className={cn(
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    typeFilter === "all"
+                                        ? "bg-background text-foreground shadow-2xs"
+                                        : "hover:text-foreground"
+                                )}
+                            >
+                                <span>All</span>
+                                <span className="text-[10px] font-mono opacity-70">
+                                    ({kpiMetrics.totalCount})
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setTypeFilter("income")}
+                                className={cn(
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    typeFilter === "income"
+                                        ? "bg-background text-emerald-600 dark:text-emerald-400 shadow-2xs"
+                                        : "hover:text-foreground"
+                                )}
+                            >
+                                <span>Income</span>
+                                <span className="text-[10px] font-mono opacity-70">
+                                    ({kpiMetrics.incomeCount})
+                                </span>
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setTypeFilter("expense")}
+                                className={cn(
+                                    "flex items-center gap-1.5 rounded-md px-3 py-1 text-xs font-medium transition-all",
+                                    typeFilter === "expense"
+                                        ? "bg-background text-rose-600 dark:text-rose-400 shadow-2xs"
+                                        : "hover:text-foreground"
+                                )}
+                            >
+                                <span>Expense</span>
+                                <span className="text-[10px] font-mono opacity-70">
+                                    ({kpiMetrics.expenseCount})
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Right side: Filters, Import, Export & Column Visibility */}
+                    <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto">
+                        {table.getColumn("category") && (
+                            <DataTableFacetedFilter
+                                column={table.getColumn("category")}
+                                title="Category"
+                                options={categoriesOption}
+                            />
+                        )}
+
+                        <ImportCsvModal />
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleExportCsv}
+                            disabled={filteredRowsCount === 0}
+                            className="h-8 gap-1.5 text-xs"
+                        >
+                            <Download className="h-3.5 w-3.5" />
+                            <span>Export CSV</span>
+                        </Button>
+
+                        <DataTableViewOptions table={table} />
+                    </div>
+                </div>
+
+                {/* Filter info indicator if filters are active */}
+                {(globalFilter || typeFilter !== "all" || (table.getState().columnFilters.length > 0)) && (
+                    <div className="flex items-center justify-between border-t border-border/40 pt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2">
+                            <Filter className="h-3.5 w-3.5 text-teal-500" />
+                            <span>
+                                Showing <strong className="text-foreground">{filteredRowsCount}</strong> of {transactions.length} transactions
+                            </span>
+                        </div>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-6 px-2 text-xs text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                                setGlobalFilter("")
+                                setTypeFilter("all")
+                                table.resetColumnFilters()
+                            }}
+                        >
+                            Reset filters
+                        </Button>
+                    </div>
+                )}
+            </div>
+
+            {/* 3. Modern Financial Ledger Table */}
+            <SkeletonWrapper isLoading={transactionsQuery.isLoading}>
+                <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader className="bg-muted/30 border-b border-border/60">
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id} className="hover:bg-transparent">
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead key={header.id} className="py-3 px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                          header.column.columnDef.header,
+                                                          header.getContext()
+                                                      )}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                            className="hover:bg-muted/30 transition-colors border-b border-border/40"
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id} className="py-3 px-4">
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-64 text-center p-8"
+                                        >
+                                            {transactions.length === 0 ? (
+                                                <div className="flex flex-col items-center justify-center text-center space-y-3">
+                                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-muted text-muted-foreground">
+                                                        <FolderPlus className="h-6 w-6" />
+                                                    </div>
+                                                    <p className="text-base font-semibold text-foreground">
+                                                        No transactions recorded yet
+                                                    </p>
+                                                    <p className="text-xs sm:text-sm text-muted-foreground max-w-sm">
+                                                        Create your first transaction using the buttons above or import transactions from a CSV file.
+                                                    </p>
+                                                </div>
+                                            ) : (
+                                                <div className="flex flex-col items-center justify-center text-center space-y-2">
+                                                    <p className="text-sm font-semibold text-foreground">
+                                                        No transactions match your current filters
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Try adjusting your search keyword, category, or type filter.
+                                                    </p>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        className="text-xs text-teal-600 dark:text-teal-400 hover:text-teal-700 mt-2"
+                                                        onClick={() => {
+                                                            setGlobalFilter("")
+                                                            setTypeFilter("all")
+                                                            table.resetColumnFilters()
+                                                        }}
+                                                    >
+                                                        Clear all filters
+                                                    </Button>
+                                                </div>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* 4. Table Pagination Footer */}
+                    {filteredRowsCount > 0 && (
+                        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-border/50 bg-muted/10">
+                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                <span>Rows per page</span>
+                                <Select
+                                    value={`${table.getState().pagination.pageSize}`}
+                                    onValueChange={(value) => table.setPageSize(Number(value))}
+                                >
+                                    <SelectTrigger className="h-8 w-[70px] text-xs bg-background">
+                                        <SelectValue placeholder={table.getState().pagination.pageSize} />
+                                    </SelectTrigger>
+                                    <SelectContent side="top">
+                                        {[10, 20, 30, 50, 100].map((size) => (
+                                            <SelectItem key={size} value={`${size}`} className="text-xs">
+                                                {size}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                                <span className="ml-2 hidden sm:inline">
+                                    Showing {currentPage * table.getState().pagination.pageSize + 1}-
+                                    {Math.min(
+                                        (currentPage + 1) * table.getState().pagination.pageSize,
+                                        filteredRowsCount
+                                    )}{" "}
+                                    of {filteredRowsCount} records
+                                </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">
+                                    Page {currentPage + 1} of {pageCount || 1}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => table.setPageIndex(0)}
+                                        disabled={!table.getCanPreviousPage()}
+                                        title="First page"
+                                    >
+                                        <ChevronsLeft className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => table.previousPage()}
+                                        disabled={!table.getCanPreviousPage()}
+                                        title="Previous page"
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => table.nextPage()}
+                                        disabled={!table.getCanNextPage()}
+                                        title="Next page"
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        className="h-8 w-8"
+                                        onClick={() => table.setPageIndex(pageCount - 1)}
+                                        disabled={!table.getCanNextPage()}
+                                        title="Last page"
+                                    >
+                                        <ChevronsRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
                     )}
-                    {table.getColumn("type") && (
-                        <DataTableFacetedFilter
-                            column={table.getColumn("type")}
-                            title="Type"
-                            options={[
-                                { label: "Income", value: "income" },
-                                { label: "Expense", value: "expense" },
-                            ]}
-                        />
-                    )}
-                </>
-            )}
-            additionalActions={(table) => (
-                <>
-                    <ImportCsvModal />
-                    <DataTableViewOptions table={table} />
-                </>
-            )}
-        />
-    );
+                </div>
+            </SkeletonWrapper>
+        </div>
+    )
 }

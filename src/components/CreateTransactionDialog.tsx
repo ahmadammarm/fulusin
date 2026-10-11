@@ -64,6 +64,10 @@ export default function CreateTransactionDialog({ trigger, type }: Props) {
                 exact: false
             });
 
+            queryClient.invalidateQueries({
+                queryKey: ['transactionHistory'],
+            });
+
 
             setOpen(prev => !prev);
         }

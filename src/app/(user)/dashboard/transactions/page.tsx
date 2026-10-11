@@ -1,21 +1,68 @@
 "use client"
 
-import TransactionHistoryTable from "@/components/TransactionHistoryTable";
+import TransactionHistoryTable from "@/components/TransactionHistoryTable"
+import CreateTransactionDialog from "@/components/CreateTransactionDialog"
+import { Button } from "@/components/ui/button"
+import { ArrowDownLeft, ArrowUpRight, Plus, ReceiptText } from "lucide-react"
 
 export default function TransactionHistoryPage() {
     return (
-        <>
+        <div className="min-h-full bg-background pb-12">
+            {/* Header banner with mobile navbar clearance */}
             <div className="border-b bg-card">
-                <div className="container flex flex-wrap items-center justify-between gap-6 py-8 px-4">
-                    <div>
-                        <p className="text-3xl font-bold">All Transactions History</p>
-                        <p className="text-muted-foreground mt-2">View and manage all your transactions</p>
+                <div className="container mx-auto px-4 sm:px-6 pt-20 md:pt-10 py-6 sm:py-8">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div>
+                            <div className="flex items-center gap-2.5">
+                                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-teal-500/10 text-teal-600 dark:text-teal-400">
+                                    <ReceiptText className="h-5 w-5" />
+                                </div>
+                                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
+                                    All Transactions
+                                </h1>
+                            </div>
+                            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 max-w-2xl">
+                                Track, filter, and audit your complete financial records across income and expenses.
+                            </p>
+                        </div>
+
+                        {/* Quick action buttons */}
+                        <div className="flex items-center gap-2.5 self-start md:self-center">
+                            <CreateTransactionDialog
+                                trigger={
+                                    <Button
+                                        size="sm"
+                                        className="h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
+                                        <span>New Income</span>
+                                    </Button>
+                                }
+                                type="income"
+                            />
+                            <CreateTransactionDialog
+                                trigger={
+                                    <Button
+                                        size="sm"
+                                        className="h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm"
+                                    >
+                                        <Plus className="h-4 w-4" />
+                                        <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
+                                        <span>New Expense</span>
+                                    </Button>
+                                }
+                                type="expense"
+                            />
+                        </div>
                     </div>
                 </div>
             </div>
-            <div className="container py-6 px-5">
+
+            {/* Main content table container */}
+            <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
                 <TransactionHistoryTable />
             </div>
-        </>
-    );
+        </div>
+    )
 }

@@ -7,7 +7,7 @@ import { CurrencySettings } from "../../src/generated/prisma/client"
 import { Currencies } from "@/lib/currencies"
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
 import { Badge } from "./ui/badge"
-import { Coins, Sparkles, TrendingUp, TrendingDown, Info } from "lucide-react"
+import { Coins, TrendingUp, TrendingDown, Info } from "lucide-react"
 import SkeletonWrapper from "./SkeletonWrapper"
 import { useMemo } from "react"
 
@@ -91,12 +91,9 @@ export default function CurrencySettingsCard() {
                         <SkeletonWrapper isLoading={currencySettings.isLoading}>
                             <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 space-y-4">
                                 <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                                    <div className="flex items-center gap-2">
-                                        <Sparkles className="h-4 w-4 text-teal-500" />
-                                        <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                            Live Formatting Preview
-                                        </span>
-                                    </div>
+                                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        Live Formatting Preview
+                                    </span>
                                     <span className="text-xs font-mono text-muted-foreground">
                                         Locale: {activeCurrency.locale}
                                     </span>
