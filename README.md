@@ -46,7 +46,7 @@ cd fulusin
 
 3. Install dependencies:
 ```bash
-npm install
+pnpm install
 ```
 
 4. Configure Environment Variable: Copy the file `.env.example` to `.env` and adjust it to your configuration:
@@ -65,7 +65,7 @@ GOOGLE_CLIENT_SECRET=
 
 5. Run development server:
 ```bash
-npm run dev
+pnpm dev
 ```
 
 ## Getting Started with Docker
@@ -104,10 +104,10 @@ Open [http://localhost:3000](http://localhost:3000) to view the application.
 
 ```bash
 # Production build
-npm run build
+pnpm build
 
 # Start production server
-npm start
+pnpm start
 ```
 
 ## This project is open for contributions. Feel free to submit issues or pull requests.
