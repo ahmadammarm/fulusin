@@ -27,7 +27,7 @@ export default function MobileBottomNav() {
     const handleLogout = async () => {
         try {
             setIsLoggingOut(true);
-            await signOut({ callbackUrl: "/sign-in", redirect: true });
+            await signOut({ callbackUrl: "/", redirect: true });
             toast.success("Logged out successfully!");
         } catch {
             toast.error("An error occurred during logout.");

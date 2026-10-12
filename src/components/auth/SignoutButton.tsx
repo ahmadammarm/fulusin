@@ -9,7 +9,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 export default function SignoutButton() {
     const handleSignout = async () => {
         try {
-            await signOut({ redirect: true, callbackUrl: "/sign-in" });
+            await signOut({ redirect: true, callbackUrl: "/" });
             toast.success("Signed out successfully");
         } catch (error: any) {
             toast.error(error.message || "Failed to sign out");

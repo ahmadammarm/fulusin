@@ -13,9 +13,8 @@ import {
     useSidebar,
 } from "@/components/ui/sidebar";
 import { useMutation } from "@tanstack/react-query";
-import { signOut, useSession } from "next-auth/react";
-import { usePathname, useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { signOut } from "next-auth/react";
+import { usePathname } from "next/navigation";
 import { toast } from "sonner";
 import Link from "next/link";
 import Logo from "./Logo";
@@ -34,20 +33,12 @@ import { LayoutDashboard, ReceiptText, Settings2, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DesktopSidebar() {
-    const { status } = useSession();
-    const router = useRouter();
     const pathname = usePathname();
     const { isMobile, setOpenMobile } = useSidebar();
 
-    useEffect(() => {
-        if (status === "unauthenticated") {
-            router.push("/sign-in");
-        }
-    }, [status, router]);
-
     const mutation = useMutation({
         mutationFn: async () => {
-            return await signOut({ callbackUrl: "/sign-in", redirect: true });
+            return await signOut({ callbackUrl: "/", redirect: true });
         },
         onSuccess: () => {
             toast.success("Logged out successfully!");

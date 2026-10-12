@@ -3,8 +3,15 @@ import DashboardTopbar from "@/components/DashboardTopbar";
 import MobileBottomNav from "@/components/MobileBottomNav";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { ReactNode } from "react";
+import { auth } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
-export default function DashboardLayout({ children }: { children: ReactNode }) {
+export default async function DashboardLayout({ children }: { children: ReactNode }) {
+    const session = await auth();
+    if (!session?.user) {
+        redirect("/sign-in");
+    }
+
     return (
         <SidebarProvider>
             <DesktopSidebar />
