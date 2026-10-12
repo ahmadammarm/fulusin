@@ -158,7 +158,7 @@ export default function TransactionHistoryTable() {
         }
     }, [currencyCode])
 
-    const transactions = transactionsQuery.data || []
+    const transactions = useMemo(() => transactionsQuery.data || [], [transactionsQuery.data])
 
     // Calculate Summary KPIs
     const kpiMetrics = useMemo(() => {

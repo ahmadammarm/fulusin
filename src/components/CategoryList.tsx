@@ -32,7 +32,7 @@ export default function CategoryList({ type }: CategoryListProps) {
         queryFn: fetchCategoriesData,
     })
 
-    const allCategories = categoriesData.data || []
+    const allCategories = useMemo(() => categoriesData.data || [], [categoriesData.data])
     const totalCount = allCategories.length
 
     const filteredCategories = useMemo(() => {

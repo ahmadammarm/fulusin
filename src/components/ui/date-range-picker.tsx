@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable max-lines */
 'use client'
 
 import React, { type FC, useState, useEffect, useRef, JSX } from 'react'
@@ -246,7 +245,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
             onUpdate?.({ range: newRange, rangeCompare: newRangeCompare })
         }
 
-        const checkPreset = (): void => {
+        useEffect(() => {
             for (const preset of PRESETS) {
                 const presetRange = getPresetRange(preset.name)
 
@@ -272,7 +271,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
             }
 
             setSelectedPreset(undefined)
-        }
+        }, [range])
 
         const resetValues = (): void => {
             if (openedRangeRef.current) {
@@ -296,10 +295,6 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                 setRangeCompare(openedRangeCompareRef.current)
             }
         }
-
-        useEffect(() => {
-            checkPreset()
-        }, [range])
 
         const PresetButton = ({
             preset,
@@ -326,24 +321,12 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
             </Button>
         )
 
-        // Helper function to check if two date ranges are equal
-        const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
-            if (!a && !b) return true
-            if (!a || !b) return false
-            const aTo = a.to ?? a.from
-            const bTo = b.to ?? b.from
-            return (
-                a.from.getTime() === b.from.getTime() &&
-                aTo.getTime() === bTo.getTime()
-            )
-        }
-
         useEffect(() => {
             if (isOpen) {
                 openedRangeRef.current = range
                 openedRangeCompareRef.current = rangeCompare
             }
-        }, [isOpen])
+        }, [isOpen, range, rangeCompare])
 
         return (
             <Popover

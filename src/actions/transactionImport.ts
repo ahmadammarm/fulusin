@@ -83,7 +83,7 @@ export async function BulkCreateTransactionsAction(transactions: CreateTransacti
 
     // 4. Execute transaction
     try {
-        await prisma.$transaction(async (tx: any) => {
+        await prisma.$transaction(async (tx) => {
             // Acquire transaction advisory lock per user to serialize concurrent operations
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
 

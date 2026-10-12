@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use server"
 
 import { auth } from "@/lib/auth";

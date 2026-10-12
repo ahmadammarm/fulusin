@@ -1,7 +1,7 @@
 "use client"
 
 import { Badge } from "@/components/ui/badge"
-import { BarChart3, CalendarClock, CheckCircle2, FileSpreadsheet, Layers, ReceiptText, Search, TrendingUp, UploadCloud } from "lucide-react"
+import { BarChart3, CalendarClock, CheckCircle2, FileSpreadsheet, Layers, ReceiptText, Search, UploadCloud } from "lucide-react"
 
 export default function Features() {
     return (

@@ -37,7 +37,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
         throw new Error("Category not found");
     }
 
-    return await prisma.$transaction(async (tx: any) => {
+    return await prisma.$transaction(async (tx) => {
         // 1. Acquire transaction advisory lock per user to serialize concurrent requests and eliminate race conditions
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
 

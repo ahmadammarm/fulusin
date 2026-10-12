@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { SigninSchema, SigninSchemaType } from "@/schemas/signinSchema";
@@ -16,7 +15,7 @@ import Link from "next/link";
 
 export default function SigninForm() {
 
-    const { data: session, status } = useSession();
+    const { status } = useSession();
     const router = useRouter();
     const [isGoogleLoading, setIsGoogleLoading] = useState(false);
 
