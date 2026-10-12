@@ -4,7 +4,7 @@ import OverviewSection from "@/components/OverviewSection";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { ArrowDownLeft, ArrowUpRight, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import { redirect } from "next/navigation";
 
 export default async function DashboardPage() {
@@ -49,7 +49,6 @@ export default async function DashboardPage() {
                                         className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
                                         <span>New Income</span>
                                     </Button>
                                 }
@@ -63,7 +62,6 @@ export default async function DashboardPage() {
                                         className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
                                         <span>New Expense</span>
                                     </Button>
                                 }

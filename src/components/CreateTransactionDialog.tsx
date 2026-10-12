@@ -23,7 +23,7 @@ import CategoryPicker from "./CategoryPicker";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Button } from "./ui/button";
 import { format } from "date-fns";
-import { ArrowDownLeft, ArrowUpRight, CalendarIcon, Loader2 } from "lucide-react";
+import { CalendarIcon, Loader2 } from "lucide-react";
 import { Calendar } from "./ui/calendar";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { CreateTransactionAction } from "@/actions/transactions";
@@ -117,26 +117,10 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>{trigger}</DialogTrigger>
             <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-lg rounded-2xl border-border/80 bg-card p-5 sm:p-6 shadow-xl max-h-[92vh] overflow-y-auto">
-                <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-4">
-                    <div className="flex items-center gap-2.5 min-w-0 pr-8">
-                        <div
-                            className={cn(
-                                "flex h-9 w-9 items-center justify-center rounded-xl border shrink-0",
-                                isIncome
-                                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400"
-                                    : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400"
-                            )}
-                        >
-                            {isIncome ? (
-                                <ArrowDownLeft className="h-4 w-4" />
-                            ) : (
-                                <ArrowUpRight className="h-4 w-4" />
-                            )}
-                        </div>
-                        <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">
-                            {isIncome ? "New Income" : "New Expense"}
-                        </DialogTitle>
-                    </div>
+                <DialogHeader className="space-y-1.5 text-left border-b border-border/60 pb-4 pr-8">
+                    <DialogTitle className="text-lg sm:text-xl font-bold tracking-tight text-foreground truncate">
+                        {isIncome ? "New Income" : "New Expense"}
+                    </DialogTitle>
                     <DialogDescription className="text-xs sm:text-sm text-muted-foreground">
                         {isIncome
                             ? "Record incoming cash flow, salary, freelance, or investment payout."

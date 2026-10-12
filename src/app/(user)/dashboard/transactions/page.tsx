@@ -3,7 +3,7 @@
 import TransactionHistoryTable from "@/components/TransactionHistoryTable";
 import CreateTransactionDialog from "@/components/CreateTransactionDialog";
 import { Button } from "@/components/ui/button";
-import { ArrowDownLeft, ArrowUpRight, Plus, ReceiptText } from "lucide-react";
+import { Plus, ReceiptText } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { CurrencySettings } from "@/generated/prisma/client";
 
@@ -48,7 +48,6 @@ export default function TransactionHistoryPage() {
                                         className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        <ArrowDownLeft className="h-3.5 w-3.5 opacity-80" />
                                         <span>New Income</span>
                                     </Button>
                                 }
@@ -62,7 +61,6 @@ export default function TransactionHistoryPage() {
                                         className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
                                     >
                                         <Plus className="h-4 w-4" />
-                                        <ArrowUpRight className="h-3.5 w-3.5 opacity-80" />
                                         <span>New Expense</span>
                                     </Button>
                                 }
