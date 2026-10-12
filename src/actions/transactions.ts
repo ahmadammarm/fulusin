@@ -21,8 +21,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     const { amount, category, date, description, type } = parsedBody.data;
     const normalizedDescription = description?.trim() || "";
 
-    const transactionDate = new Date(date);
-    const { day, month, year } = getNormalizedHistoryDate(transactionDate);
+    const { day, month, year, normalizedDate } = getNormalizedHistoryDate(date);
 
     const categoryRow = await prisma.category.findUnique({
         where: {
@@ -50,7 +49,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 amount,
                 type,
                 category: categoryRow.name,
-                date: transactionDate,
+                date: normalizedDate,
                 OR: [
                     { description: normalizedDescription },
                     ...(normalizedDescription === "" ? [{ description: null }] : []),
@@ -92,7 +91,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
             data: {
                 userId: user.id,
                 amount,
-                date: transactionDate,
+                date: normalizedDate,
                 description: normalizedDescription,
                 type,
                 category: categoryRow.name,

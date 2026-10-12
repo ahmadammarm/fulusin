@@ -54,13 +54,12 @@ export async function BulkCreateTransactionsAction(transactions: CreateTransacti
             return { success: false, error: `Category '${t.category}' (type: ${t.type}) not found. Please create it first.` };
         }
 
-        const transactionDate = new Date(t.date);
-        const { day, month, year } = getNormalizedHistoryDate(transactionDate);
+        const { day, month, year, normalizedDate } = getNormalizedHistoryDate(t.date);
 
         transactionsToInsert.push({
             userId: user.id,
             amount: t.amount,
-            date: transactionDate,
+            date: normalizedDate,
             description: t.description || "",
             type: t.type,
             category: categoryRow.name,

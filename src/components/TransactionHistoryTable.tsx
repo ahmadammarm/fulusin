@@ -19,6 +19,7 @@ import { GetTransactionHistoryResponse } from "@/app/api/transaction-history/rou
 import { CurrencySettings } from "../../src/generated/prisma/client"
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
 import { format } from "date-fns"
+import { formatWibDate } from "@/lib/dateHelper"
 import {
     ArrowDownLeft,
     ArrowUpRight,
@@ -266,8 +267,7 @@ export default function TransactionHistoryTable() {
                     <DataTableColumnHeader column={column} title="Date" />
                 ),
                 cell: ({ row }) => {
-                    const parsedDate = new Date(row.original.date)
-                    const formattedDisplayDate = format(parsedDate, "yyyy-MM-dd")
+                    const formattedDisplayDate = formatWibDate(row.original.date, "yyyy-MM-dd")
                     return (
                         <span className="text-xs font-mono text-muted-foreground whitespace-nowrap">
                             {formattedDisplayDate}
@@ -389,7 +389,7 @@ export default function TransactionHistoryTable() {
     // CSV Export Handler
     const handleExportCsv = () => {
         const rowsToExport = table.getFilteredRowModel().rows.map((row) => ({
-            Date: format(new Date(row.original.date), "yyyy-MM-dd"),
+            Date: formatWibDate(row.original.date, "yyyy-MM-dd"),
             Category: row.original.category,
             Type: row.original.type,
             Amount: row.original.amount,

@@ -124,6 +124,22 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
         const [selectedPreset, setSelectedPreset] = useState<string | undefined>(undefined)
 
+        useEffect(() => {
+            const newFrom = getDateAdjustedForTimezone(initialDateFrom)
+            const newTo = initialDateTo
+                ? getDateAdjustedForTimezone(initialDateTo)
+                : getDateAdjustedForTimezone(initialDateFrom)
+
+            setRange((prev) => {
+                const prevFrom = prev.from?.getTime()
+                const prevTo = (prev.to ?? prev.from)?.getTime()
+                if (prevFrom === newFrom.getTime() && prevTo === newTo.getTime()) {
+                    return prev
+                }
+                return { from: newFrom, to: newTo }
+            })
+        }, [initialDateFrom, initialDateTo])
+
         const [isSmallScreen, setIsSmallScreen] = useState(
             typeof window !== 'undefined' ? window.innerWidth < 960 : false
         )
@@ -144,8 +160,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
         const getPresetRange = (presetName: string): DateRange => {
             const preset = PRESETS.find(({ name }) => name === presetName)
             if (!preset) throw new Error(`Unknown date range preset: ${presetName}`)
-            const from = new Date()
-            const to = new Date()
+            let from = new Date()
+            let to = new Date()
             const first = from.getDate() - from.getDay()
 
             switch (preset.name) {
@@ -185,43 +201,49 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                     from.setHours(0, 0, 0, 0)
                     to.setHours(23, 59, 59, 999)
                     break
-                case 'thisMonth':
-                    from.setDate(1)
-                    from.setHours(0, 0, 0, 0)
-                    to.setHours(23, 59, 59, 999)
+                case 'thisMonth': {
+                    const today = new Date()
+                    from = new Date(today.getFullYear(), today.getMonth(), 1, 0, 0, 0, 0)
+                    to = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999)
                     break
-                case 'lastMonth':
-                    from.setMonth(from.getMonth() - 1)
-                    from.setDate(1)
-                    from.setHours(0, 0, 0, 0)
-                    to.setDate(0)
-                    to.setHours(23, 59, 59, 999)
+                }
+                case 'lastMonth': {
+                    const today = new Date()
+                    from = new Date(today.getFullYear(), today.getMonth() - 1, 1, 0, 0, 0, 0)
+                    to = new Date(today.getFullYear(), today.getMonth(), 0, 23, 59, 59, 999)
                     break
+                }
             }
 
             return { from, to }
         }
 
         const setPreset = (preset: string): void => {
-            const range = getPresetRange(preset)
-            setRange(range)
+            const newRange = getPresetRange(preset)
+            setRange(newRange)
+            setSelectedPreset(preset)
+            let newRangeCompare: DateRange | undefined = undefined
             if (rangeCompare) {
-                const rangeCompare = {
+                newRangeCompare = {
                     from: new Date(
-                        range.from.getFullYear() - 1,
-                        range.from.getMonth(),
-                        range.from.getDate()
+                        newRange.from.getFullYear() - 1,
+                        newRange.from.getMonth(),
+                        newRange.from.getDate()
                     ),
-                    to: range.to
+                    to: newRange.to
                         ? new Date(
-                            range.to.getFullYear() - 1,
-                            range.to.getMonth(),
-                            range.to.getDate()
+                            newRange.to.getFullYear() - 1,
+                            newRange.to.getMonth(),
+                            newRange.to.getDate()
                         )
                         : undefined
                 }
-                setRangeCompare(rangeCompare)
+                setRangeCompare(newRangeCompare)
             }
+            openedRangeRef.current = newRange
+            openedRangeCompareRef.current = newRangeCompare
+            setIsOpen(false)
+            onUpdate?.({ range: newRange, rangeCompare: newRangeCompare })
         }
 
         const checkPreset = (): void => {
@@ -253,36 +275,26 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
         }
 
         const resetValues = (): void => {
-            setRange({
-                from:
-                    typeof initialDateFrom === 'string'
-                        ? getDateAdjustedForTimezone(initialDateFrom)
-                        : initialDateFrom,
-                to: initialDateTo
-                    ? typeof initialDateTo === 'string'
-                        ? getDateAdjustedForTimezone(initialDateTo)
-                        : initialDateTo
-                    : typeof initialDateFrom === 'string'
-                        ? getDateAdjustedForTimezone(initialDateFrom)
-                        : initialDateFrom
-            })
-            setRangeCompare(
-                initialCompareFrom
-                    ? {
-                        from:
-                            typeof initialCompareFrom === 'string'
-                                ? getDateAdjustedForTimezone(initialCompareFrom)
-                                : initialCompareFrom,
-                        to: initialCompareTo
-                            ? typeof initialCompareTo === 'string'
-                                ? getDateAdjustedForTimezone(initialCompareTo)
-                                : initialCompareTo
-                            : typeof initialCompareFrom === 'string'
-                                ? getDateAdjustedForTimezone(initialCompareFrom)
-                                : initialCompareFrom
-                    }
-                    : undefined
-            )
+            if (openedRangeRef.current) {
+                setRange(openedRangeRef.current)
+            } else {
+                setRange({
+                    from:
+                        typeof initialDateFrom === 'string'
+                            ? getDateAdjustedForTimezone(initialDateFrom)
+                            : initialDateFrom,
+                    to: initialDateTo
+                        ? typeof initialDateTo === 'string'
+                            ? getDateAdjustedForTimezone(initialDateTo)
+                            : initialDateTo
+                        : typeof initialDateFrom === 'string'
+                            ? getDateAdjustedForTimezone(initialDateFrom)
+                            : initialDateFrom
+                })
+            }
+            if (openedRangeCompareRef.current !== undefined) {
+                setRangeCompare(openedRangeCompareRef.current)
+            }
         }
 
         useEffect(() => {
@@ -316,10 +328,13 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
 
         // Helper function to check if two date ranges are equal
         const areRangesEqual = (a?: DateRange, b?: DateRange): boolean => {
-            if (!a || !b) return a === b // If either is undefined, return true if both are undefined
+            if (!a && !b) return true
+            if (!a || !b) return false
+            const aTo = a.to ?? a.from
+            const bTo = b.to ?? b.from
             return (
                 a.from.getTime() === b.from.getTime() &&
-                (!a.to || !b.to || a.to.getTime() === b.to.getTime())
+                aTo.getTime() === bTo.getTime()
             )
         }
 
@@ -337,6 +352,9 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                 onOpenChange={(open: boolean) => {
                     if (!open) {
                         resetValues()
+                    } else {
+                        openedRangeRef.current = range
+                        openedRangeCompareRef.current = rangeCompare
                     }
                     setIsOpen(open)
                 }}
@@ -505,18 +523,12 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                                         mode="range"
                                         onSelect={(value: { from?: Date, to?: Date } | undefined) => {
                                             if (value?.from != null) {
-                                                setRange({ from: value.from, to: value?.to })
+                                                setRange({ from: value.from, to: value.to })
                                             }
                                         }}
                                         selected={range}
                                         numberOfMonths={isSmallScreen ? 1 : 2}
-                                        defaultMonth={
-                                            new Date(
-                                                new Date().setMonth(
-                                                    new Date().getMonth() - (isSmallScreen ? 0 : 1)
-                                                )
-                                            )
-                                        }
+                                        defaultMonth={range.from}
                                     />
                                 </div>
                             </div>
@@ -539,8 +551,8 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                     <div className="flex justify-end gap-2 py-2 pr-4">
                         <Button
                             onClick={() => {
-                                setIsOpen(false)
                                 resetValues()
+                                setIsOpen(false)
                             }}
                             variant="ghost"
                         >
@@ -548,13 +560,15 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                         </Button>
                         <Button
                             onClick={() => {
-                                setIsOpen(false)
-                                if (
-                                    !areRangesEqual(range, openedRangeRef.current) ||
-                                    !areRangesEqual(rangeCompare, openedRangeCompareRef.current)
-                                ) {
-                                    onUpdate?.({ range, rangeCompare })
+                                const effectiveRange: DateRange = {
+                                    from: range.from,
+                                    to: range.to ?? range.from,
                                 }
+                                openedRangeRef.current = effectiveRange
+                                openedRangeCompareRef.current = rangeCompare
+                                setRange(effectiveRange)
+                                setIsOpen(false)
+                                onUpdate?.({ range: effectiveRange, rangeCompare })
                             }}
                         >
                             Update

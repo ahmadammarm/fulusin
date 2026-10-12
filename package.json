@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "history:resync": "npx tsx scripts/resyncHistory.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.10.0",
@@ -41,6 +42,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dotenv": "^17.2.3",
     "export-to-csv": "^1.4.0",
     "lucide-react": "^0.525.0",
@@ -66,7 +68,6 @@
     "@types/papaparse": "^5.5.2",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "date-fns-tz": "^3.2.0",
     "eslint": "^9",
     "eslint-config-next": "15.4.1",
     "prisma": "^7.2.0",

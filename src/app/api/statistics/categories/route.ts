@@ -2,6 +2,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
+import { getWibDateRange } from "@/lib/dateHelper";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -39,13 +40,15 @@ export async function GET(request: NextRequest) {
 export type GetCategoriesStatisticsResponseType = Awaited<ReturnType<typeof getCategoriesStatistics>>;
 
 async function getCategoriesStatistics(userId: string, from: Date, to: Date) {
+    const { start, end } = getWibDateRange(from, to);
+
     const statistics = await prisma.transaction.groupBy({
         by: ["type", "category", "categoryIcon"],
         where: {
             userId,
             date: {
-                gte: new Date(from),
-                lte: new Date(to),
+                gte: start,
+                lte: end,
             },
         },
         _sum: {
@@ -58,5 +61,5 @@ async function getCategoriesStatistics(userId: string, from: Date, to: Date) {
         }
     });
 
-    return statistics
+    return statistics;
 }

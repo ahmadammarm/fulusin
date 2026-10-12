@@ -36,15 +36,17 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                         initialDateTo={dateRange.to}
                         showCompare={false}
                         onUpdate={(values) => {
-                            const { from, to } = values.range;
+                            const from = values.range.from;
+                            const to = values.range.to ?? from;
                             if (!from || !to) return;
-                            if (differenceInDays(to, from) > MAX_DATE_RANGE_DAYS) {
+                            const [start, end] = from > to ? [to, from] : [from, to];
+                            if (differenceInDays(end, start) > MAX_DATE_RANGE_DAYS) {
                                 toast.error(
                                     `The selected date range is too big. Max allowed is ${MAX_DATE_RANGE_DAYS} days.`
                                 );
                                 return;
                             }
-                            setDateRange({ from, to });
+                            setDateRange({ from: start, to: end });
                         }}
                     />
                 </div>

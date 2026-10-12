@@ -2,9 +2,9 @@
 "use client";
 
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
-import { DatetoUTCDate } from "@/lib/dateHelper";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
+import { formatWibDate } from "@/lib/dateHelper";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { TransactionType } from "@/lib/types";
 import { GetCategoriesStatisticsResponseType } from "@/app/api/statistics/categories/route";
@@ -25,11 +25,15 @@ export default function CategoriesStatistics({
     from,
     to,
 }: CategoriesStatisticsProps) {
+    const fromStr = useMemo(() => formatWibDate(from, "yyyy-MM-dd"), [from]);
+    const toStr = useMemo(() => formatWibDate(to, "yyyy-MM-dd"), [to]);
+
     const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
-        queryKey: ["overview", "statistics", "categories", from.toISOString(), to.toISOString()],
+        queryKey: ["overview", "statistics", "categories", fromStr, toStr],
         queryFn: async () => {
             const response = await fetch(
-                `/api/statistics/categories?from=${DatetoUTCDate(from)}&to=${DatetoUTCDate(to)}`
+                `/api/statistics/categories?from=${fromStr}&to=${toStr}`,
+                { cache: "no-store" }
             );
             if (!response.ok) {
                 throw new Error("Failed to fetch categories statistics");

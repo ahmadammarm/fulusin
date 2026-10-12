@@ -44,7 +44,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ### Timezone Normalization
 - All daily and monthly aggregation points use `Asia/Jakarta` (WIB) as the reference timezone.
-- Use `date-fns-tz` to normalize dates: `fromZonedTime(startOfDay(transactionDate), "Asia/Jakarta")` before extracting UTC day, month, and year values for historical records.
+- Use `getNormalizedHistoryDate(date)` and `getWibDateRange(from, to)` from `src/lib/dateHelper.ts` to normalize dates and compute strict WIB calendar day boundaries.
 
 ### Authentication & Wizard Flow
 - NextAuth configuration resides in `src/lib/auth.ts` and `src/app/api/auth/[...nextauth]/route.ts`.

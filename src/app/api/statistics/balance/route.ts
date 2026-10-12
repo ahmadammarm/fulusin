@@ -2,6 +2,7 @@
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
+import { getWibDateRange } from "@/lib/dateHelper";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -47,11 +48,7 @@ export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>
 
 async function getBalanceStatistics(userId: string, from: Date, to: Date) {
     try {
-        const start = new Date(from);
-        start.setHours(0, 0, 0, 0);
-
-        const end = new Date(to);
-        end.setHours(23, 59, 59, 999);
+        const { start, end } = getWibDateRange(from, to);
 
         const total = await prisma.transaction.groupBy({
             by: ["type"],

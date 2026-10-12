@@ -7,6 +7,7 @@ import { useMemo, useState } from "react";
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
 import SkeletonWrapper from "./SkeletonWrapper";
 import { Eye, EyeOff, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { formatWibDate } from "@/lib/dateHelper";
 import StatisticsCardItem from "./StatisticsCardItem";
 import { Button } from "./ui/button";
 
@@ -16,18 +17,17 @@ interface StatisticCardProps {
     currencySettings: CurrencySettings;
 }
 
-function formatDate(date: Date) {
-    return date.toLocaleDateString("en-CA");
-}
-
 export default function StatisticsCard({ from, to, currencySettings }: StatisticCardProps) {
     const [isShow, setIsShow] = useState<boolean>(true);
 
+    const fromStr = useMemo(() => formatWibDate(from, "yyyy-MM-dd"), [from]);
+    const toStr = useMemo(() => formatWibDate(to, "yyyy-MM-dd"), [to]);
+
     const statsQuery = useQuery<BalanceStatistics>({
-        queryKey: ["overview", "statistics", from, to],
+        queryKey: ["overview", "statistics", fromStr, toStr],
         queryFn: async () => {
             const response = await fetch(
-                `/api/statistics/balance?from=${formatDate(from)}&to=${formatDate(to)}`,
+                `/api/statistics/balance?from=${fromStr}&to=${toStr}`,
                 { cache: "no-store" }
             );
             if (!response.ok) {
