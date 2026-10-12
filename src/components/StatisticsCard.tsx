@@ -85,7 +85,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                     <StatisticsCardItem
                         formatter={formatter}
                         title="Total Income"
-                        value={isShow ? income : 0}
+                        value={income}
                         isHidden={!isShow}
                         icon={
                             <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
@@ -102,7 +102,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                     <StatisticsCardItem
                         formatter={formatter}
                         title="Total Expense"
-                        value={isShow ? expense : 0}
+                        value={expense}
                         isHidden={!isShow}
                         icon={
                             <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400">
@@ -119,7 +119,7 @@ export default function StatisticsCard({ from, to, currencySettings }: Statistic
                     <StatisticsCardItem
                         formatter={formatter}
                         title="Net Balance"
-                        value={isShow ? balance : 0}
+                        value={balance}
                         isHidden={!isShow}
                         icon={
                             <div className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/20 text-teal-600 dark:text-teal-400">

@@ -1,6 +1,6 @@
 "use client"
 
-import { ReactNode, useCallback } from "react";
+import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Card } from "./ui/card";
 import CountUp from "react-countup";
 import { cn } from "@/lib/utils";
@@ -26,6 +26,22 @@ export default function StatisticsCardItem({
     cardBorderClass,
     subtitle,
 }: StatisticCardItemProps) {
+    const [hasCounted, setHasCounted] = useState(false);
+    const prevValueRef = useRef(value);
+
+    useEffect(() => {
+        if (prevValueRef.current !== value) {
+            prevValueRef.current = value;
+            setHasCounted(false);
+        }
+    }, [value]);
+
+    useEffect(() => {
+        if (isHidden) {
+            setHasCounted(true);
+        }
+    }, [isHidden]);
+
     const formatFunction = useCallback(
         (val: number) => {
             return formatter.format(val);
@@ -56,6 +72,8 @@ export default function StatisticsCardItem({
                     >
                         {isHidden ? (
                             "••••••••"
+                        ) : hasCounted ? (
+                            formatter.format(value)
                         ) : (
                             <CountUp
                                 start={0}
@@ -63,6 +81,7 @@ export default function StatisticsCardItem({
                                 duration={1.2}
                                 separator=","
                                 formattingFn={formatFunction}
+                                onEnd={() => setHasCounted(true)}
                             />
                         )}
                     </h3>
