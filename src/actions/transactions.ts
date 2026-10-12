@@ -23,10 +23,13 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     const transactionDate = new Date(date);
     const { day, month, year } = getNormalizedHistoryDate(transactionDate);
 
-    const categoryRow = await prisma.category.findFirst({
+    const categoryRow = await prisma.category.findUnique({
         where: {
-            userId: user.id,
-            name: category,
+            userId_name_type: {
+                userId: user.id,
+                name: category,
+                type,
+            },
         },
     });
 

@@ -72,11 +72,17 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
 
     const { mutate, isPending } = useMutation({
         mutationFn: CreateTransactionAction,
+        onMutate: () => {
+            toast.loading("Recording transaction...", {
+                id: "create-transaction",
+            });
+            setOpen(false);
+        },
         onSuccess: () => {
             toast.success(
-                `${isIncome ? "Income" : "Expense"} transaction created successfully!`,
+                `${isIncome ? "Income" : "Expense"} transaction recorded!`,
                 {
-                    id: "create-transaction-success",
+                    id: "create-transaction",
                 }
             );
 
@@ -96,12 +102,10 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
             queryClient.invalidateQueries({
                 queryKey: ["transactionHistory"],
             });
-
-            setOpen(false);
         },
         onError: (error: Error) => {
             toast.error(`Failed to record transaction: ${error.message}`, {
-                id: "create-transaction-error",
+                id: "create-transaction",
             });
         },
     });

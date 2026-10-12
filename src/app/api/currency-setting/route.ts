@@ -15,21 +15,14 @@ export async function GET(request: NextRequest) {
             redirect("/sign-in");
         }
 
-        const currencySetting = await prisma.currencySettings.upsert({
+        const currencySetting = await prisma.currencySettings.findUnique({
             where: {
                 userId: user.id,
             },
-            update: {},
-            create: {
-                userId: user.id,
-                currency: "USD",
-            },
         });
 
-        revalidatePath("/");
-
         return NextResponse.json({
-            currency: currencySetting.currency,
+            currency: currencySetting?.currency || "USD",
         });
     } catch (error: any) {
         return NextResponse.json({

@@ -99,6 +99,9 @@ model Transaction {
 
     user        User     @relation(fields: [userId], references: [id])
     categoryRel Category @relation("CategoryTransactions", fields: [userId, category, type], references: [userId, name, type])
+
+    @@index([userId, date])
+    @@index([userId, type, date])
 }
 
 model MonthHistory {
