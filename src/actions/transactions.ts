@@ -19,6 +19,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     }
 
     const { amount, category, date, description, type } = parsedBody.data;
+    const normalizedDescription = description?.trim() || "";
 
     const transactionDate = new Date(date);
     const { day, month, year } = getNormalizedHistoryDate(transactionDate);
@@ -37,20 +38,70 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
         throw new Error("Category not found");
     }
 
-    await prisma.$transaction([
-        prisma.transaction.create({
+    return await prisma.$transaction(async (tx: any) => {
+        // 1. Acquire transaction advisory lock per user to serialize concurrent requests and eliminate race conditions
+        await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
+
+        // 2. Prevent duplicate submissions within the 10-second deduplication window
+        const tenSecondsAgo = new Date(Date.now() - 10 * 1000);
+        const duplicateTransaction = await tx.transaction.findFirst({
+            where: {
+                userId: user.id,
+                amount,
+                type,
+                category: categoryRow.name,
+                date: transactionDate,
+                OR: [
+                    { description: normalizedDescription },
+                    ...(normalizedDescription === "" ? [{ description: null }] : []),
+                ],
+                createdAt: {
+                    gte: tenSecondsAgo,
+                },
+            },
+        });
+
+        if (duplicateTransaction) {
+            throw new Error(
+                "Duplicate transaction detected. Please wait a few seconds before recording an identical transaction."
+            );
+        }
+
+        // 3. Balance verification and overdraft tracking
+        if (type === "expense") {
+            const historySums = await tx.yearHistory.aggregate({
+                where: { userId: user.id },
+                _sum: {
+                    income: true,
+                    expense: true,
+                },
+            });
+            const totalIncome = historySums._sum.income || 0;
+            const totalExpense = historySums._sum.expense || 0;
+            const availableBalance = totalIncome - totalExpense;
+
+            if (availableBalance < amount) {
+                console.warn(
+                    `[Overdraft Note] User ${user.id} recorded expense of ${amount} with available balance of ${availableBalance}. Balance is negative.`
+                );
+            }
+        }
+
+        // 4. Create transaction
+        const newTransaction = await tx.transaction.create({
             data: {
                 userId: user.id,
                 amount,
                 date: transactionDate,
-                description: description || "",
+                description: normalizedDescription,
                 type,
                 category: categoryRow.name,
                 categoryIcon: categoryRow.icon,
             },
-        }),
+        });
 
-        prisma.monthHistory.upsert({
+        // 5. Atomically upsert MonthHistory
+        await tx.monthHistory.upsert({
             where: {
                 userId_day_month_year: {
                     userId: user.id,
@@ -75,9 +126,10 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                     increment: type === "income" ? amount : 0,
                 },
             },
-        }),
+        });
 
-        prisma.yearHistory.upsert({
+        // 6. Atomically upsert YearHistory
+        await tx.yearHistory.upsert({
             where: {
                 userId_month_year: {
                     userId: user.id,
@@ -100,6 +152,8 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                     increment: type === "income" ? amount : 0,
                 },
             },
-        }),
-    ]);
+        });
+
+        return newTransaction;
+    });
 }

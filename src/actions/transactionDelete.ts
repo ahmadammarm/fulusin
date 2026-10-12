@@ -26,6 +26,9 @@ export async function TransactionDelete(id: string) {
         const { day, month, year } = getNormalizedHistoryDate(transaction.date)
 
         await prisma.$transaction(async (tx: any) => {
+            // Acquire transaction advisory lock per user to serialize concurrent operations
+            await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
+
             // 1. Delete the transaction record
             await tx.transaction.delete({
                 where: { id },

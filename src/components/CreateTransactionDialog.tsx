@@ -2,7 +2,7 @@
 "use client";
 
 import { TransactionType } from "@/lib/types";
-import { ReactNode, useCallback, useMemo, useState } from "react";
+import { ReactNode, useCallback, useMemo, useRef, useState } from "react";
 import {
     Dialog,
     DialogClose,
@@ -69,16 +69,19 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
     );
 
     const queryClient = useQueryClient();
+    const isSubmittingRef = useRef(false);
 
     const { mutate, isPending } = useMutation({
         mutationFn: CreateTransactionAction,
         onMutate: () => {
+            isSubmittingRef.current = true;
             toast.loading("Recording transaction...", {
                 id: "create-transaction",
             });
             setOpen(false);
         },
         onSuccess: () => {
+            isSubmittingRef.current = false;
             toast.success(
                 `${isIncome ? "Income" : "Expense"} transaction recorded!`,
                 {
@@ -104,6 +107,7 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
             });
         },
         onError: (error: Error) => {
+            isSubmittingRef.current = false;
             toast.error(`Failed to record transaction: ${error.message}`, {
                 id: "create-transaction",
             });
@@ -112,9 +116,11 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
 
     const onSubmit = useCallback(
         (data: CreateTransactionSchemaType) => {
+            if (isPending || isSubmittingRef.current) return;
+            isSubmittingRef.current = true;
             mutate(data);
         },
-        [mutate]
+        [mutate, isPending]
     );
 
     return (
