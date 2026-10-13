@@ -8,9 +8,8 @@ import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
 import HistoryPeriodSelector from "./HistoryPeriodSelector";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { GetHistoryDataResponseType } from "@/app/api/history-data/route";
-import SkeletonWrapper from "./SkeletonWrapper";
 import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import CustomTooltip from "./CustomTooltip";
 import { BarChart3 } from "lucide-react";
@@ -31,12 +30,11 @@ export default function HistorySection({
         return GetFormatterForCurrency(currencySettings.currency);
     }, [currencySettings.currency]);
 
-    const historyData = useQuery<GetHistoryDataResponseType>({
+    const { data } = useSuspenseQuery<GetHistoryDataResponseType>({
         queryKey: ["overview", "history", timeframe, period.month, period.year],
         queryFn: async () => {
             const res = await fetch(
-                `/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`,
-                { cache: "no-store" }
+                `/api/history-data?timeframe=${timeframe}&month=${period.month}&year=${period.year}`
             );
 
             if (!res.ok) {
@@ -45,18 +43,16 @@ export default function HistorySection({
 
             return res.json();
         },
-        staleTime: 1000 * 60,
-        refetchOnWindowFocus: false,
     });
 
     const dataAvailable = useMemo(() => {
-        return historyData.data?.some((d) => d.income > 0 || d.expense > 0);
-    }, [historyData.data]);
+        return data?.some((d) => d.income > 0 || d.expense > 0);
+    }, [data]);
 
     const chartData = useMemo(() => {
-        if (!historyData.data) return [];
+        if (!data) return [];
 
-        return historyData.data.map((item: any) => ({
+        return data.map((item: any) => ({
             ...item,
             label:
                 timeframe === "year"
@@ -65,7 +61,7 @@ export default function HistorySection({
                       })
                     : item.day?.toString().padStart(2, "0"),
         }));
-    }, [historyData.data, timeframe]);
+    }, [data, timeframe]);
 
     useEffect(() => {
         setPeriod({
@@ -117,99 +113,97 @@ export default function HistorySection({
                 </CardHeader>
 
                 <CardContent className="p-4 sm:p-6">
-                    <SkeletonWrapper isLoading={historyData.isFetching}>
-                        {dataAvailable ? (
-                            <div className="w-full h-[280px] sm:h-[320px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                        data={chartData}
-                                        barCategoryGap={10}
-                                        barGap={3}
-                                        margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
-                                    >
-                                        <defs>
-                                            <linearGradient
-                                                id="incomeBar"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
-                                                <stop offset="100%" stopColor="#10b981" stopOpacity={0.15} />
-                                            </linearGradient>
-                                            <linearGradient
-                                                id="expenseBar"
-                                                x1="0"
-                                                y1="0"
-                                                x2="0"
-                                                y2="1"
-                                            >
-                                                <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9} />
-                                                <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.15} />
-                                            </linearGradient>
-                                        </defs>
+                    {dataAvailable ? (
+                        <div className="w-full h-[280px] sm:h-[320px]">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <BarChart
+                                    data={chartData}
+                                    barCategoryGap={10}
+                                    barGap={3}
+                                    margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                                >
+                                    <defs>
+                                        <linearGradient
+                                            id="incomeBar"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop offset="0%" stopColor="#10b981" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#10b981" stopOpacity={0.15} />
+                                        </linearGradient>
+                                        <linearGradient
+                                            id="expenseBar"
+                                            x1="0"
+                                            y1="0"
+                                            x2="0"
+                                            y2="1"
+                                        >
+                                            <stop offset="0%" stopColor="#f43f5e" stopOpacity={0.9} />
+                                            <stop offset="100%" stopColor="#f43f5e" stopOpacity={0.15} />
+                                        </linearGradient>
+                                    </defs>
 
-                                        <CartesianGrid
-                                            strokeDasharray="4 4"
-                                            strokeOpacity={0.2}
-                                            vertical={false}
-                                        />
+                                    <CartesianGrid
+                                        strokeDasharray="4 4"
+                                        strokeOpacity={0.2}
+                                        vertical={false}
+                                    />
 
-                                        <XAxis
-                                            stroke="#888888"
-                                            fontSize={11}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            padding={{ left: 10, right: 10 }}
-                                            dataKey="label"
-                                            dy={4}
-                                        />
+                                    <XAxis
+                                        stroke="#888888"
+                                        fontSize={11}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        padding={{ left: 10, right: 10 }}
+                                        dataKey="label"
+                                        dy={4}
+                                    />
 
-                                        <YAxis
-                                            stroke="#888888"
-                                            fontSize={11}
-                                            tickLine={false}
-                                            axisLine={false}
-                                            dx={-4}
-                                        />
+                                    <YAxis
+                                        stroke="#888888"
+                                        fontSize={11}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        dx={-4}
+                                    />
 
-                                        <Bar
-                                            dataKey="income"
-                                            fill="url(#incomeBar)"
-                                            radius={[4, 4, 0, 0]}
-                                            maxBarSize={36}
-                                        />
-                                        <Bar
-                                            dataKey="expense"
-                                            fill="url(#expenseBar)"
-                                            radius={[4, 4, 0, 0]}
-                                            maxBarSize={36}
-                                        />
+                                    <Bar
+                                        dataKey="income"
+                                        fill="url(#incomeBar)"
+                                        radius={[4, 4, 0, 0]}
+                                        maxBarSize={36}
+                                    />
+                                    <Bar
+                                        dataKey="expense"
+                                        fill="url(#expenseBar)"
+                                        radius={[4, 4, 0, 0]}
+                                        maxBarSize={36}
+                                    />
 
-                                        <Tooltip
-                                            cursor={{ fill: "currentColor", opacity: 0.05 }}
-                                            content={(props) => (
-                                                <CustomTooltip {...props} formatter={formatter} />
-                                            )}
-                                        />
-                                    </BarChart>
-                                </ResponsiveContainer>
+                                    <Tooltip
+                                        cursor={{ fill: "currentColor", opacity: 0.05 }}
+                                        content={(props) => (
+                                            <CustomTooltip {...props} formatter={formatter} />
+                                        )}
+                                    />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div className="flex h-[280px] w-full flex-col items-center justify-center p-6 text-center border border-dashed border-border/80 rounded-xl bg-muted/20">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
+                                <BarChart3 className="h-6 w-6" />
                             </div>
-                        ) : (
-                            <div className="flex h-[280px] w-full flex-col items-center justify-center p-6 text-center border border-dashed border-border/80 rounded-xl bg-muted/20">
-                                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground mb-3">
-                                    <BarChart3 className="h-6 w-6" />
-                                </div>
-                                <p className="text-sm font-medium text-foreground">
-                                    No data available for the selected period
-                                </p>
-                                <p className="text-xs text-muted-foreground max-w-sm mt-1">
-                                    Try selecting a different year or month, or record a new transaction to visualize your cash flow.
-                                </p>
-                            </div>
-                        )}
-                    </SkeletonWrapper>
+                            <p className="text-sm font-medium text-foreground">
+                                No data available for the selected period
+                            </p>
+                            <p className="text-xs text-muted-foreground max-w-sm mt-1">
+                                Try selecting a different year or month, or record a new transaction to visualize your cash flow.
+                            </p>
+                        </div>
+                    )}
                 </CardContent>
             </Card>
         </section>

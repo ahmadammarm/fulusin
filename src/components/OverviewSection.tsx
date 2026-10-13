@@ -2,12 +2,16 @@
 
 import { CurrencySettings } from "../../src/generated/prisma/client";
 import { differenceInDays, startOfMonth } from "date-fns";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { toast } from "sonner";
 import StatisticsCard from "./StatisticsCard";
 import CategoriesStatistics from "./CategoriesStatistics";
+import {
+    CategoriesStatisticsSkeleton,
+    StatisticsCardSkeleton,
+} from "./skeletons/DashboardOverviewSkeleton";
 
 export default function OverviewSection({ currencySettings }: { currencySettings: CurrencySettings }) {
     const [dateRange, setDateRange] = useState<{ from: Date; to: Date }>({
@@ -51,14 +55,19 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                 </div>
             </div>
 
-            {/* Metrics & Category Sections */}
+            {/* Metrics & Category Sections with Granular Suspense Boundaries */}
             <div className="flex flex-col w-full gap-6 mt-6">
-                <StatisticsCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
-                <CategoriesStatistics
-                    currencySettings={currencySettings}
-                    from={dateRange.from}
-                    to={dateRange.to}
-                />
+                <Suspense fallback={<StatisticsCardSkeleton />}>
+                    <StatisticsCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
+                </Suspense>
+
+                <Suspense fallback={<CategoriesStatisticsSkeleton />}>
+                    <CategoriesStatistics
+                        currencySettings={currencySettings}
+                        from={dateRange.from}
+                        to={dateRange.to}
+                    />
+                </Suspense>
             </div>
         </section>
     );

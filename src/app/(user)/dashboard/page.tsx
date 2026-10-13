@@ -1,11 +1,13 @@
 import CreateTransactionDialog from "@/components/CreateTransactionDialog";
 import HistorySection from "@/components/HistorySection";
 import OverviewSection from "@/components/OverviewSection";
+import DashboardHistorySkeleton from "@/components/skeletons/DashboardHistorySkeleton";
 import { Button } from "@/components/ui/button";
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { Plus } from "lucide-react";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
 export default async function DashboardPage() {
     const user = await auth().then((session) => {
@@ -46,7 +48,7 @@ export default async function DashboardPage() {
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center cursor-pointer"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <span>New Income</span>
@@ -59,7 +61,7 @@ export default async function DashboardPage() {
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center cursor-pointer"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <span>New Expense</span>
@@ -73,10 +75,12 @@ export default async function DashboardPage() {
                 </div>
             </div>
 
-            {/* Dashboard Sections */}
+            {/* Dashboard Sections with Independent Streaming */}
             <div className="space-y-6 sm:space-y-8">
                 <OverviewSection currencySettings={currencySettings} />
-                <HistorySection currencySettings={currencySettings} />
+                <Suspense fallback={<DashboardHistorySkeleton />}>
+                    <HistorySection currencySettings={currencySettings} />
+                </Suspense>
             </div>
         </div>
     );

@@ -1,23 +1,32 @@
-"use client";
-
 import TransactionHistoryTable from "@/components/TransactionHistoryTable";
 import CreateTransactionDialog from "@/components/CreateTransactionDialog";
+import TransactionsTableSkeleton from "@/components/skeletons/TransactionsTableSkeleton";
 import { Button } from "@/components/ui/button";
 import { Plus, ReceiptText } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { CurrencySettings } from "@/generated/prisma/client";
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { Suspense } from "react";
 
-export default function TransactionHistoryPage() {
-    const currencyQuery = useQuery<CurrencySettings>({
-        queryKey: ["currencySettings"],
-        queryFn: async () => {
-            const res = await fetch("/api/currency-setting");
-            if (!res.ok) throw new Error("Failed to fetch currency");
-            return res.json();
+export default async function TransactionHistoryPage() {
+    const user = await auth().then((session) => {
+        if (!session?.user) {
+            redirect("/sign-in");
+        }
+        return session.user;
+    });
+
+    const currencySettings = await prisma.currencySettings.findUnique({
+        where: {
+            userId: user.id,
         },
     });
 
-    const currency = currencyQuery.data?.currency || "USD";
+    if (!currencySettings) {
+        redirect("/wizard");
+    }
+
+    const currency = currencySettings.currency;
 
     return (
         <div className="min-h-full bg-background pb-12">
@@ -45,7 +54,7 @@ export default function TransactionHistoryPage() {
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center cursor-pointer"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <span>New Income</span>
@@ -58,7 +67,7 @@ export default function TransactionHistoryPage() {
                                 trigger={
                                     <Button
                                         size="sm"
-                                        className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center"
+                                        className="w-full sm:w-auto h-9 px-3.5 bg-rose-600 hover:bg-rose-700 text-white shadow-xs gap-1.5 font-medium text-xs sm:text-sm whitespace-nowrap justify-center cursor-pointer"
                                     >
                                         <Plus className="h-4 w-4" />
                                         <span>New Expense</span>
@@ -72,9 +81,11 @@ export default function TransactionHistoryPage() {
                 </div>
             </div>
 
-            {/* Main content table container */}
+            {/* Main content table container with Suspense streaming */}
             <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8">
-                <TransactionHistoryTable />
+                <Suspense fallback={<TransactionsTableSkeleton />}>
+                    <TransactionHistoryTable />
+                </Suspense>
             </div>
         </div>
     );

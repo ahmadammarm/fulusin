@@ -1,33 +1,16 @@
-"use client"
+"use client";
 
-import CategoryList from "@/components/CategoryList"
-import CurrencySettingsCard from "@/components/CurrencySettingsCard"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Badge } from "@/components/ui/badge"
-import { ArrowDownLeft, ArrowUpRight, SlidersHorizontal } from "lucide-react"
-import { useQuery } from "@tanstack/react-query"
-import axios from "axios"
+import CategoryList from "@/components/CategoryList";
+import CurrencySettingsCard from "@/components/CurrencySettingsCard";
+import {
+    CategoryListSkeleton,
+    CurrencySettingsSkeleton,
+} from "@/components/skeletons/ManagePreferencesSkeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ArrowDownLeft, ArrowUpRight, SlidersHorizontal } from "lucide-react";
+import { Suspense } from "react";
 
 export default function ManagePage() {
-    const incomeCategoriesQuery = useQuery({
-        queryKey: ["categories", "income"],
-        queryFn: async () => {
-            const res = await axios.get("/api/categories?type=income")
-            return res.data
-        },
-    })
-
-    const expenseCategoriesQuery = useQuery({
-        queryKey: ["categories", "expense"],
-        queryFn: async () => {
-            const res = await axios.get("/api/categories?type=expense")
-            return res.data
-        },
-    })
-
-    const incomeCount = incomeCategoriesQuery.data?.length ?? 0
-    const expenseCount = expenseCategoriesQuery.data?.length ?? 0
-
     return (
         <div className="min-h-full bg-background pb-12">
             {/* Page Header banner */}
@@ -55,7 +38,9 @@ export default function ManagePage() {
             <div className="container mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
                 {/* Section 1: Currency Settings Card with Live Preview */}
                 <section>
-                    <CurrencySettingsCard />
+                    <Suspense fallback={<CurrencySettingsSkeleton />}>
+                        <CurrencySettingsCard />
+                    </Suspense>
                 </section>
 
                 {/* Section 2: Tabbed Category Management */}
@@ -78,12 +63,6 @@ export default function ManagePage() {
                                 >
                                     <ArrowDownLeft className="h-4 w-4 text-emerald-500 shrink-0" />
                                     <span>Income</span>
-                                    <Badge
-                                        variant="secondary"
-                                        className="px-1.5 py-0 text-[10px] font-mono bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                                    >
-                                        {incomeCount}
-                                    </Badge>
                                 </TabsTrigger>
 
                                 <TabsTrigger
@@ -92,26 +71,24 @@ export default function ManagePage() {
                                 >
                                     <ArrowUpRight className="h-4 w-4 text-rose-500 shrink-0" />
                                     <span>Expense</span>
-                                    <Badge
-                                        variant="secondary"
-                                        className="px-1.5 py-0 text-[10px] font-mono bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
-                                    >
-                                        {expenseCount}
-                                    </Badge>
                                 </TabsTrigger>
                             </TabsList>
                         </div>
 
                         <TabsContent value="income" className="mt-0 focus-visible:outline-hidden">
-                            <CategoryList type="income" />
+                            <Suspense fallback={<CategoryListSkeleton />}>
+                                <CategoryList type="income" />
+                            </Suspense>
                         </TabsContent>
 
                         <TabsContent value="expense" className="mt-0 focus-visible:outline-hidden">
-                            <CategoryList type="expense" />
+                            <Suspense fallback={<CategoryListSkeleton />}>
+                                <CategoryList type="expense" />
+                            </Suspense>
                         </TabsContent>
                     </Tabs>
                 </section>
             </div>
         </div>
-    )
+    );
 }

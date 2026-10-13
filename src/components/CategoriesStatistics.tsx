@@ -2,10 +2,9 @@
 "use client";
 
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
-import { useQuery } from "@tanstack/react-query";
+import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { formatWibDate } from "@/lib/dateHelper";
-import SkeletonWrapper from "./SkeletonWrapper";
 import { TransactionType } from "@/lib/types";
 import { GetCategoriesStatisticsResponseType } from "@/app/api/statistics/categories/route";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -28,21 +27,15 @@ export default function CategoriesStatistics({
     const fromStr = useMemo(() => formatWibDate(from, "yyyy-MM-dd"), [from]);
     const toStr = useMemo(() => formatWibDate(to, "yyyy-MM-dd"), [to]);
 
-    const statisticsQuery = useQuery<GetCategoriesStatisticsResponseType>({
+    const { data } = useSuspenseQuery<GetCategoriesStatisticsResponseType>({
         queryKey: ["overview", "statistics", "categories", fromStr, toStr],
         queryFn: async () => {
-            const response = await fetch(
-                `/api/statistics/categories?from=${fromStr}&to=${toStr}`,
-                { cache: "no-store" }
-            );
+            const response = await fetch(`/api/statistics/categories?from=${fromStr}&to=${toStr}`);
             if (!response.ok) {
                 throw new Error("Failed to fetch categories statistics");
             }
             return response.json();
         },
-        staleTime: 1000 * 60,
-        refetchOnWindowFocus: false,
-        refetchOnReconnect: false,
     });
 
     const formatter = useMemo(() => {
@@ -50,31 +43,25 @@ export default function CategoriesStatistics({
     }, [currencySettings?.currency]);
 
     const incomeData = useMemo(() => {
-        if (!statisticsQuery.data) return [];
-        return statisticsQuery.data.filter((item: any) => item.type === "income");
-    }, [statisticsQuery.data]);
+        return data.filter((item: any) => item.type === "income");
+    }, [data]);
 
     const expenseData = useMemo(() => {
-        if (!statisticsQuery.data) return [];
-        return statisticsQuery.data.filter((item: any) => item.type === "expense");
-    }, [statisticsQuery.data]);
+        return data.filter((item: any) => item.type === "expense");
+    }, [data]);
 
     return (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 w-full">
-            <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard
-                    formatter={formatter}
-                    type="income"
-                    data={incomeData}
-                />
-            </SkeletonWrapper>
-            <SkeletonWrapper isLoading={statisticsQuery.isFetching}>
-                <CategoriesStatisticsCard
-                    formatter={formatter}
-                    type="expense"
-                    data={expenseData}
-                />
-            </SkeletonWrapper>
+            <CategoriesStatisticsCard
+                formatter={formatter}
+                type="income"
+                data={incomeData}
+            />
+            <CategoriesStatisticsCard
+                formatter={formatter}
+                type="expense"
+                data={expenseData}
+            />
         </div>
     );
 }
@@ -142,64 +129,39 @@ function CategoriesStatisticsCard({
                             No transactions recorded
                         </p>
                         <p className="text-xs text-muted-foreground max-w-xs mt-1">
-                            No {isIncome ? "income" : "expense"} activity found for the selected date range.
+                            {isIncome
+                                ? "Record an income transaction to see top earning channels."
+                                : "Record an expense transaction to track your highest spend categories."}
                         </p>
                     </div>
                 ) : (
-                    <div className="space-y-3.5">
-                        {top3Data.map((item: any, index: number) => {
+                    <div className="flex flex-col gap-4">
+                        {top3Data.map((item: any) => {
                             const amount = item._sum.amount || 0;
-                            const percentage = total > 0 ? (amount / total) * 100 : 0;
+                            const percentage = total > 0 ? Math.round((amount * 100) / total) : 0;
 
                             return (
-                                <div
-                                    key={item.category}
-                                    className="space-y-2 p-3 rounded-xl bg-muted/30 border border-border/40 hover:bg-muted/50 transition-colors"
-                                >
-                                    <div className="flex items-center justify-between text-xs sm:text-sm gap-2">
-                                        <div className="flex items-center gap-2.5 min-w-0">
-                                            <span
-                                                className={cn(
-                                                    "flex h-5 w-5 items-center justify-center rounded-md font-mono text-[10px] font-bold shrink-0 border",
-                                                    index === 0
-                                                        ? isIncome
-                                                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30"
-                                                            : "bg-rose-500/15 text-rose-600 dark:text-rose-400 border-rose-500/30"
-                                                        : "bg-muted/80 text-muted-foreground border-border/60"
-                                                )}
-                                            >
-                                                #{index + 1}
-                                            </span>
-                                            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-muted text-xs shrink-0">
-                                                {item.categoryIcon}
+                                <div key={item.category} className="flex flex-col gap-2">
+                                    <div className="flex items-center justify-between text-xs sm:text-sm">
+                                        <div className="flex items-center gap-2 min-w-0">
+                                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted/60 text-sm border border-border/50 shrink-0">
+                                                {item.categoryIcon || "🏷️"}
                                             </span>
                                             <span className="font-semibold text-foreground truncate">
                                                 {item.category}
                                             </span>
-                                            <span className="font-mono text-[11px] text-muted-foreground shrink-0">
-                                                ({percentage === 100 ? "100%" : `${percentage.toFixed(1)}%`})
+                                            <span className="text-[11px] text-muted-foreground font-mono shrink-0">
+                                                ({percentage}%)
                                             </span>
                                         </div>
-                                        <span
-                                            className={cn(
-                                                "font-mono font-bold text-xs sm:text-sm shrink-0",
-                                                isIncome
-                                                    ? "text-emerald-600 dark:text-emerald-400"
-                                                    : "text-rose-600 dark:text-rose-400"
-                                            )}
-                                        >
+                                        <span className="font-mono font-bold text-foreground shrink-0">
                                             {formatter.format(amount)}
                                         </span>
                                     </div>
-
                                     <Progress
                                         value={percentage}
-                                        className="h-1.5 bg-muted/80"
-                                        indicator={
-                                            isIncome
-                                                ? "bg-emerald-500 dark:bg-emerald-400"
-                                                : "bg-rose-500 dark:bg-rose-400"
-                                        }
+                                        indicator={isIncome ? "bg-emerald-500" : "bg-rose-500"}
+                                        className="h-2 bg-muted/60"
                                     />
                                 </div>
                             );

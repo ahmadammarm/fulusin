@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { useQuery } from "@tanstack/react-query"
+import { useSuspenseQuery } from "@tanstack/react-query"
 import axios from "axios"
 import {
     ColumnDef,
@@ -68,7 +68,6 @@ import { DataTableFacetedFilter } from "./data-table/FacetedFilter"
 import { DataTableViewOptions } from "./data-table/ColumnToggle"
 import TransactionDeleteDialog from "./TransactionDeleteDialog"
 import ImportCsvModal from "./ImportCsvModal"
-import SkeletonWrapper from "./SkeletonWrapper"
 import { Card, CardContent } from "./ui/card"
 import { download, generateCsv, mkConfig } from "export-to-csv"
 import { cn } from "@/lib/utils"
@@ -123,29 +122,26 @@ export default function TransactionHistoryTable() {
         pageSize: 10,
     })
 
-    // Fetch transaction history
-    const transactionsQuery = useQuery<GetTransactionHistoryResponse>({
+    // Fetch transaction history with Suspense
+    const { data: transactionsData } = useSuspenseQuery<GetTransactionHistoryResponse>({
         queryKey: ["transactionHistory"],
         queryFn: async () => {
             const response = await axios.get("/api/transaction-history")
             return response.data
         },
-        refetchOnWindowFocus: false,
-        staleTime: 1000 * 60 * 5,
     })
 
     // Fetch currency settings to format summary KPI cards
-    const currencyQuery = useQuery<CurrencySettings>({
+    const { data: currencyData } = useSuspenseQuery<CurrencySettings>({
         queryKey: ["currencySettings"],
         queryFn: async () => {
             const res = await fetch("/api/currency-setting")
             if (!res.ok) throw new Error("Failed to fetch currency")
             return res.json()
         },
-        refetchOnWindowFocus: false,
     })
 
-    const currencyCode = currencyQuery.data?.currency || "USD"
+    const currencyCode = currencyData?.currency || "USD"
 
     const formatter = useMemo(() => {
         try {
@@ -158,7 +154,7 @@ export default function TransactionHistoryTable() {
         }
     }, [currencyCode])
 
-    const transactions = useMemo(() => transactionsQuery.data || [], [transactionsQuery.data])
+    const transactions = useMemo(() => transactionsData || [], [transactionsData])
 
     // Calculate Summary KPIs
     const kpiMetrics = useMemo(() => {
@@ -416,8 +412,7 @@ export default function TransactionHistoryTable() {
     return (
         <div className="w-full space-y-6">
             {/* 1. Summary KPI Metrics Banner */}
-            <SkeletonWrapper isLoading={transactionsQuery.isLoading || currencyQuery.isLoading}>
-                <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 2xl:grid-cols-4 gap-3 sm:gap-4">
                     {/* Card 1: Total Records */}
                     <Card className="border border-border/70 shadow-2xs overflow-hidden">
                         <CardContent className="p-4 sm:p-5 flex items-center justify-between gap-3 min-w-0">
@@ -515,7 +510,6 @@ export default function TransactionHistoryTable() {
                         </CardContent>
                     </Card>
                 </div>
-            </SkeletonWrapper>
 
             {/* 2. Unified Command Toolbar */}
             <div className="flex flex-col gap-3 rounded-2xl border border-border/70 bg-card p-3 sm:p-4 shadow-2xs">
@@ -645,8 +639,7 @@ export default function TransactionHistoryTable() {
             </div>
 
             {/* 3. Modern Financial Ledger Table */}
-            <SkeletonWrapper isLoading={transactionsQuery.isLoading}>
-                <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
+            <div className="rounded-2xl border border-border/70 bg-card overflow-hidden shadow-2xs">
                     <div className="overflow-x-auto">
                         <Table className="min-w-[720px] lg:min-w-full">
                             <TableHeader className="bg-muted/30 border-b border-border/60">
@@ -810,7 +803,7 @@ export default function TransactionHistoryTable() {
                         </div>
                     )}
                 </div>
-            </SkeletonWrapper>
+            </div>
         </div>
     )
 }

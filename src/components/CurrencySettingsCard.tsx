@@ -1,49 +1,46 @@
-"use client"
+"use client";
 
-import { useQuery } from "@tanstack/react-query"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { CurrencyCombobox } from "./CurrencyCombobox"
-import { CurrencySettings } from "../../src/generated/prisma/client"
-import { Currencies } from "@/lib/currencies"
-import { GetFormatterForCurrency } from "@/lib/currencyFormatter"
-import { Badge } from "./ui/badge"
-import { Coins, TrendingUp, TrendingDown, Info } from "lucide-react"
-import SkeletonWrapper from "./SkeletonWrapper"
-import { useMemo } from "react"
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CurrencyCombobox } from "./CurrencyCombobox";
+import { CurrencySettings } from "../../src/generated/prisma/client";
+import { Currencies } from "@/lib/currencies";
+import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
+import { Badge } from "./ui/badge";
+import { Coins, TrendingUp, TrendingDown, Info } from "lucide-react";
+import { useMemo } from "react";
 
 export default function CurrencySettingsCard() {
-    const currencySettings = useQuery<CurrencySettings>({
+    const { data: currencySettings } = useSuspenseQuery<CurrencySettings>({
         queryKey: ["currencySettings"],
         queryFn: async () => {
-            const response = await fetch("/api/currency-setting")
+            const response = await fetch("/api/currency-setting");
             if (!response.ok) {
-                throw new Error("Failed to fetch currency settings")
+                throw new Error("Failed to fetch currency settings");
             }
-            const data = await response.json()
-            return data as CurrencySettings
+            return response.json();
         },
-        refetchOnWindowFocus: false,
-    })
+    });
 
     const activeCurrency = useMemo(() => {
-        if (!currencySettings.data?.currency) return Currencies[0]
-        return Currencies.find((c) => c.value === currencySettings.data.currency) || Currencies[0]
-    }, [currencySettings.data?.currency])
+        if (!currencySettings?.currency) return Currencies[0];
+        return Currencies.find((c) => c.value === currencySettings.currency) || Currencies[0];
+    }, [currencySettings?.currency]);
 
     const formattedSamples = useMemo(() => {
         try {
-            const formatter = GetFormatterForCurrency(activeCurrency.value)
+            const formatter = GetFormatterForCurrency(activeCurrency.value);
             return {
                 positive: formatter.format(1250000),
                 negative: formatter.format(450.75),
-            }
+            };
         } catch {
             return {
                 positive: `${activeCurrency.value} 1,250,000.00`,
                 negative: `${activeCurrency.value} 450.75`,
-            }
+            };
         }
-    }, [activeCurrency.value])
+    }, [activeCurrency.value]);
 
     return (
         <Card className="border border-border/70 shadow-xs overflow-hidden">
@@ -88,55 +85,53 @@ export default function CurrencySettingsCard() {
 
                     {/* Right: Live preview card */}
                     <div className="lg:col-span-7">
-                        <SkeletonWrapper isLoading={currencySettings.isLoading}>
-                            <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 space-y-4">
-                                <div className="flex items-center justify-between border-b border-border/40 pb-3">
-                                    <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                        Live Formatting Preview
-                                    </span>
-                                    <span className="text-xs font-mono text-muted-foreground">
-                                        Locale: {activeCurrency.locale}
-                                    </span>
+                        <div className="rounded-xl border border-border/70 bg-card/60 p-4 sm:p-5 space-y-4">
+                            <div className="flex items-center justify-between border-b border-border/40 pb-3">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                    Live Formatting Preview
+                                </span>
+                                <span className="text-xs font-mono text-muted-foreground">
+                                    Locale: {activeCurrency.locale}
+                                </span>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {/* Inflow sample */}
+                                <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 flex flex-col justify-between">
+                                    <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">
+                                        <span className="flex items-center gap-1.5">
+                                            <TrendingUp className="h-3.5 w-3.5" />
+                                            Income Format
+                                        </span>
+                                        <span className="text-[10px] uppercase font-mono tracking-wider opacity-75">
+                                            Inflow
+                                        </span>
+                                    </div>
+                                    <p className="text-base sm:text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate">
+                                        +{formattedSamples.positive}
+                                    </p>
                                 </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {/* Inflow sample */}
-                                    <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 flex flex-col justify-between">
-                                        <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-medium mb-1">
-                                            <span className="flex items-center gap-1.5">
-                                                <TrendingUp className="h-3.5 w-3.5" />
-                                                Income Format
-                                            </span>
-                                            <span className="text-[10px] uppercase font-mono tracking-wider opacity-75">
-                                                Inflow
-                                            </span>
-                                        </div>
-                                        <p className="text-base sm:text-lg font-bold font-mono text-emerald-600 dark:text-emerald-400 truncate">
-                                            +{formattedSamples.positive}
-                                        </p>
+                                {/* Outflow sample */}
+                                <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 flex flex-col justify-between">
+                                    <div className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">
+                                        <span className="flex items-center gap-1.5">
+                                            <TrendingDown className="h-3.5 w-3.5" />
+                                            Expense Format
+                                        </span>
+                                        <span className="text-[10px] uppercase font-mono tracking-wider opacity-75">
+                                            Outflow
+                                        </span>
                                     </div>
-
-                                    {/* Outflow sample */}
-                                    <div className="rounded-lg border border-rose-500/20 bg-rose-500/5 p-3 flex flex-col justify-between">
-                                        <div className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-400 font-medium mb-1">
-                                            <span className="flex items-center gap-1.5">
-                                                <TrendingDown className="h-3.5 w-3.5" />
-                                                Expense Format
-                                            </span>
-                                            <span className="text-[10px] uppercase font-mono tracking-wider opacity-75">
-                                                Outflow
-                                            </span>
-                                        </div>
-                                        <p className="text-base sm:text-lg font-bold font-mono text-rose-600 dark:text-rose-400 truncate">
-                                            -{formattedSamples.negative}
-                                        </p>
-                                    </div>
+                                    <p className="text-base sm:text-lg font-bold font-mono text-rose-600 dark:text-rose-400 truncate">
+                                        -{formattedSamples.negative}
+                                    </p>
                                 </div>
                             </div>
-                        </SkeletonWrapper>
+                        </div>
                     </div>
                 </div>
             </CardContent>
         </Card>
-    )
+    );
 }
