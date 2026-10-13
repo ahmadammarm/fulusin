@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
 import React, { type FC, useState, useEffect, useRef, JSX } from 'react'
@@ -420,7 +419,7 @@ export const DateRangePicker: FC<DateRangePickerProps> & {
                                         <div className="flex gap-2">
                                             <DateInput
                                                 value={range.from}
-                                                onChange={(date: any) => {
+                                                onChange={(date: Date) => {
                                                     const toDate =
                                                         range.to == null || date > range.to ? date : range.to
                                                     setRange((prevRange) => ({

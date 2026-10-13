@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
@@ -9,7 +8,7 @@ import { Card, CardContent, CardHeader } from "./ui/card";
 import { Badge } from "./ui/badge";
 import HistoryPeriodSelector from "./HistoryPeriodSelector";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { GetHistoryDataResponseType } from "@/app/api/history-data/route";
+import { GetHistoryDataResponseType, HistoryDataPoint } from "@/app/api/history-data/route";
 import { Bar, BarChart, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer } from "recharts";
 import CustomTooltip from "./CustomTooltip";
 import { BarChart3 } from "lucide-react";
@@ -52,7 +51,7 @@ export default function HistorySection({
     const chartData = useMemo(() => {
         if (!data) return [];
 
-        return data.map((item: any) => ({
+        return data.map((item: HistoryDataPoint) => ({
             ...item,
             label:
                 timeframe === "year"

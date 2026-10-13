@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -12,17 +11,21 @@ export async function GET() {
         redirect("/sign-in");
     }
 
-    const periods = await getHistoryPeriod(user.id);
-    return NextResponse.json(periods);
-
+    try {
+        const periods = await getHistoryPeriod(user.id);
+        return NextResponse.json(periods);
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Failed to fetch periods";
+        return NextResponse.json({ error: message }, { status: 500 });
+    }
 }
 
 export type GetHistoryPeriodResponseType = Awaited<ReturnType<typeof getHistoryPeriod>>;
 
-async function getHistoryPeriod(userId: string) {
+async function getHistoryPeriod(userId: string): Promise<number[]> {
     const result = await prisma.monthHistory.findMany({
         where: {
-            userId: userId
+            userId,
         },
         select: {
             year: true,
@@ -30,17 +33,16 @@ async function getHistoryPeriod(userId: string) {
         distinct: ["year"],
         orderBy: [
             {
-                year: "asc"
-            }
-        ]
-    })
+                year: "asc",
+            },
+        ],
+    });
 
-    const years = result.map((item: any) => item.year);
+    const years = result.map((item: { year: number }) => item.year);
 
     if (years.length === 0) {
         return [new Date().getFullYear()];
     }
 
     return years;
-
 }

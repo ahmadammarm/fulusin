@@ -1,26 +1,33 @@
-"use server"
+"use server";
 
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { CreateTransactionSchema, CreateTransactionSchemaType } from "@/schemas/transaction";
 import { redirect } from "next/navigation";
 import { getNormalizedHistoryDate } from "@/lib/dateHelper";
+import { roundCurrency, subtractCurrency } from "@/lib/financialMath";
+import { Prisma, Transaction } from "@/generated/prisma/client";
 
-export async function CreateTransactionAction(form: CreateTransactionSchemaType) {
+export async function CreateTransactionAction(form: CreateTransactionSchemaType): Promise<Transaction> {
     const parsedBody = CreateTransactionSchema.safeParse(form);
     if (!parsedBody.success) {
-        throw new Error("Invalid data");
+        throw new Error("Invalid transaction data provided");
     }
 
     const session = await auth();
     const user = session?.user;
     if (!user) {
-        redirect("sign-in");
+        redirect("/sign-in");
     }
 
     const { amount, category, date, description, type } = parsedBody.data;
-    const normalizedDescription = description?.trim() || "";
+    const safeAmount = roundCurrency(amount);
 
+    if (safeAmount <= 0) {
+        throw new Error("Transaction amount must be greater than zero");
+    }
+
+    const normalizedDescription = description?.trim() || "";
     const { day, month, year, normalizedDate } = getNormalizedHistoryDate(date);
 
     const categoryRow = await prisma.category.findUnique({
@@ -34,10 +41,10 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
     });
 
     if (!categoryRow) {
-        throw new Error("Category not found");
+        throw new Error(`Category "${category}" not found`);
     }
 
-    return await prisma.$transaction(async (tx) => {
+    return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
         // 1. Acquire transaction advisory lock per user to serialize concurrent requests and eliminate race conditions
         await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
 
@@ -46,7 +53,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
         const duplicateTransaction = await tx.transaction.findFirst({
             where: {
                 userId: user.id,
-                amount,
+                amount: safeAmount,
                 type,
                 category: categoryRow.name,
                 date: normalizedDate,
@@ -75,13 +82,13 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                     expense: true,
                 },
             });
-            const totalIncome = historySums._sum.income || 0;
-            const totalExpense = historySums._sum.expense || 0;
-            const availableBalance = totalIncome - totalExpense;
+            const totalIncome = roundCurrency(historySums._sum.income || 0);
+            const totalExpense = roundCurrency(historySums._sum.expense || 0);
+            const availableBalance = subtractCurrency(totalIncome, totalExpense);
 
-            if (availableBalance < amount) {
+            if (availableBalance < safeAmount) {
                 console.warn(
-                    `[Overdraft Note] User ${user.id} recorded expense of ${amount} with available balance of ${availableBalance}. Balance is negative.`
+                    `[Overdraft Note] User ${user.id} recorded expense of ${safeAmount} with available balance of ${availableBalance}. Balance is negative.`
                 );
             }
         }
@@ -90,7 +97,7 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
         const newTransaction = await tx.transaction.create({
             data: {
                 userId: user.id,
-                amount,
+                amount: safeAmount,
                 date: normalizedDate,
                 description: normalizedDescription,
                 type,
@@ -114,15 +121,15 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 day,
                 month,
                 year,
-                income: type === "income" ? amount : 0,
-                expense: type === "expense" ? amount : 0,
+                income: type === "income" ? safeAmount : 0,
+                expense: type === "expense" ? safeAmount : 0,
             },
             update: {
                 expense: {
-                    increment: type === "expense" ? amount : 0,
+                    increment: type === "expense" ? safeAmount : 0,
                 },
                 income: {
-                    increment: type === "income" ? amount : 0,
+                    increment: type === "income" ? safeAmount : 0,
                 },
             },
         });
@@ -140,15 +147,15 @@ export async function CreateTransactionAction(form: CreateTransactionSchemaType)
                 userId: user.id,
                 month,
                 year,
-                income: type === "income" ? amount : 0,
-                expense: type === "expense" ? amount : 0,
+                income: type === "income" ? safeAmount : 0,
+                expense: type === "expense" ? safeAmount : 0,
             },
             update: {
                 expense: {
-                    increment: type === "expense" ? amount : 0,
+                    increment: type === "expense" ? safeAmount : 0,
                 },
                 income: {
-                    increment: type === "income" ? amount : 0,
+                    increment: type === "income" ? safeAmount : 0,
                 },
             },
         });

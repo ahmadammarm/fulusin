@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { CategoryDelete } from "@/actions/categories"
-import { Category } from "../../src/generated/prisma/client"
-import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { ReactNode, useState } from "react"
-import { toast } from "sonner"
+import { CategoryDelete } from "@/actions/categories";
+import { Category } from "../../src/generated/prisma/client";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { ReactNode, useState } from "react";
+import { toast } from "sonner";
 import {
     AlertDialog,
     AlertDialogCancel,
@@ -15,52 +14,52 @@ import {
     AlertDialogHeader,
     AlertDialogTitle,
     AlertDialogTrigger,
-} from "./ui/alert-dialog"
-import { Button } from "./ui/button"
-import { Badge } from "./ui/badge"
-import { TransactionType } from "@/lib/types"
-import { AlertTriangle, Loader2, Trash2 } from "lucide-react"
+} from "./ui/alert-dialog";
+import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
+import { TransactionType } from "@/lib/types";
+import { AlertTriangle, Loader2, Trash2 } from "lucide-react";
 
 interface CategoryDeleteDialogProps {
-    trigger: ReactNode
-    category: Category
+    trigger: ReactNode;
+    category: Category;
 }
 
 export default function CategoryDeleteDialog({ trigger, category }: CategoryDeleteDialogProps) {
-    const [open, setOpen] = useState(false)
-    const categoryIdentifier = `${category.name}-${category.type}`
-    const queryClient = useQueryClient()
+    const [open, setOpen] = useState(false);
+    const categoryIdentifier = `${category.name}-${category.type}`;
+    const queryClient = useQueryClient();
 
     const deleteMutation = useMutation({
         mutationFn: CategoryDelete,
         onSuccess: async () => {
             toast.success(`Category "${category.name}" deleted successfully.`, {
                 id: categoryIdentifier,
-            })
+            });
 
             await queryClient.invalidateQueries({
                 queryKey: ["categories"],
-            })
-            setOpen(false)
+            });
+            setOpen(false);
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(`Error deleting category: ${error.message || "Unknown error"}`, {
                 id: categoryIdentifier,
-            })
+            });
         },
-    })
+    });
 
     const handleDelete = () => {
         toast.loading("Deleting category...", {
             id: categoryIdentifier,
-        })
+        });
         deleteMutation.mutate({
             name: category.name,
             type: category.type as TransactionType,
-        })
-    }
+        });
+    };
 
-    const isIncome = category.type === "income"
+    const isIncome = category.type === "income";
 
     return (
         <AlertDialog open={open} onOpenChange={setOpen}>
@@ -112,7 +111,7 @@ export default function CategoryDeleteDialog({ trigger, category }: CategoryDele
                             </div>
 
                             <p className="text-xs leading-relaxed text-muted-foreground">
-                                Categories with recorded transactions cannot be deleted. Please delete or reassign related transactions first.
+                                Categories referenced by transactions, monthly budgets, or recurring rules cannot be deleted. Please delete or reassign related records first.
                             </p>
                         </div>
                     </AlertDialogDescription>
@@ -126,7 +125,7 @@ export default function CategoryDeleteDialog({ trigger, category }: CategoryDele
                         variant="destructive"
                         onClick={handleDelete}
                         disabled={deleteMutation.isPending}
-                        className="gap-2"
+                        className="gap-2 cursor-pointer"
                     >
                         {deleteMutation.isPending ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -138,5 +137,5 @@ export default function CategoryDeleteDialog({ trigger, category }: CategoryDele
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
-    )
+    );
 }

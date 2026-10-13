@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
 import { toast } from "sonner";
 import {
@@ -41,7 +40,7 @@ export default function TransactionDeleteDialog({ open, setOpen, transactionId }
             });
             setOpen(false);
         },
-        onError: (error: any) => {
+        onError: (error: Error) => {
             toast.error(`Error deleting transaction: ${error.message || "Unknown error"}`, {
                 id: transactionId,
             });
@@ -75,7 +74,7 @@ export default function TransactionDeleteDialog({ open, setOpen, transactionId }
                     </AlertDialogCancel>
                     <AlertDialogAction
                         disabled={deleteMutation.isPending}
-                        className="bg-destructive hover:bg-destructive/90 text-white gap-2"
+                        className="bg-destructive hover:bg-destructive/90 text-white gap-2 cursor-pointer"
                         onClick={(e) => {
                             e.preventDefault();
                             toast.loading("Deleting transaction...", {

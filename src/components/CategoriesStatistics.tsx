@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { GetFormatterForCurrency } from "@/lib/currencyFormatter";
@@ -6,7 +5,10 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 import { formatWibDate } from "@/lib/dateHelper";
 import { TransactionType } from "@/lib/types";
-import { GetCategoriesStatisticsResponseType } from "@/app/api/statistics/categories/route";
+import {
+    CategoryStatisticItem,
+    GetCategoriesStatisticsResponseType,
+} from "@/app/api/statistics/categories/route";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
 import { CurrencySettings } from "@/generated/prisma/client";
@@ -43,11 +45,11 @@ export default function CategoriesStatistics({
     }, [currencySettings?.currency]);
 
     const incomeData = useMemo(() => {
-        return data.filter((item: any) => item.type === "income");
+        return data.filter((item: CategoryStatisticItem) => item.type === "income");
     }, [data]);
 
     const expenseData = useMemo(() => {
-        return data.filter((item: any) => item.type === "expense");
+        return data.filter((item: CategoryStatisticItem) => item.type === "expense");
     }, [data]);
 
     return (
@@ -73,18 +75,18 @@ function CategoriesStatisticsCard({
 }: {
     formatter: Intl.NumberFormat;
     type: TransactionType;
-    data: GetCategoriesStatisticsResponseType;
+    data: CategoryStatisticItem[];
 }) {
     const sortedData = useMemo(() => {
         return [...data]
-            .filter((item: any) => item.type === type)
-            .sort((a: any, b: any) => (b._sum.amount || 0) - (a._sum.amount || 0));
+            .filter((item: CategoryStatisticItem) => item.type === type)
+            .sort((a: CategoryStatisticItem, b: CategoryStatisticItem) => (b._sum.amount || 0) - (a._sum.amount || 0));
     }, [data, type]);
 
     const top3Data = useMemo(() => sortedData.slice(0, 3), [sortedData]);
 
     const total = sortedData.reduce(
-        (sum: any, item: { _sum: { amount: any } }) => sum + (item._sum.amount || 0),
+        (sum: number, item: CategoryStatisticItem) => sum + (item._sum.amount || 0),
         0
     );
 
@@ -136,7 +138,7 @@ function CategoriesStatisticsCard({
                     </div>
                 ) : (
                     <div className="flex flex-col gap-4">
-                        {top3Data.map((item: any) => {
+                        {top3Data.map((item: CategoryStatisticItem) => {
                             const amount = item._sum.amount || 0;
                             const percentage = total > 0 ? Math.round((amount * 100) / total) : 0;
 

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
@@ -10,21 +9,18 @@ export async function GET(request: NextRequest) {
     const user = session?.user;
 
     if (!user) {
-        redirect('/sign-in');
+        redirect("/sign-in");
     }
 
     try {
         const { searchParams } = new URL(request.url);
-
-        const paramType = searchParams.get('type');
-
+        const paramType = searchParams.get("type");
 
         if (!paramType) {
             return NextResponse.json({ error: "Type parameter is required" }, { status: 400 });
         }
 
         const validator = z.enum(["income", "expense"]);
-
         const queryParam = validator.safeParse(paramType);
 
         if (!queryParam.success) {
@@ -39,13 +35,13 @@ export async function GET(request: NextRequest) {
                 ...(type && { type }),
             },
             orderBy: {
-                name: 'asc',
-            }
-        })
+                name: "asc",
+            },
+        });
 
         return NextResponse.json(categories);
-
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Failed to fetch categories";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

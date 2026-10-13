@@ -1,14 +1,18 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
 import { getWibDateRange } from "@/lib/dateHelper";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
+import { roundCurrency } from "@/lib/financialMath";
+
+export interface BalanceStatistics {
+    expense: number;
+    income: number;
+}
 
 export async function GET(request: NextRequest) {
     const session = await auth();
-
     const user = session?.user;
 
     if (!user) {
@@ -23,9 +27,10 @@ export async function GET(request: NextRequest) {
         const queryParams = overviewQuerySchema.safeParse({ from, to });
 
         if (!queryParams.success) {
-            return NextResponse.json({
-                error: queryParams.error.message
-            }, { status: 400 });
+            return NextResponse.json(
+                { error: queryParams.error.issues[0]?.message || "Invalid date range parameters" },
+                { status: 400 }
+            );
         }
 
         const statistics = await getBalanceStatistics(
@@ -35,41 +40,38 @@ export async function GET(request: NextRequest) {
         );
 
         return NextResponse.json(statistics);
-
-    } catch (error: any) {
-        console.error("Error fetching balance statistics:", error);
-        return NextResponse.json({
-            error: "Failed to fetch balance statistics."
-        }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Failed to fetch balance statistics.";
+        console.error("Error fetching balance statistics:", message);
+        return NextResponse.json(
+            { error: "Failed to fetch balance statistics." },
+            { status: 500 }
+        );
     }
 }
 
-export type BalanceStatistics = Awaited<ReturnType<typeof getBalanceStatistics>>;
+async function getBalanceStatistics(userId: string, from: Date, to: Date): Promise<BalanceStatistics> {
+    const { start, end } = getWibDateRange(from, to);
 
-async function getBalanceStatistics(userId: string, from: Date, to: Date) {
-    try {
-        const { start, end } = getWibDateRange(from, to);
-
-        const total = await prisma.transaction.groupBy({
-            by: ["type"],
-            where: {
-                userId,
-                date: {
-                    gte: start,
-                    lte: end,
-                },
+    const totals = await prisma.transaction.groupBy({
+        by: ["type"],
+        where: {
+            userId,
+            date: {
+                gte: start,
+                lte: end,
             },
-            _sum: {
-                amount: true,
-            },
-        });
+        },
+        _sum: {
+            amount: true,
+        },
+    });
 
-        return {
-            expense: total.find((t: any) => t.type === "expense")?._sum.amount ?? 0,
-            income: total.find((t: any) => t.type === "income")?._sum.amount ?? 0,
-        };
-    } catch (error) {
-        console.error("Error in getBalanceStatistics:", error);
-        throw new Error("Failed to fetch balance statistics.");
-    }
+    const expenseRecord = totals.find((t) => t.type === "expense");
+    const incomeRecord = totals.find((t) => t.type === "income");
+
+    return {
+        expense: roundCurrency(expenseRecord?._sum.amount ?? 0),
+        income: roundCurrency(incomeRecord?._sum.amount ?? 0),
+    };
 }

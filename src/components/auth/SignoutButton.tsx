@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { signOut } from "next-auth/react";
 import { toast } from "sonner"
 import { Button } from "../ui/button";
@@ -11,8 +10,8 @@ export default function SignoutButton() {
         try {
             await signOut({ redirect: true, callbackUrl: "/" });
             toast.success("Signed out successfully");
-        } catch (error: any) {
-            toast.error(error.message || "Failed to sign out");
+        } catch (error: unknown) {
+            toast.error(error instanceof Error ? error.message : "Failed to sign out");
         }
     }
 

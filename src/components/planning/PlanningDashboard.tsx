@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
 import { useQuery } from "@tanstack/react-query";
 import { GetRecurringTransactionsAction } from "@/actions/recurring";
+import { ProcessDueRecurringTransactionsAction } from "@/actions/recurringExecution";
 
 export default function PlanningDashboard() {
   const [isMounted, setIsMounted] = useState(false);
@@ -16,7 +17,10 @@ export default function PlanningDashboard() {
   }, []);
   const { data: recurringTx } = useQuery({
       queryKey: ["recurringTransactions"],
-      queryFn: async () => await GetRecurringTransactionsAction(),
+      queryFn: async () => {
+          await ProcessDueRecurringTransactionsAction();
+          return await GetRecurringTransactionsAction();
+      },
   });
 
   // Mock data for Advanced Analytics

@@ -1,40 +1,51 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use server"
+"use server";
 
-import { auth } from "@/lib/auth"
-import prisma from "@/lib/prisma"
-import { redirect } from "next/navigation"
-import { getNormalizedHistoryDate } from "@/lib/dateHelper"
+import { auth } from "@/lib/auth";
+import prisma from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import { getNormalizedHistoryDate } from "@/lib/dateHelper";
+import { clampNonNegative, isZeroCurrency, subtractCurrency } from "@/lib/financialMath";
+import { Prisma } from "@/generated/prisma/client";
 
-export async function TransactionDelete(id: string) {
-    const session = await auth()
-    const user = session?.user
+export interface DeleteTransactionResult {
+    success: boolean;
+    id: string;
+}
+
+export async function TransactionDelete(id: string): Promise<DeleteTransactionResult> {
+    const session = await auth();
+    const user = session?.user;
 
     if (!user) {
-        redirect("/sign-in")
+        redirect("/sign-in");
+    }
+
+    if (!id || typeof id !== "string") {
+        throw new Error("Invalid transaction identifier");
     }
 
     try {
-        const transaction = await prisma.transaction.findUnique({
-            where: { id },
-        })
-
-        if (!transaction || transaction.userId !== user.id) {
-            throw new Error("Transaction not found or unauthorized")
-        }
-
-        const { day, month, year } = getNormalizedHistoryDate(transaction.date)
-
-        await prisma.$transaction(async (tx: any) => {
-            // Acquire transaction advisory lock per user to serialize concurrent operations
+        return await prisma.$transaction(async (tx: Prisma.TransactionClient) => {
+            // 1. Acquire transaction advisory lock per user to serialize concurrent operations
             await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`tx-lock:${user.id}`}))`;
 
-            // 1. Delete the transaction record
+            // 2. Read transaction INSIDE transaction block under lock to prevent race conditions
+            const transaction = await tx.transaction.findUnique({
+                where: { id },
+            });
+
+            if (!transaction || transaction.userId !== user.id) {
+                throw new Error("Transaction not found or unauthorized");
+            }
+
+            const { day, month, year } = getNormalizedHistoryDate(transaction.date);
+
+            // 3. Delete the transaction record
             await tx.transaction.delete({
                 where: { id },
-            })
+            });
 
-            // 2. Decrement or prune MonthHistory using compound unique key
+            // 4. Decrement or prune MonthHistory using compound unique key with safe financial math
             const monthHistoryRecord = await tx.monthHistory.findUnique({
                 where: {
                     userId_day_month_year: {
@@ -44,17 +55,18 @@ export async function TransactionDelete(id: string) {
                         year,
                     },
                 },
-            })
+            });
 
             if (monthHistoryRecord) {
                 const updatedIncome = transaction.type === "income"
-                    ? Math.max(0, monthHistoryRecord.income - transaction.amount)
-                    : monthHistoryRecord.income
-                const updatedExpense = transaction.type === "expense"
-                    ? Math.max(0, monthHistoryRecord.expense - transaction.amount)
-                    : monthHistoryRecord.expense
+                    ? clampNonNegative(subtractCurrency(monthHistoryRecord.income, transaction.amount))
+                    : monthHistoryRecord.income;
 
-                const isMonthRecordZero = updatedIncome <= 0.0001 && updatedExpense <= 0.0001
+                const updatedExpense = transaction.type === "expense"
+                    ? clampNonNegative(subtractCurrency(monthHistoryRecord.expense, transaction.amount))
+                    : monthHistoryRecord.expense;
+
+                const isMonthRecordZero = isZeroCurrency(updatedIncome) && isZeroCurrency(updatedExpense);
 
                 if (isMonthRecordZero) {
                     await tx.monthHistory.delete({
@@ -66,7 +78,7 @@ export async function TransactionDelete(id: string) {
                                 year,
                             },
                         },
-                    })
+                    });
                 } else {
                     await tx.monthHistory.update({
                         where: {
@@ -81,11 +93,11 @@ export async function TransactionDelete(id: string) {
                             income: updatedIncome,
                             expense: updatedExpense,
                         },
-                    })
+                    });
                 }
             }
 
-            // 3. Decrement or prune YearHistory using compound unique key
+            // 5. Decrement or prune YearHistory using compound unique key with safe financial math
             const yearHistoryRecord = await tx.yearHistory.findUnique({
                 where: {
                     userId_month_year: {
@@ -94,17 +106,18 @@ export async function TransactionDelete(id: string) {
                         year,
                     },
                 },
-            })
+            });
 
             if (yearHistoryRecord) {
                 const updatedYearIncome = transaction.type === "income"
-                    ? Math.max(0, yearHistoryRecord.income - transaction.amount)
-                    : yearHistoryRecord.income
-                const updatedYearExpense = transaction.type === "expense"
-                    ? Math.max(0, yearHistoryRecord.expense - transaction.amount)
-                    : yearHistoryRecord.expense
+                    ? clampNonNegative(subtractCurrency(yearHistoryRecord.income, transaction.amount))
+                    : yearHistoryRecord.income;
 
-                const isYearRecordZero = updatedYearIncome <= 0.0001 && updatedYearExpense <= 0.0001
+                const updatedYearExpense = transaction.type === "expense"
+                    ? clampNonNegative(subtractCurrency(yearHistoryRecord.expense, transaction.amount))
+                    : yearHistoryRecord.expense;
+
+                const isYearRecordZero = isZeroCurrency(updatedYearIncome) && isZeroCurrency(updatedYearExpense);
 
                 if (isYearRecordZero) {
                     await tx.yearHistory.delete({
@@ -115,7 +128,7 @@ export async function TransactionDelete(id: string) {
                                 year,
                             },
                         },
-                    })
+                    });
                 } else {
                     await tx.yearHistory.update({
                         where: {
@@ -129,14 +142,15 @@ export async function TransactionDelete(id: string) {
                             income: updatedYearIncome,
                             expense: updatedYearExpense,
                         },
-                    })
+                    });
                 }
             }
-        })
 
-        return { success: true }
-    } catch (error: any) {
-        console.error("Error deleting transaction:", error)
-        throw new Error(error.message || "Failed to delete transaction")
+            return { success: true, id };
+        });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Failed to delete transaction";
+        console.error("Error deleting transaction:", message);
+        throw new Error(message);
     }
 }

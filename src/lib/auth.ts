@@ -1,7 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { NextAuthOptions, getServerSession, DefaultSession } from "next-auth";
+import type { JWT } from "next-auth/jwt";
 import { Adapter } from "next-auth/adapters";
 import { compare } from "bcryptjs";
 import { GetServerSidePropsContext, NextApiRequest, NextApiResponse } from "next";
@@ -178,7 +178,7 @@ export const authOptions: NextAuthOptions = {
             }
 
             if (typeof token.expiresAt === "number" && Date.now() / 1000 > token.expiresAt) {
-                return {} as any;
+                return {} as JWT;
             }
 
             if (account && account.provider === "google") {

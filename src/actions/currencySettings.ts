@@ -1,16 +1,16 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-"use server"
+"use server";
 
 import prisma from "@/lib/prisma";
 import { UpdateUserCurrencySchema } from "@/schemas/currencySettings";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
+import { CurrencySettings } from "@/generated/prisma/client";
 
-export async function UpdateUserCurrencyAction(currency: string): Promise<{ userId: string; currency: string }> {
+export async function UpdateUserCurrencyAction(currency: string): Promise<CurrencySettings> {
     const parsedBody = UpdateUserCurrencySchema.safeParse({ currency });
 
     if (!parsedBody.success) {
-        throw new Error(parsedBody.error.message || "Invalid currency value");
+        throw new Error(parsedBody.error.issues[0]?.message || "Invalid currency value");
     }
 
     const session = await auth();
@@ -25,7 +25,7 @@ export async function UpdateUserCurrencyAction(currency: string): Promise<{ user
     });
 
     if (!existingUser) {
-        throw new Error("User not found in the database.");
+        throw new Error("User account not found in the database.");
     }
 
     try {
@@ -43,7 +43,8 @@ export async function UpdateUserCurrencyAction(currency: string): Promise<{ user
         });
 
         return currencySettings;
-    } catch (error: any) {
-        throw new Error(error?.message || "An error occurred while updating the currency setting.");
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An error occurred while updating the currency setting.";
+        throw new Error(message);
     }
 }

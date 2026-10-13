@@ -1,12 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 
-export async function GET(request: NextRequest) {
+export async function GET() {
     try {
         const session = await auth();
         const user = session?.user;
@@ -24,9 +21,8 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({
             currency: currencySetting?.currency || "USD",
         });
-    } catch (error: any) {
-        return NextResponse.json({
-            error: error?.message || "An error occurred while processing your request."
-        }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "An error occurred while processing your request.";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }

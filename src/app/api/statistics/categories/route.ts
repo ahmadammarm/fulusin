@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { auth } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
@@ -6,12 +5,23 @@ import { getWibDateRange } from "@/lib/dateHelper";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
 
+export interface CategoryStatisticItem {
+    type: string;
+    category: string;
+    categoryIcon: string;
+    _sum: {
+        amount: number | null;
+    };
+}
+
+export type GetCategoriesStatisticsResponseType = CategoryStatisticItem[];
+
 export async function GET(request: NextRequest) {
     const session = await auth();
-    const user = await session?.user;
+    const user = session?.user;
 
     if (!user) {
-        redirect("/signin");
+        redirect("/sign-in");
     }
 
     try {
@@ -21,7 +31,10 @@ export async function GET(request: NextRequest) {
 
         const queryParams = overviewQuerySchema.safeParse({ from, to });
         if (!queryParams.success) {
-            return NextResponse.json({ error: "Invalid query parameters" }, { status: 400 });
+            return NextResponse.json(
+                { error: queryParams.error.issues[0]?.message || "Invalid query parameters" },
+                { status: 400 }
+            );
         }
 
         const statistics = await getCategoriesStatistics(
@@ -31,15 +44,17 @@ export async function GET(request: NextRequest) {
         );
 
         return NextResponse.json(statistics);
-
-    } catch (error: any) {
-        return NextResponse.json({ error: error.message }, { status: 500 });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Failed to fetch categories statistics";
+        return NextResponse.json({ error: message }, { status: 500 });
     }
 }
 
-export type GetCategoriesStatisticsResponseType = Awaited<ReturnType<typeof getCategoriesStatistics>>;
-
-async function getCategoriesStatistics(userId: string, from: Date, to: Date) {
+async function getCategoriesStatistics(
+    userId: string,
+    from: Date,
+    to: Date
+): Promise<CategoryStatisticItem[]> {
     const { start, end } = getWibDateRange(from, to);
 
     const statistics = await prisma.transaction.groupBy({
@@ -52,13 +67,13 @@ async function getCategoriesStatistics(userId: string, from: Date, to: Date) {
             },
         },
         _sum: {
-            amount: true
+            amount: true,
         },
         orderBy: {
             _sum: {
-                amount: "desc"
-            }
-        }
+                amount: "desc",
+            },
+        },
     });
 
     return statistics;

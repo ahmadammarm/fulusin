@@ -1,9 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { cn } from "@/lib/utils";
 import { useCallback } from "react";
 import CountUp from "react-countup";
 
-export default function CustomTooltip({ active, payload, formatter }: any) {
+interface CustomTooltipData {
+    income: number;
+    expense: number;
+    label?: string;
+}
+
+interface CustomTooltipProps {
+    active?: boolean;
+    payload?: ReadonlyArray<{
+        payload: CustomTooltipData;
+    }>;
+    formatter: Intl.NumberFormat;
+}
+
+export default function CustomTooltip({ active, payload, formatter }: CustomTooltipProps) {
     if (!active || !payload || payload.length === 0) {
         return null;
     }

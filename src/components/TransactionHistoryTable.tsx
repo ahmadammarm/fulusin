@@ -804,6 +804,5 @@ export default function TransactionHistoryTable() {
                     )}
                 </div>
             </div>
-        </div>
     )
 }
