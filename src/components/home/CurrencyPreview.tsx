@@ -1,24 +1,25 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Badge } from "@/components/ui/badge"
-import { ArrowDownLeft, ArrowUpRight, TrendingUp } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowDownLeft, ArrowUpRight, TrendingUp } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface CurrencyOption {
-    code: string
-    name: string
-    symbol: string
-    locale: string
-    inflow: number
-    outflow: number
+    code: string;
+    name: string;
+    symbol: string;
+    locale: string;
+    inflow: number;
+    outflow: number;
     sampleItems: {
-        category: string
-        icon: string
-        desc: string
-        type: "income" | "expense"
-        amount: number
-    }[]
+        category: string;
+        icon: string;
+        desc: string;
+        type: "income" | "expense";
+        amount: number;
+    }[];
 }
 
 const SUPPORTED_CURRENCIES: CurrencyOption[] = [
@@ -92,13 +93,13 @@ const SUPPORTED_CURRENCIES: CurrencyOption[] = [
             { category: "Freelance", icon: "📈", desc: "Contract Code Review", type: "income", amount: 1500.0 },
         ],
     },
-]
+];
 
 export default function CurrencyPreview() {
-    const [selectedCode, setSelectedCode] = useState<string>("USD")
+    const [selectedCode, setSelectedCode] = useState<string>("USD");
 
     const activeCurrency =
-        SUPPORTED_CURRENCIES.find((c) => c.code === selectedCode) || SUPPORTED_CURRENCIES[0]
+        SUPPORTED_CURRENCIES.find((c) => c.code === selectedCode) || SUPPORTED_CURRENCIES[0];
 
     const formatMoney = (val: number) => {
         try {
@@ -106,25 +107,31 @@ export default function CurrencyPreview() {
                 style: "currency",
                 currency: activeCurrency.code,
                 maximumFractionDigits: activeCurrency.code === "JPY" ? 0 : 2,
-            }).format(val)
+            }).format(val);
         } catch {
-            return `${activeCurrency.symbol} ${val.toLocaleString()}`
+            return `${activeCurrency.symbol} ${val.toLocaleString()}`;
         }
-    }
+    };
 
-    const netBalance = activeCurrency.inflow - activeCurrency.outflow
+    const netBalance = activeCurrency.inflow - activeCurrency.outflow;
 
     return (
-        <section id="currencies" className="py-20 md:py-28 bg-card/30 border-b border-border/60">
+        <section id="currencies" className="py-20 md:py-28 bg-card/30 border-b border-border/60 relative overflow-hidden">
+            {/* Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[500px] bg-gradient-to-r from-emerald-500/5 via-teal-500/10 to-transparent blur-3xl pointer-events-none -z-10" />
+
             <div className="container mx-auto px-4 sm:px-6">
                 {/* Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
-                        <span>Global Locale Formatting</span>
-                    </div>
+                <motion.div
+                    className="text-center max-w-3xl mx-auto space-y-4 mb-14"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                         Your currency,{" "}
-                        <span className="text-teal-600 dark:text-teal-400">
+                        <span className="bg-gradient-to-r from-teal-500 to-emerald-400 bg-clip-text text-transparent">
                             rendered flawlessly.
                         </span>
                     </h2>
@@ -132,30 +139,49 @@ export default function CurrencyPreview() {
                         Fulusin respects native currency conventions, decimal separators, and notation without
                         distorting underlying arithmetic precision. Select a currency below to see the live transformation.
                     </p>
-                </div>
+                </motion.div>
 
-                {/* Currency Switcher Buttons */}
-                <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-2xl mx-auto">
+                {/* Currency Switcher Buttons with Animated Layout Pill */}
+                <motion.div
+                    className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-2xl mx-auto"
+                    initial={{ opacity: 0, y: 16 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.5, delay: 0.1 }}
+                >
                     {SUPPORTED_CURRENCIES.map((currency) => (
                         <button
                             key={currency.code}
                             type="button"
                             onClick={() => setSelectedCode(currency.code)}
                             className={cn(
-                                "flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border",
+                                "relative flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors border cursor-pointer",
                                 selectedCode === currency.code
-                                    ? "bg-teal-600 text-white border-teal-600 shadow-xs"
-                                    : "bg-background text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/40"
+                                    ? "text-white border-transparent"
+                                    : "bg-background/80 text-muted-foreground border-border/80 hover:text-foreground hover:bg-muted/40"
                             )}
                         >
+                            {selectedCode === currency.code && (
+                                <motion.div
+                                    layoutId="active-currency-pill"
+                                    className="absolute inset-0 bg-teal-600 rounded-xl shadow-md shadow-teal-600/30 -z-10"
+                                    transition={{ type: "spring", stiffness: 450, damping: 32 }}
+                                />
+                            )}
                             <span className="font-mono font-bold">{currency.code}</span>
                             <span className="opacity-80">({currency.symbol})</span>
                         </button>
                     ))}
-                </div>
+                </motion.div>
 
-                {/* Live Preview Display Card */}
-                <div className="max-w-4xl mx-auto rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm">
+                {/* Live Preview Display Card with Animated Content */}
+                <motion.div
+                    className="max-w-4xl mx-auto rounded-2xl border border-border/80 bg-card p-6 sm:p-8 shadow-sm backdrop-blur-xs"
+                    initial={{ opacity: 0, scale: 0.96 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.15 }}
+                    transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] as const }}
+                >
                     {/* Top Status Bar */}
                     <div className="flex flex-wrap items-center justify-between gap-3 pb-6 border-b border-border/60">
                         <div>
@@ -171,82 +197,130 @@ export default function CurrencyPreview() {
                         </Badge>
                     </div>
 
-                    {/* KPI Metrics */}
+                    {/* KPI Metrics with Animated Transitions */}
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 my-6">
-                        <div className="p-4 rounded-xl border border-border/70 bg-background/50">
+                        <motion.div
+                            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+                            className="p-4 rounded-xl border border-border/70 bg-background/50"
+                        >
                             <div className="flex items-center justify-between text-xs text-emerald-600 dark:text-emerald-400 font-semibold mb-1">
                                 <span>TOTAL INFLOW</span>
                                 <ArrowDownLeft className="h-4 w-4" />
                             </div>
-                            <p className="text-lg sm:text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 truncate">
-                                +{formatMoney(activeCurrency.inflow)}
-                            </p>
-                        </div>
+                            <AnimatePresence mode="wait">
+                                <motion.p
+                                    key={`inflow-${activeCurrency.code}`}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.25 }}
+                                    className="text-lg sm:text-xl font-mono font-bold text-emerald-600 dark:text-emerald-400 truncate"
+                                >
+                                    +{formatMoney(activeCurrency.inflow)}
+                                </motion.p>
+                            </AnimatePresence>
+                        </motion.div>
 
-                        <div className="p-4 rounded-xl border border-border/70 bg-background/50">
+                        <motion.div
+                            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+                            className="p-4 rounded-xl border border-border/70 bg-background/50"
+                        >
                             <div className="flex items-center justify-between text-xs text-rose-600 dark:text-rose-400 font-semibold mb-1">
                                 <span>TOTAL OUTFLOW</span>
                                 <ArrowUpRight className="h-4 w-4" />
                             </div>
-                            <p className="text-lg sm:text-xl font-mono font-bold text-rose-600 dark:text-rose-400 truncate">
-                                -{formatMoney(activeCurrency.outflow)}
-                            </p>
-                        </div>
+                            <AnimatePresence mode="wait">
+                                <motion.p
+                                    key={`outflow-${activeCurrency.code}`}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.25 }}
+                                    className="text-lg sm:text-xl font-mono font-bold text-rose-600 dark:text-rose-400 truncate"
+                                >
+                                    -{formatMoney(activeCurrency.outflow)}
+                                </motion.p>
+                            </AnimatePresence>
+                        </motion.div>
 
-                        <div className="p-4 rounded-xl border border-teal-500/30 bg-teal-500/5">
+                        <motion.div
+                            whileHover={{ y: -2, transition: { duration: 0.15 } }}
+                            className="p-4 rounded-xl border border-teal-500/30 bg-teal-500/5"
+                        >
                             <div className="flex items-center justify-between text-xs text-teal-600 dark:text-teal-400 font-semibold mb-1">
                                 <span>NET ACCUMULATION</span>
-                                <TrendingUp className="h-4 w-4" />
+                                <TrendingUp className="h-4 w-4 text-teal-500" />
                             </div>
-                            <p className="text-lg sm:text-xl font-mono font-bold text-teal-600 dark:text-teal-400 truncate">
-                                +{formatMoney(netBalance)}
-                            </p>
-                        </div>
+                            <AnimatePresence mode="wait">
+                                <motion.p
+                                    key={`net-${activeCurrency.code}`}
+                                    initial={{ opacity: 0, y: 6 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -6 }}
+                                    transition={{ duration: 0.25 }}
+                                    className="text-lg sm:text-xl font-mono font-bold text-teal-600 dark:text-teal-400 truncate"
+                                >
+                                    +{formatMoney(netBalance)}
+                                </motion.p>
+                            </AnimatePresence>
+                        </motion.div>
                     </div>
 
-                    {/* Sample Ledger Rows */}
+                    {/* Sample Ledger Rows with Staggered Motion */}
                     <div className="rounded-xl border border-border/60 overflow-hidden bg-background/60">
                         <div className="px-4 py-2.5 bg-muted/40 border-b border-border/40 text-[11px] font-mono font-semibold text-muted-foreground uppercase tracking-wider flex justify-between">
                             <span>Channel & Description</span>
                             <span>Formatted Ledger Value</span>
                         </div>
-                        <div className="divide-y divide-border/40">
-                            {activeCurrency.sampleItems.map((item) => (
-                                <div
-                                    key={item.desc}
-                                    className="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors gap-3"
-                                >
-                                    <div className="flex items-center gap-3 min-w-0">
-                                        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60 text-base border border-border/50 shrink-0">
-                                            {item.icon}
-                                        </span>
-                                        <div className="min-w-0">
-                                            <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
-                                                {item.category}
-                                            </p>
-                                            <p className="text-[11px] text-muted-foreground truncate">
-                                                {item.desc}
-                                            </p>
-                                        </div>
-                                    </div>
-
-                                    <span
-                                        className={cn(
-                                            "font-mono font-bold text-xs sm:text-sm shrink-0",
-                                            item.type === "income"
-                                                ? "text-emerald-600 dark:text-emerald-400"
-                                                : "text-rose-600 dark:text-rose-400"
-                                        )}
+                        <AnimatePresence mode="wait">
+                            <motion.div
+                                key={activeCurrency.code}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                                className="divide-y divide-border/40"
+                            >
+                                {activeCurrency.sampleItems.map((item, idx) => (
+                                    <motion.div
+                                        key={item.desc}
+                                        initial={{ opacity: 0, x: -8 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        transition={{ delay: idx * 0.05, duration: 0.25 }}
+                                        className="flex items-center justify-between p-3.5 hover:bg-muted/20 transition-colors gap-3"
                                     >
-                                        {item.type === "income" ? "+" : "-"}
-                                        {formatMoney(item.amount)}
-                                    </span>
-                                </div>
-                            ))}
-                        </div>
+                                        <div className="flex items-center gap-3 min-w-0">
+                                            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted/60 text-base border border-border/50 shrink-0">
+                                                {item.icon}
+                                            </span>
+                                            <div className="min-w-0">
+                                                <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
+                                                    {item.category}
+                                                </p>
+                                                <p className="text-[11px] text-muted-foreground truncate">
+                                                    {item.desc}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        <span
+                                            className={cn(
+                                                "font-mono font-bold text-xs sm:text-sm shrink-0",
+                                                item.type === "income"
+                                                    ? "text-emerald-600 dark:text-emerald-400"
+                                                    : "text-rose-600 dark:text-rose-400"
+                                            )}
+                                        >
+                                            {item.type === "income" ? "+" : "-"}
+                                            {formatMoney(item.amount)}
+                                        </span>
+                                    </motion.div>
+                                ))}
+                            </motion.div>
+                        </AnimatePresence>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </section>
-    )
+    );
 }

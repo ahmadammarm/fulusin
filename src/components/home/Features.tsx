@@ -1,20 +1,56 @@
-"use client"
+"use client";
 
-import { Badge } from "@/components/ui/badge"
-import { BarChart3, CalendarClock, CheckCircle2, FileSpreadsheet, Layers, ReceiptText, Search, UploadCloud } from "lucide-react"
+import { Badge } from "@/components/ui/badge";
+import {
+    BarChart3,
+    CalendarClock,
+    CheckCircle2,
+    FileSpreadsheet,
+    Layers,
+    ReceiptText,
+    Search,
+    UploadCloud,
+} from "lucide-react";
+import { motion } from "framer-motion";
 
 export default function Features() {
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.1,
+                delayChildren: 0.05,
+            },
+        },
+    };
+
+    const itemFadeUp = {
+        hidden: { opacity: 0, y: 24 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+        },
+    };
+
     return (
-        <section id="features" className="py-20 md:py-28 bg-card/40 border-y border-border/60 relative">
+        <section id="features" className="py-20 md:py-28 bg-card/40 border-y border-border/60 relative overflow-hidden">
+            {/* Background ambient light */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-7xl h-[600px] bg-gradient-to-r from-teal-500/5 via-emerald-500/5 to-teal-500/5 blur-3xl pointer-events-none -z-10" />
+
             <div className="container mx-auto px-4 sm:px-6">
                 {/* Section Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
-                        <span>Personal Financial Essentials</span>
-                    </div>
+                <motion.div
+                    className="text-center max-w-3xl mx-auto space-y-4 mb-16"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                         Everything you need to{" "}
-                        <span className="text-teal-600 dark:text-teal-400">
+                        <span className="bg-gradient-to-r from-teal-500 to-emerald-400 bg-clip-text text-transparent">
                             master your money.
                         </span>
                     </h2>
@@ -22,15 +58,25 @@ export default function Features() {
                         Clear insights, effortless tracking, and zero spreadsheet headaches. Designed to help you
                         understand your spending habits, save consistently, and achieve financial clarity.
                     </p>
-                </div>
+                </motion.div>
 
-                {/* Bento Grid Layout */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto">
+                {/* Bento Grid Layout with Framer Motion Stagger */}
+                <motion.div
+                    className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 max-w-6xl mx-auto"
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.1 }}
+                >
                     {/* Bento Tile 1: Cash Flow Overview (Span 2 cols on lg) */}
-                    <div className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                    <motion.div
+                        variants={itemFadeUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
+                    >
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform duration-200">
                                     <BarChart3 className="h-5 w-5" />
                                 </div>
                                 <Badge variant="outline" className="text-[11px] font-mono border-border">
@@ -62,20 +108,24 @@ export default function Features() {
                                         <p className="text-[10px] text-rose-600 dark:text-rose-400 font-semibold uppercase">Total Outflow</p>
                                         <p className="font-mono font-bold text-xs sm:text-sm text-rose-600 dark:text-rose-400 mt-0.5">-$3,120.50</p>
                                     </div>
-                                    <div className="bg-background/80 rounded-lg p-2.5 border border-teal-500/30 bg-teal-500/5">
+                                    <div className="rounded-lg p-2.5 border border-teal-500/30 bg-teal-500/5">
                                         <p className="text-[10px] text-teal-600 dark:text-teal-400 font-semibold uppercase">Net Savings</p>
                                         <p className="font-mono font-bold text-xs sm:text-sm text-teal-600 dark:text-teal-400 mt-0.5">+$5,329.50</p>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Bento Tile 2: CSV Bulk Ingestion (Span 2 cols on lg) */}
-                    <div className="md:col-span-1 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                    <motion.div
+                        variants={itemFadeUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="md:col-span-1 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
+                    >
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform duration-200">
                                     <FileSpreadsheet className="h-5 w-5" />
                                 </div>
                                 <Badge variant="outline" className="text-[11px] font-mono border-border">
@@ -109,13 +159,17 @@ export default function Features() {
                                 </span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Bento Tile 3: Custom Category Channels (Span 2 cols on lg) */}
-                    <div className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                    <motion.div
+                        variants={itemFadeUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="md:col-span-2 lg:col-span-2 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
+                    >
                         <div className="space-y-3">
                             <div className="flex items-center justify-between">
-                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform duration-200">
                                     <Layers className="h-5 w-5" />
                                 </div>
                                 <Badge variant="outline" className="text-[11px] font-mono border-border">
@@ -133,37 +187,41 @@ export default function Features() {
 
                         {/* Real Mini UI Preview: Category Pills */}
                         <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>💼</span>
                                 <span className="font-medium text-foreground truncate">Salary & Retainers</span>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>🥑</span>
                                 <span className="font-medium text-foreground truncate">Fresh Groceries</span>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>💻</span>
                                 <span className="font-medium text-foreground truncate">Cloud & Dev Tools</span>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>☕</span>
                                 <span className="font-medium text-foreground truncate">Coffee & Cafes</span>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>🏠</span>
                                 <span className="font-medium text-foreground truncate">Rent & Utilities</span>
                             </div>
-                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50">
+                            <div className="flex items-center gap-2 p-2 rounded-lg bg-muted/40 border border-border/50 hover:bg-muted/60 transition-colors">
                                 <span>📈</span>
                                 <span className="font-medium text-foreground truncate">Investments</span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Bento Tile 4: Transaction History & Audit Ledger (Span 1 col on lg) */}
-                    <div className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                    <motion.div
+                        variants={itemFadeUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
+                    >
                         <div className="space-y-3">
-                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform duration-200">
                                 <ReceiptText className="h-5 w-5" />
                             </div>
                             <h3 className="text-xl font-bold text-foreground">
@@ -183,12 +241,16 @@ export default function Features() {
                                 <span className="font-mono font-bold text-rose-600 dark:text-rose-400 shrink-0">-$18.75</span>
                             </div>
                         </div>
-                    </div>
+                    </motion.div>
 
                     {/* Bento Tile 5: Recurring Commitments & Subscriptions (Span 1 col on lg) */}
-                    <div className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-all duration-300 shadow-sm">
+                    <motion.div
+                        variants={itemFadeUp}
+                        whileHover={{ y: -4, transition: { duration: 0.2 } }}
+                        className="md:col-span-1 lg:col-span-1 rounded-2xl border border-border/80 bg-card p-6 sm:p-8 flex flex-col justify-between group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
+                    >
                         <div className="space-y-3">
-                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                            <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-105 transition-transform duration-200">
                                 <CalendarClock className="h-5 w-5" />
                             </div>
                             <h3 className="text-xl font-bold text-foreground">
@@ -208,9 +270,9 @@ export default function Features() {
                                 <span className="font-mono text-muted-foreground shrink-0">20th / mo</span>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </motion.div>
+                </motion.div>
             </div>
         </section>
-    )
+    );
 }

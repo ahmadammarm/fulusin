@@ -1,12 +1,13 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { ChevronDown } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface FAQItem {
-    question: string
-    answer: string
+    question: string;
+    answer: string;
 }
 
 const FAQS: FAQItem[] = [
@@ -40,73 +41,126 @@ const FAQS: FAQItem[] = [
         answer:
             "When dealing with transactions recorded late at night, UTC-only databases often misclassify records into the wrong day or month. Fulusin anchors all transaction aggregation points to your regional reference timezone (Asia/Jakarta standard) before extracting day, month, and year values for historical records.",
     },
-]
+];
 
 export default function FAQ() {
-    const [openIndex, setOpenIndex] = useState<number | null>(0)
+    const [openIndex, setOpenIndex] = useState<number | null>(0);
 
     const toggle = (idx: number) => {
-        setOpenIndex((prev) => (prev === idx ? null : idx))
-    }
+        setOpenIndex((prev) => (prev === idx ? null : idx));
+    };
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.08,
+                delayChildren: 0.05,
+            },
+        },
+    };
+
+    const itemVariants = {
+        hidden: { opacity: 0, y: 16 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+        },
+    };
 
     return (
-        <section id="faq" className="py-20 md:py-28 bg-background border-b border-border/60">
+        <section id="faq" className="py-20 md:py-28 bg-background border-b border-border/60 relative overflow-hidden">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-5xl h-[450px] bg-gradient-to-b from-teal-500/5 via-emerald-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+
             <div className="container mx-auto px-4 sm:px-6">
                 {/* Section Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-4 mb-14">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
-                        <span>Transparent Financial Architecture</span>
-                    </div>
+                <motion.div
+                    className="text-center max-w-3xl mx-auto space-y-4 mb-14"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                         Frequently Asked{" "}
-                        <span className="text-teal-600 dark:text-teal-400">
+                        <span className="bg-gradient-to-r from-teal-500 to-emerald-400 bg-clip-text text-transparent">
                             Questions
                         </span>
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                         Direct answers to common questions about Fulusin&apos;s ledger design, data privacy, and daily workflows.
                     </p>
-                </div>
+                </motion.div>
 
-                {/* Accordion Container */}
-                <div className="max-w-3xl mx-auto space-y-3">
+                {/* Accordion Container with Staggered Viewport Entrance */}
+                <motion.div
+                    className="max-w-3xl mx-auto space-y-3"
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.15 }}
+                >
                     {FAQS.map((faq, idx) => {
-                        const isOpen = openIndex === idx
+                        const isOpen = openIndex === idx;
                         return (
-                            <div
+                            <motion.div
                                 key={faq.question}
+                                variants={itemVariants}
+                                whileHover={{ y: -1 }}
                                 className={cn(
                                     "rounded-xl border transition-all duration-200 overflow-hidden",
                                     isOpen
-                                        ? "border-teal-500/40 bg-card shadow-sm"
-                                        : "border-border/80 bg-card/60 hover:border-border"
+                                        ? "border-teal-500/50 bg-card shadow-md shadow-teal-500/5"
+                                        : "border-border/80 bg-card/60 hover:border-border hover:bg-card"
                                 )}
                             >
                                 <button
                                     type="button"
                                     onClick={() => toggle(idx)}
-                                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm sm:text-base text-foreground focus:outline-hidden"
+                                    className="w-full p-4 sm:p-5 text-left flex items-center justify-between gap-4 font-semibold text-sm sm:text-base text-foreground focus:outline-hidden cursor-pointer"
                                     aria-expanded={isOpen}
                                 >
-                                    <span>{faq.question}</span>
-                                    <ChevronDown
-                                        className={cn(
-                                            "h-4 w-4 text-muted-foreground shrink-0 transition-transform duration-200",
-                                            isOpen && "rotate-180 text-teal-500"
-                                        )}
-                                    />
+                                    <span className={cn(isOpen && "text-teal-600 dark:text-teal-400 transition-colors")}>
+                                        {faq.question}
+                                    </span>
+                                    <motion.div
+                                        animate={{ rotate: isOpen ? 180 : 0 }}
+                                        transition={{ duration: 0.25, ease: "easeInOut" }}
+                                        className="shrink-0"
+                                    >
+                                        <ChevronDown
+                                            className={cn(
+                                                "h-4 w-4 transition-colors",
+                                                isOpen ? "text-teal-500" : "text-muted-foreground"
+                                            )}
+                                        />
+                                    </motion.div>
                                 </button>
 
-                                {isOpen && (
-                                    <div className="px-4 pb-5 sm:px-5 sm:pb-5 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-3">
-                                        {faq.answer}
-                                    </div>
-                                )}
-                            </div>
-                        )
+                                <AnimatePresence initial={false}>
+                                    {isOpen && (
+                                        <motion.div
+                                            key="content"
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] as const }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="px-4 pb-5 sm:px-5 sm:pb-5 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40 pt-3">
+                                                {faq.answer}
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </motion.div>
+                        );
                     })}
-                </div>
+                </motion.div>
             </div>
         </section>
-    )
+    );
 }

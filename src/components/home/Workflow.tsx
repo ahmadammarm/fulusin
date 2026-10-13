@@ -1,7 +1,8 @@
-"use client"
+"use client";
 
-import { Coins, Database, FileSpreadsheet, LineChart } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
+import { Coins, Database, FileSpreadsheet, LineChart } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { motion } from "framer-motion";
 
 export default function Workflow() {
     const steps = [
@@ -41,42 +42,93 @@ export default function Workflow() {
                 "Switch between monthly and annual views. Visualize income versus expense velocity and maintain positive financial trajectory.",
             metric: "Real-time O(1) query rendering",
         },
-    ]
+    ];
+
+    const containerVariants = {
+        hidden: { opacity: 0 },
+        visible: {
+            opacity: 1,
+            transition: {
+                staggerChildren: 0.14,
+                delayChildren: 0.1,
+            },
+        },
+    };
+
+    const cardVariants = {
+        hidden: { opacity: 0, y: 28 },
+        visible: {
+            opacity: 1,
+            y: 0,
+            transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] as const },
+        },
+    };
 
     return (
-        <section id="workflow" className="py-20 md:py-28 bg-background border-b border-border/60">
+        <section id="workflow" className="py-20 md:py-28 bg-background border-b border-border/60 relative overflow-hidden">
+            {/* Ambient Background Glow */}
+            <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-full max-w-6xl h-[450px] bg-gradient-to-b from-teal-500/5 to-transparent blur-3xl pointer-events-none -z-10" />
+
             <div className="container mx-auto px-4 sm:px-6">
                 {/* Header */}
-                <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-                    <div className="inline-flex items-center px-3 py-1 rounded-full border border-teal-500/30 bg-teal-500/10 text-teal-600 dark:text-teal-400 text-xs font-medium">
-                        <span>Seamless 4-Step Process</span>
-                    </div>
+                <motion.div
+                    className="text-center max-w-3xl mx-auto space-y-4 mb-16"
+                    initial={{ opacity: 0, y: 24 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] as const }}
+                >
                     <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
                         From raw transactions to{" "}
-                        <span className="text-teal-600 dark:text-teal-400">
+                        <span className="bg-gradient-to-r from-teal-500 to-emerald-400 bg-clip-text text-transparent">
                             crystal clear financial vision.
                         </span>
                     </h2>
                     <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
                         How Fulusin turns daily receipts and bank exports into an audit-ready financial ledger in seconds.
                     </p>
+                </motion.div>
+
+                {/* Flow Indicator Beam on Desktop */}
+                <div className="hidden lg:block max-w-6xl mx-auto relative mb-6 px-8">
+                    <div className="h-0.5 w-full bg-border/60 relative overflow-hidden rounded-full">
+                        <motion.div
+                            className="absolute top-0 bottom-0 w-48 bg-gradient-to-r from-transparent via-teal-400 to-transparent blur-[1px]"
+                            animate={{
+                                x: ["-100%", "600%"],
+                            }}
+                            transition={{
+                                repeat: Infinity,
+                                duration: 3.5,
+                                ease: "linear",
+                            }}
+                        />
+                    </div>
                 </div>
 
                 {/* Workflow Steps Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
+                <motion.div
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto"
+                    variants={containerVariants}
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, amount: 0.15 }}
+                >
                     {steps.map((step) => {
-                        const Icon = step.icon
+                        const Icon = step.icon;
                         return (
-                            <div
+                            <motion.div
                                 key={step.number}
-                                className="rounded-2xl border border-border/80 bg-card p-6 flex flex-col justify-between relative group hover:border-teal-500/40 transition-all duration-300 shadow-sm"
+                                variants={cardVariants}
+                                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                                className="rounded-2xl border border-border/80 bg-card p-6 flex flex-col justify-between relative group hover:border-teal-500/40 transition-colors duration-300 shadow-sm hover:shadow-lg hover:shadow-teal-500/5"
                             >
                                 <div>
                                     <div className="flex items-center justify-between mb-4">
-                                        <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400">
+                                        <div className="h-10 w-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 group-hover:scale-110 group-hover:bg-teal-500/15 transition-all duration-200">
                                             <Icon className="h-5 w-5" />
                                         </div>
-                                        <span className="text-2xl font-black font-mono text-muted-foreground/40 group-hover:text-teal-500/60 transition-colors">
+                                        <span className="text-2xl font-black font-mono text-muted-foreground/35 group-hover:text-teal-500/70 transition-colors">
                                             {step.number}
                                         </span>
                                     </div>
@@ -85,7 +137,7 @@ export default function Workflow() {
                                         {step.badge}
                                     </Badge>
 
-                                    <h3 className="text-lg font-bold text-foreground mb-2">
+                                    <h3 className="text-lg font-bold text-foreground mb-2 group-hover:text-teal-600 dark:group-hover:text-teal-400 transition-colors">
                                         {step.title}
                                     </h3>
 
@@ -96,15 +148,15 @@ export default function Workflow() {
 
                                 <div className="mt-6 pt-4 border-t border-border/60">
                                     <p className="text-[11px] font-mono text-teal-600 dark:text-teal-400 flex items-center gap-1.5">
-                                        <span className="h-1.5 w-1.5 rounded-full bg-teal-500" />
+                                        <span className="h-1.5 w-1.5 rounded-full bg-teal-500 animate-pulse" />
                                         {step.metric}
                                     </p>
                                 </div>
-                            </div>
-                        )
+                            </motion.div>
+                        );
                     })}
-                </div>
+                </motion.div>
             </div>
         </section>
-    )
+    );
 }
