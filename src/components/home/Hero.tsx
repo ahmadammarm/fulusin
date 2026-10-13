@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ArrowRight, ChevronRight, TrendingUp } from "lucide-react";
 import { Button } from "../ui/button";
 import { Badge } from "../ui/badge";
@@ -29,8 +29,21 @@ export default function Hero() {
     const { data: session, status } = useSession();
     const router = useRouter();
     const [mockupView, setMockupView] = useState<"ledger" | "categories">("ledger");
+    const [isDesktop, setIsDesktop] = useState(false);
 
-    // 3D Parallax Tilt for the Ledger Card
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(min-width: 768px)");
+        setIsDesktop(mediaQuery.matches);
+
+        const handler = (e: MediaQueryListEvent) => {
+            setIsDesktop(e.matches);
+        };
+
+        mediaQuery.addEventListener("change", handler);
+        return () => mediaQuery.removeEventListener("change", handler);
+    }, []);
+
+    // 3D Parallax Tilt for the Ledger Card (active on desktop only)
     const mouseX = useMotionValue(0);
     const mouseY = useMotionValue(0);
 
@@ -41,6 +54,7 @@ export default function Hero() {
     const glareY = useTransform(mouseY, [-0.5, 0.5], [0, 100]);
 
     const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+        if (!isDesktop) return;
         const rect = e.currentTarget.getBoundingClientRect();
         const x = (e.clientX - rect.left) / rect.width - 0.5;
         const y = (e.clientY - rect.top) / rect.height - 0.5;
@@ -49,6 +63,7 @@ export default function Hero() {
     };
 
     const handleMouseLeave = () => {
+        if (!isDesktop) return;
         mouseX.set(0);
         mouseY.set(0);
     };
@@ -221,32 +236,40 @@ export default function Hero() {
 
                 {/* 3D Showcase & Interactive Ledger Mockup Section */}
                 <div className="mt-12 sm:mt-16 max-w-6xl mx-auto relative">
-                    {/* Embedded 3D Canvas in Background Depth */}
-                    <div className="absolute inset-0 -top-16 sm:-top-20 z-0 opacity-80 pointer-events-none flex items-center justify-center">
-                        <Hero3DCanvas />
-                    </div>
+                    {/* Embedded 3D Canvas in Background Depth (Desktop Only: >= 768px) */}
+                    {isDesktop && (
+                        <div className="hidden md:flex absolute inset-0 -top-16 sm:-top-20 z-0 opacity-80 pointer-events-none items-center justify-center">
+                            <Hero3DCanvas />
+                        </div>
+                    )}
 
-                    {/* Interactive 3D Parallax Glass Ledger Mockup */}
+                    {/* Interactive Glass Ledger Mockup (Flat & performant on mobile, 3D parallax tilt on desktop) */}
                     <motion.div
                         variants={cardEntrance}
                         initial="hidden"
                         animate="visible"
-                        style={{
-                            rotateX,
-                            rotateY,
-                            transformPerspective: 1200,
-                        }}
+                        style={
+                            isDesktop
+                                ? {
+                                      rotateX,
+                                      rotateY,
+                                      transformPerspective: 1200,
+                                  }
+                                : undefined
+                        }
                         onMouseMove={handleMouseMove}
                         onMouseLeave={handleMouseLeave}
                         className="relative z-10 rounded-2xl sm:rounded-3xl border border-border/80 bg-card/85 dark:bg-card/90 shadow-2xl backdrop-blur-xl overflow-hidden transition-shadow duration-300 hover:shadow-teal-500/10"
                     >
-                        {/* Dynamic Interactive Glare Overlay */}
-                        <motion.div
-                            className="absolute inset-0 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300 -z-0"
-                            style={{
-                                background: `radial-gradient(600px circle at ${glareX}% ${glareY}%, rgba(45, 212, 191, 0.12), transparent 40%)`,
-                            }}
-                        />
+                        {/* Dynamic Interactive Glare Overlay (Desktop Only) */}
+                        {isDesktop && (
+                            <motion.div
+                                className="absolute inset-0 pointer-events-none opacity-0 hover:opacity-100 transition-opacity duration-300 -z-0"
+                                style={{
+                                    background: `radial-gradient(600px circle at ${glareX}% ${glareY}%, rgba(45, 212, 191, 0.12), transparent 40%)`,
+                                }}
+                            />
+                        )}
 
                         {/* Mockup Window Titlebar */}
                         <div className="flex flex-wrap items-center justify-between gap-3 px-4 sm:px-6 py-3.5 border-b border-border/60 bg-muted/40 text-xs relative z-10">

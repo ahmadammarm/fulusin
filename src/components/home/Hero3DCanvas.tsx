@@ -11,6 +11,11 @@ export default function Hero3DCanvas() {
         const container = mountRef.current;
         if (!container) return;
 
+        // Bypass WebGL initialization entirely on mobile viewports (< 768px) for performance
+        if (typeof window !== "undefined" && window.innerWidth < 768) {
+            return;
+        }
+
         // Check WebGL availability
         try {
             const canvas = document.createElement("canvas");
