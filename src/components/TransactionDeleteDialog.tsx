@@ -38,6 +38,9 @@ export default function TransactionDeleteDialog({ open, setOpen, transactionId }
                 queryKey: ["overview"],
                 exact: false,
             });
+            await queryClient.invalidateQueries({
+                queryKey: ["budgets"],
+            });
             setOpen(false);
         },
         onError: (error: Error) => {

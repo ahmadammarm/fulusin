@@ -29,7 +29,7 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "./ui/alert-dialog";
-import { LayoutDashboard, ReceiptText, Settings2, LogOut } from "lucide-react";
+import { LayoutDashboard, ReceiptText, Settings2, LogOut, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export default function DesktopSidebar() {
@@ -60,6 +60,7 @@ export default function DesktopSidebar() {
 
     const isDashboardActive = pathname === "/dashboard";
     const isTransactionsActive = pathname.startsWith("/dashboard/transactions");
+    const isPlanningActive = pathname.startsWith("/dashboard/planning");
     const isManageActive = pathname.startsWith("/dashboard/manage");
 
     return (
@@ -105,6 +106,25 @@ export default function DesktopSidebar() {
                                 <Link href="/dashboard/transactions" onClick={handleLinkClick}>
                                     <ReceiptText className="h-4 w-4 shrink-0" />
                                     <span>Transactions</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
+
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isPlanningActive}
+                                tooltip="Planning"
+                                className={cn(
+                                    "transition-colors rounded-xl h-9 px-3 text-xs sm:text-sm font-medium",
+                                    isPlanningActive
+                                        ? "bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold hover:bg-teal-500/20"
+                                        : "text-muted-foreground hover:text-foreground hover:bg-muted"
+                                )}
+                            >
+                                <Link href="/dashboard/planning" onClick={handleLinkClick}>
+                                    <Target className="h-4 w-4 shrink-0" />
+                                    <span>Planning</span>
                                 </Link>
                             </SidebarMenuButton>
                         </SidebarMenuItem>

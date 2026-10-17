@@ -61,12 +61,15 @@ export async function CategoryDelete(form: CategoryDeleteSchemaType): Promise<Ca
                 type,
             },
         }),
-        prisma.budget.count({
-            where: {
-                userId: user.id,
-                category: name,
-            },
-        }),
+        // Budgets only reference expense categories.
+        type === "expense"
+            ? prisma.budget.count({
+                  where: {
+                      userId: user.id,
+                      category: name,
+                  },
+              })
+            : Promise.resolve(0),
         prisma.recurringTransaction.count({
             where: {
                 userId: user.id,
