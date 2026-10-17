@@ -1,4 +1,4 @@
-import { PiggyBank, Wallet, TrendingDown } from "lucide-react";
+import { Coins, TriangleAlert, Wallet, TrendingDown } from "lucide-react";
 import { BudgetWithProgress } from "@/app/api/budgets/route";
 import { addCurrency, subtractCurrency } from "@/lib/financialMath";
 import { cn } from "@/lib/utils";
@@ -19,7 +19,7 @@ export default function BudgetSummary({ budgets, formatter }: BudgetSummaryProps
         {
             label: remaining >= 0 ? "Remaining" : "Over Budget",
             value: Math.abs(remaining),
-            icon: PiggyBank,
+            icon: remaining >= 0 ? Coins : TriangleAlert,
             tone:
                 remaining >= 0
                     ? "text-emerald-600 dark:text-emerald-400 bg-emerald-500/10"
