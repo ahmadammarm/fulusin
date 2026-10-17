@@ -1,4 +1,5 @@
 import { formatInTimeZone, fromZonedTime } from "date-fns-tz";
+import { Period } from "@/lib/types";
 
 export const APP_TIMEZONE = "Asia/Jakarta";
 
@@ -78,6 +79,40 @@ export function getWibDateRange(from: Date | string, to: Date | string): WibDate
         start: startParsed.wibStartOfDay,
         end: endParsed.wibEndOfDay,
     };
+}
+
+/**
+ * Returns the WIB start and end boundaries of a calendar month (month is 1-12).
+ */
+export function getWibMonthRange(month: number, year: number): WibDateRange {
+    const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+    const pad = (value: number) => String(value).padStart(2, "0");
+    return getWibDateRange(
+        `${year}-${pad(month)}-01`,
+        `${year}-${pad(month)}-${pad(lastDay)}`
+    );
+}
+
+/**
+ * Returns the calendar month immediately before the given one.
+ */
+export function getPreviousPeriod({ month, year }: Period): Period {
+    return month === 1 ? { month: 12, year: year - 1 } : { month: month - 1, year };
+}
+
+/**
+ * Returns the calendar month immediately after the given one.
+ */
+export function getNextPeriod({ month, year }: Period): Period {
+    return month === 12 ? { month: 1, year: year + 1 } : { month: month + 1, year };
+}
+
+/**
+ * Returns the current calendar month in Asia/Jakarta.
+ */
+export function getCurrentWibPeriod(): Period {
+    const { month, year } = parseWibDate(new Date());
+    return { month, year };
 }
 
 /**
