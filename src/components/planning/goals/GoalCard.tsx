@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { format } from "date-fns";
-import { CalendarClock, CheckCircle2, MoreHorizontal, Pencil, PiggyBank, Trash2 } from "lucide-react";
+import { CalendarClock, CheckCircle2, MoreHorizontal, Pencil, Target, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import {
@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import GoalFormDialog from "@/components/planning/goals/GoalFormDialog";
 import GoalFundsDialog from "@/components/planning/goals/GoalFundsDialog";
-import ConfirmDeleteDialog from "@/components/planning/ConfirmDeleteDialog";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
 import { DeleteGoalAction } from "@/actions/goals";
 import { GoalItem } from "@/app/api/goals/route";
 import { getGoalProgress } from "@/lib/planning";
@@ -69,7 +69,7 @@ export default function GoalCard({ goal, formatter }: GoalCardProps) {
                             : "bg-teal-500/10 text-teal-600 dark:text-teal-400 border-teal-500/20"
                     )}
                 >
-                    {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <PiggyBank className="h-5 w-5" />}
+                    {isCompleted ? <CheckCircle2 className="h-5 w-5" /> : <Target className="h-5 w-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground truncate">{goal.name}</p>
@@ -108,7 +108,7 @@ export default function GoalCard({ goal, formatter }: GoalCardProps) {
                 />
                 <div className="flex items-center justify-between text-xs">
                     <span className="font-medium text-foreground">
-                        {isCompleted ? "Goal reached 🎉" : `${formatter.format(remaining)} to go`}
+                        {isCompleted ? "Goal reached" : `${formatter.format(remaining)} to go`}
                     </span>
                     <span className="text-muted-foreground font-mono">{percentage}%</span>
                 </div>
@@ -141,8 +141,8 @@ export default function GoalCard({ goal, formatter }: GoalCardProps) {
             <ConfirmDeleteDialog
                 open={isDeleteOpen}
                 setOpen={setIsDeleteOpen}
-                title="Delete Goal"
-                description={`Delete the "${goal.name}" goal and its saved progress? This cannot be undone.`}
+                title={`Delete "${goal.name}"?`}
+                description="The goal and its saved progress will be removed. Your account balance isn't affected. This can't be undone."
                 isPending={deleteMutation.isPending}
                 onConfirm={() => deleteMutation.mutate({ id: goal.id })}
             />
