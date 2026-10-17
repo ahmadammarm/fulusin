@@ -1,63 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { ProcessDueRecurringTransactionsAction } from "@/actions/recurringExecution";
-import prisma from "@/lib/prisma";
+import { processDueRecurringForAllUsers, processDueRecurringForUser } from "@/lib/recurringProcessor";
 
-export async function POST(request: NextRequest) {
+function hasValidCronSecret(request: NextRequest): boolean {
+    const cronSecret = process.env.CRON_SECRET;
+    return Boolean(cronSecret) && request.headers.get("authorization") === `Bearer ${cronSecret}`;
+}
+
+async function processAllUsers() {
     try {
-        const authHeader = request.headers.get("authorization");
-        const cronSecret = process.env.CRON_SECRET;
-
-        // Check secret if configured
-        const isAuthorizedSecret =
-            cronSecret && authHeader === `Bearer ${cronSecret}`;
-
-        if (!isAuthorizedSecret) {
-            // Fallback: Check if active user session is authenticated
-            const session = await auth();
-            if (!session?.user?.id) {
-                return NextResponse.json(
-                    { error: "Unauthorized. Provide a valid CRON_SECRET or sign in." },
-                    { status: 401 }
-                );
-            }
-
-            // Process for authenticated user
-            const result = await ProcessDueRecurringTransactionsAction(session.user.id);
-            return NextResponse.json(result);
-        }
-
-        // If authorized via CRON_SECRET, process all users with due recurring rules
-        const usersWithDueRecurring = await prisma.recurringTransaction.findMany({
-            where: {
-                nextDate: {
-                    lte: new Date(),
-                },
-            },
-            select: {
-                userId: true,
-            },
-            distinct: ["userId"],
-        });
-
-        let totalProcessed = 0;
-        const allCreatedIds: string[] = [];
-
-        for (const { userId } of usersWithDueRecurring) {
-            const res = await ProcessDueRecurringTransactionsAction(userId);
-            totalProcessed += res.processedCount;
-            allCreatedIds.push(...res.transactionIds);
-        }
-
-        return NextResponse.json({
-            success: true,
-            usersCount: usersWithDueRecurring.length,
-            totalProcessed,
-            transactionIds: allCreatedIds,
-        });
+        const result = await processDueRecurringForAllUsers();
+        return NextResponse.json({ success: true, ...result });
     } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "Recurring cron processing failed";
         console.error("Cron recurring execution error:", message);
+        return NextResponse.json({ error: message }, { status: 500 });
+    }
+}
+
+/**
+ * Vercel Cron entry point. Vercel calls this with GET and sends `Authorization: Bearer <CRON_SECRET>`.
+ */
+export async function GET(request: NextRequest) {
+    if (!hasValidCronSecret(request)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    return processAllUsers();
+}
+
+/**
+ * Manual trigger: processes every user with a valid CRON_SECRET, or only the signed-in user otherwise.
+ */
+export async function POST(request: NextRequest) {
+    if (hasValidCronSecret(request)) {
+        return processAllUsers();
+    }
+
+    try {
+        const session = await auth();
+        if (!session?.user?.id) {
+            return NextResponse.json(
+                { error: "Unauthorized. Provide a valid CRON_SECRET or sign in." },
+                { status: 401 }
+            );
+        }
+
+        const result = await processDueRecurringForUser(session.user.id);
+        return NextResponse.json({ success: true, ...result });
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Recurring processing failed";
+        console.error("Recurring execution error:", message);
         return NextResponse.json({ error: message }, { status: 500 });
     }
 }

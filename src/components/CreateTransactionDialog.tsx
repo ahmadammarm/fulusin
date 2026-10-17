@@ -102,6 +102,10 @@ export default function CreateTransactionDialog({ trigger, type, currency = "USD
             });
 
             queryClient.invalidateQueries({
+                queryKey: ["budgets"],
+            });
+
+            queryClient.invalidateQueries({
                 queryKey: ["transactionHistory"],
             });
         },

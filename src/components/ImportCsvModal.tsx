@@ -65,6 +65,7 @@ export default function ImportCsvModal() {
         toast.success("Transactions imported successfully.");
         queryClient.invalidateQueries({ queryKey: ["transactionHistory"] });
         queryClient.invalidateQueries({ queryKey: ["overview"] });
+        queryClient.invalidateQueries({ queryKey: ["budgets"] });
         setOpen(false);
         setFile(null);
         setPreviewData([]);

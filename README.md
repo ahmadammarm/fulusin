@@ -1,147 +1,299 @@
 # Fulusin
 
-Fulusin is a web-based financial tracking platform designed to help individuals manage, monitor, and analyze their financial activities within specific timeframes.
+Fulusin is a web-based personal finance tracker. It helps people record income and expenses, see where their money goes over any period, plan monthly budgets, save toward goals, and automate transactions that repeat on a schedule.
+
+## Table of Contents
+
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Getting Started](#getting-started)
+- [Environment Variables](#environment-variables)
+- [Available Scripts](#available-scripts)
+- [Database](#database)
+- [Recurring Transactions and Cron](#recurring-transactions-and-cron)
+- [Testing](#testing)
+- [Deployment](#deployment)
+- [Running with Docker](#running-with-docker)
+- [Contributing](#contributing)
+
+## Features
+
+**Authentication and onboarding**
+- Sign in with Google OAuth or with an email and password account.
+- A first-run wizard asks for the user's preferred currency before the dashboard becomes available.
+
+**Dashboard**
+- Income, expense, and balance summary for any date range.
+- Top income and expense categories for the selected range.
+- Monthly and yearly history charts.
+
+**Transactions**
+- Record income and expenses with a category, description, and date.
+- Searchable, filterable, and paginated transaction history.
+- Export transactions to CSV.
+- Bulk import from CSV with the headers `date, amount, description, type, category`. Categories must already exist.
+
+**Preferences**
+- Choose a default currency. Amounts are formatted with the matching locale and symbol across the app.
+- Create and delete income and expense categories, each with an emoji icon. A category cannot be deleted while transactions, budgets, or recurring schedules still use it.
+
+**Planning**
+- **Budgets:** set a monthly spending limit per expense category and track spending against it. Cards turn amber at 80% of the limit and red when the limit is exceeded. Budgets can be edited, deleted, and copied from the previous month.
+- **Goals:** create savings goals with a target amount and an optional deadline, then add or withdraw funds. Goal funds are tracked separately and do not change the account balance.
+- **Recurring:** schedule income or expenses that repeat daily, weekly, monthly, or yearly. Each occurrence is recorded as a real transaction when it falls due, including any occurrences missed while the app was not used.
+
+**Education**
+- An AI assistant powered by Google Gemini that explains financial concepts with a definition, key ideas, practical strategies, and an example.
 
 ## Tech Stack
 
-- **Framework**: Next.js 16
-- **Language**: TypeScript
-- **Styling**: TailwindCSS
-- **UI Components**: shadcn/ui
-- **Database**: PostgreSQL
-- **Containerization**: Docker(optional)
+| Area | Technology |
+| --- | --- |
+| Framework | Next.js 16 (App Router), React 18 |
+| Language | TypeScript 5 |
+| Styling | Tailwind CSS v4, shadcn/ui (Radix UI primitives) |
+| Database | PostgreSQL (Neon), Prisma ORM 7 with the Neon serverless adapter |
+| Authentication | NextAuth.js v4 (Google OAuth and credentials) |
+| Data fetching | TanStack React Query v5, Next.js Server Actions |
+| Forms and validation | React Hook Form, Zod |
+| Charts and motion | Recharts, Framer Motion, Three.js |
+| AI | Google Generative AI (`gemini-2.5-flash-lite`) |
+| Testing | Vitest |
+| Hosting | Vercel (Docker is also supported) |
+
+## Architecture
+
+**Reads and writes are separated.**
+- Mutations are Server Actions in `src/actions/`. Each action validates input with Zod, resolves the signed-in user from the session, and scopes every query to that user.
+- Reads are Route Handlers in `src/app/api/` that are consumed by TanStack React Query on the client.
+
+**Balances are pre-aggregated.**
+Instead of summing all transactions on every dashboard render, the database keeps running totals:
+- `MonthHistory` stores income and expense per user per day.
+- `YearHistory` stores income and expense per user per month.
+
+Creating, importing, or deleting a transaction updates these tables in the same database transaction. If they ever drift, `pnpm history:resync` rebuilds them from the transaction records.
+
+**All dates use the Asia/Jakarta (WIB) calendar.**
+Daily and monthly boundaries are computed in WIB with the helpers in `src/lib/dateHelper.ts`, so a transaction always lands on the same calendar day regardless of where the server runs.
+
+**Concurrent writes are serialized per user.**
+Writes that touch balances take a PostgreSQL advisory lock per user, which prevents double submissions and duplicate recurring transactions. Money values are rounded to two decimals with the helpers in `src/lib/financialMath.ts`.
+
+**Routes are protected in two layers.**
+`src/proxy.ts` redirects signed-out visitors away from `/dashboard`. The dashboard layout also redirects users without a currency setting to the `/wizard` onboarding page.
 
 ## Project Structure
 
 ```
 fulusin/
+├── prisma/
+│   ├── schema.prisma          # Database models
+│   └── migrations/            # SQL migrations
+├── scripts/
+│   └── resyncHistory.ts       # Rebuilds MonthHistory and YearHistory
 ├── src/
-│   ├── actions/        # Next.js server action handlers
-│   ├── app/            # Next.js app router pages
-│   ├── components/     # Reusable React components
-│   ├── lib/            # Core utilities and helpers
-│   ├── provider/       # Next Auth and React Query Client provider configurations
-│   ├── schemas/        # Form validation schemas
+│   ├── actions/               # Server Actions (mutations)
+│   ├── app/
+│   │   ├── (auth)/            # Sign in and sign up pages
+│   │   ├── (user)/dashboard/  # Dashboard, transactions, planning, education, manage
+│   │   ├── api/               # Route Handlers (reads, auth, cron)
+│   │   └── wizard/            # Currency onboarding
+│   ├── components/
+│   │   ├── home/              # Landing page sections
+│   │   ├── planning/          # Budgets, goals, and recurring UI
+│   │   ├── skeletons/         # Loading placeholders
+│   │   └── ui/                # shadcn/ui primitives
+│   ├── generated/prisma/      # Generated Prisma client (not committed)
+│   ├── hooks/                 # Shared React hooks
+│   ├── lib/                   # Auth, Prisma, date, money, and domain helpers
+│   ├── providers/             # NextAuth and React Query providers
+│   ├── schemas/               # Zod validation schemas
+│   └── proxy.ts               # Route protection
+├── deployment/Dockerfile
+├── docker-compose.yaml
+└── vercel.json                # Vercel Cron schedule
 ```
-
-## Key Features
-- OAuth integration with Google and GitHub
-- React Query for handling server actions functionality
-- Allows users to choose their preferred default currency, with automatic formatting and symbol adjustments
-- Enables adding, editing, and organizing categories for income and expenses
-- Displays transaction history for monthly and yearly periods
 
 ## Getting Started
 
-1. Clone the repository:
+### Prerequisites
+
+- Node.js 20 or newer
+- pnpm
+- A PostgreSQL database on [Neon](https://neon.tech)
+- A Google OAuth client and a Gemini API key (see [Environment Variables](#environment-variables))
+
+### Installation
+
+1. Clone the repository and enter the project directory:
+
+   ```sh
+   git clone https://github.com/ahmadammarm/fulusin.git
+   cd fulusin
+   ```
+
+2. Install dependencies. This also generates the Prisma client into `src/generated/prisma`:
+
+   ```sh
+   pnpm install
+   ```
+
+3. Create your environment file and fill in the values:
+
+   ```sh
+   cp .env.example .env
+   ```
+
+4. Apply the database migrations:
+
+   ```sh
+   pnpm prisma migrate deploy
+   ```
+
+5. Start the development server:
+
+   ```sh
+   pnpm dev
+   ```
+
+6. Open [http://localhost:3000](http://localhost:3000).
+
+## Environment Variables
+
+All variables are documented in `.env.example`.
+
+| Variable | Required | Description |
+| --- | --- | --- |
+| `DATABASE_URL` | Yes | PostgreSQL connection string. The Prisma client uses the Neon serverless adapter, so use a Neon connection string. |
+| `NEXTAUTH_SECRET` | Yes | Secret used to encrypt session tokens. Changing it signs out every user. |
+| `NEXTAUTH_URL` | Recommended | Public base URL of the app, for example `http://localhost:3000` locally. |
+| `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID. |
+| `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret. |
+| `GEMINI_API_KEY` | For Education | Google Gemini API key used by the Education assistant. |
+| `CRON_SECRET` | For cron | Secret that authorizes `/api/cron/recurring`. Use a different value in every environment. |
+
+Generate random secrets with:
+
 ```sh
-git clone https://github.com/ahmadammarm/fulusin.git
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
-2. Navigate to the project directory:
+For Google OAuth, add `<NEXTAUTH_URL>/api/auth/callback/google` as an authorized redirect URI in the Google Cloud Console.
+
+## Available Scripts
+
+| Command | Description |
+| --- | --- |
+| `pnpm dev` | Start the development server on port 3000. |
+| `pnpm build` | Apply migrations, type-check, lint, and build for production. |
+| `pnpm start` | Start the production server after a build. |
+| `pnpm lint` | Run ESLint. |
+| `pnpm lint:strict` | Run ESLint and fail on more than 10 warnings. |
+| `pnpm type-check` | Run the TypeScript compiler without emitting files. |
+| `pnpm test` | Run Vitest in watch mode. |
+| `pnpm test:run` | Run the test suite once. |
+| `pnpm history:resync` | Rebuild `MonthHistory` and `YearHistory` from transactions. Pass `--userId=<id>` to limit it to one user. |
+
+`pnpm build` runs `prisma migrate deploy` first, so it needs a reachable database.
+
+## Database
+
+The schema lives in `prisma/schema.prisma`. The generated client is written to `src/generated/prisma`, so application code imports Prisma types from `@/generated/prisma/client` rather than `@prisma/client`.
+
+| Command | Use it to |
+| --- | --- |
+| `pnpm prisma migrate dev --name <name>` | Create and apply a new migration during development. |
+| `pnpm prisma migrate deploy` | Apply pending migrations (CI, production, fresh setups). |
+| `pnpm prisma generate` | Regenerate the client after changing the schema. |
+| `pnpm prisma studio` | Browse the data in a local UI. |
+
+## Recurring Transactions and Cron
+
+Due recurring transactions are recorded in two ways:
+
+1. **When a user opens the Recurring tab.** The app processes that user's due schedules immediately.
+2. **On a daily schedule.** Vercel Cron calls `GET /api/cron/recurring` at 00:05 WIB (`5 17 * * *` UTC), as configured in `vercel.json`, and processes every user.
+
+The cron endpoint only accepts requests with the header `Authorization: Bearer <CRON_SECRET>`. Vercel adds this header automatically when `CRON_SECRET` is set in the project's environment variables.
+
+To trigger it manually, for example locally:
 
 ```sh
-cd fulusin
+curl -H "Authorization: Bearer <CRON_SECRET>" http://localhost:3000/api/cron/recurring
 ```
 
-3. Install dependencies:
-```bash
-pnpm install
-```
+This processes real data in the database that `DATABASE_URL` points to.
 
-4. Configure Environment Variable: Copy the file `.env.example` to `.env` and adjust it to your configuration:
+Each run records every missed occurrence, up to 366 per schedule. Next dates are calculated on the WIB calendar. Monthly schedules on days 29 to 31 fall on the last day of shorter months.
+
+## Testing
+
+Unit tests use Vitest and live next to the code they cover, as `*.test.ts` files in `src/`.
 
 ```sh
-cp .env.example .env
+pnpm test:run
 ```
 
-```
-NEXTAUTH_SECRET=
-DATABASE_URL=
-GOOGLE_CLIENT_ID=
-GOOGLE_CLIENT_SECRET=
-```
+The current suite covers budget and goal progress calculations and recurring date scheduling.
 
+## Deployment
 
-5. Run development server:
-```bash
-pnpm dev
-```
+The app is deployed on Vercel.
 
-## Getting Started with Docker
+1. Import the repository into Vercel.
+2. Add every variable from [Environment Variables](#environment-variables) under Project Settings, Environment Variables. Set `NEXTAUTH_URL` to the production domain.
+3. Deploy. The build applies pending migrations before compiling.
+4. Check Project Settings, Cron Jobs to confirm the recurring job is registered. Cron jobs only run on production deployments, and on the Hobby plan they run at most once a day.
 
-1. Clone the repository:
-```sh
-git clone https://github.com/ahmadammarm/fulusin.git
-```
+## Running with Docker
 
-2. Navigate to the project directory:
+The repository includes a `Dockerfile` and a `docker-compose.yaml`. The app container reads `.env` and applies migrations before starting.
 
 ```sh
-cd fulusin
-```
-
-3. Run the Docker Compose:
-
-```sh
-docker-compose up
-```
-
-or run in detach mode:
-```sh
+# Build and start in the background
 docker-compose up -d
-```
 
-4. To stop the Docker Compose:
-```sh
+# Stop and remove the containers
 docker-compose down
 ```
 
-Open [http://localhost:3000](http://localhost:3000) to view the application.
+The compose file also starts a local PostgreSQL 15 container on port 5432. The Prisma client is configured with the Neon serverless adapter, so point `DATABASE_URL` at a Neon database unless you change the adapter in `src/lib/prisma.ts`.
 
+## Contributing
 
-## Build and Deployment
+Contributions are welcome through issues and pull requests.
 
-```bash
-# Production build
-pnpm build
+### Branch strategy
 
-# Start production server
-pnpm start
-```
+| Branch | Purpose |
+| --- | --- |
+| `main` | Production |
+| `develop` | Active development and staging |
+| `feature/*` | New features |
+| `refactor/*` | Improvements that keep existing behavior |
 
-## This project is open for contributions. Feel free to submit issues or pull requests.
-### How to Contribute?
-Please follow the workflow below to keep the codebase clean and consistent.
+### Workflow
 
-### Branch Strategy
+1. Check out `develop` and create a branch from it:
 
-- main → Production branch
-- develop → Active development branch (staging env)
-- feature/* → New features
-- refactor/* New improvements without remove old functionallity
+   ```sh
+   git checkout develop
+   git pull
+   git checkout -b feature/your-feature-name
+   ```
 
-### Contribution Steps
+2. Make your changes, then make sure these pass:
 
-1. Clone the repository:
-```sh
-git clone https://github.com/ahmadammarm/fulusin.git
-```
+   ```sh
+   pnpm type-check
+   pnpm lint:strict
+   pnpm test:run
+   ```
 
-2. Checkout to the develop branch
-```sh
-git checkout develop
-```
+3. Commit with a clear message, for example `feat(planning): add budget copy action`.
+4. Push the branch and open a pull request to `develop`.
 
-3. Create a new branch
-```sh
-git checkout -b feature/your-feature-name
-```
-
-4. Make your changes
-5. Commit with a clear and descriptive message
-6. Push your new branch
-7. Open a Pull Request to the develop branch
-
-Do not submit pull requests directly to the main branch!
-
+Do not open pull requests directly against `main`.

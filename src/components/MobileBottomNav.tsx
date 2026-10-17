@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ReceiptText, Settings2, LogOut } from "lucide-react";
+import { LayoutDashboard, ReceiptText, Settings2, LogOut, Target } from "lucide-react";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -51,6 +51,12 @@ export default function MobileBottomNav() {
             isActive: pathname.startsWith("/dashboard/transactions"),
         },
         {
+            label: "Planning",
+            href: "/dashboard/planning",
+            icon: Target,
+            isActive: pathname.startsWith("/dashboard/planning"),
+        },
+        {
             label: "Manage",
             href: "/dashboard/manage",
             icon: Settings2,
@@ -63,7 +69,7 @@ export default function MobileBottomNav() {
             aria-label="Mobile Navigation"
             className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/90 dark:bg-card/95 backdrop-blur-lg border-t border-border/80 shadow-[0_-4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.3)] pb-[env(safe-area-inset-bottom,0px)]"
         >
-            <div className="grid grid-cols-4 h-16 max-w-md mx-auto px-2">
+            <div className="grid grid-cols-5 h-16 max-w-md mx-auto px-2">
                 {navItems.map((item) => {
                     const Icon = item.icon;
                     return (
