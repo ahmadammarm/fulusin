@@ -11,6 +11,7 @@ import {
 } from "@/app/api/statistics/categories/route";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Progress } from "./ui/progress";
+import CategoryIcon from "./CategoryIcon";
 import { CurrencySettings } from "@/generated/prisma/client";
 import { ArrowDownLeft, ArrowUpRight, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -146,9 +147,7 @@ function CategoriesStatisticsCard({
                                 <div key={item.category} className="flex flex-col gap-2">
                                     <div className="flex items-center justify-between text-xs sm:text-sm">
                                         <div className="flex items-center gap-2 min-w-0">
-                                            <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-muted/60 text-sm border border-border/50 shrink-0">
-                                                {item.categoryIcon || "🏷️"}
-                                            </span>
+                                            <CategoryIcon icon={item.categoryIcon} className="h-7 w-7 rounded-lg text-sm" />
                                             <span className="font-semibold text-foreground truncate">
                                                 {item.category}
                                             </span>

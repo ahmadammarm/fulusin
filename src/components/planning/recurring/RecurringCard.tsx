@@ -12,7 +12,8 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import ConfirmDeleteDialog from "@/components/planning/ConfirmDeleteDialog";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import CategoryIcon from "@/components/CategoryIcon";
 import { DeleteRecurringTransactionAction } from "@/actions/recurring";
 import { RecurringItem } from "@/app/api/recurring/route";
 import { RECURRING_FREQUENCY_LABELS } from "@/lib/recurring";
@@ -45,9 +46,7 @@ export default function RecurringCard({ rule, formatter }: RecurringCardProps) {
     return (
         <div className="flex flex-col rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs gap-4">
             <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/60 border border-border/50 text-lg shrink-0">
-                    {rule.categoryIcon || "🏷️"}
-                </span>
+                <CategoryIcon icon={rule.categoryIcon} />
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground truncate">{label}</p>
                     <p className="text-xs text-muted-foreground truncate">{rule.category}</p>
@@ -93,8 +92,9 @@ export default function RecurringCard({ rule, formatter }: RecurringCardProps) {
             <ConfirmDeleteDialog
                 open={isDeleteOpen}
                 setOpen={setIsDeleteOpen}
-                title="Delete Schedule"
-                description={`Stop repeating "${label}"? Transactions already recorded stay in your history.`}
+                title={`Stop repeating "${label}"?`}
+                description="No new transactions will be recorded from this schedule. Ones already recorded stay in your history."
+                confirmLabel="Delete schedule"
                 isPending={deleteMutation.isPending}
                 onConfirm={() => deleteMutation.mutate({ id: rule.id })}
             />

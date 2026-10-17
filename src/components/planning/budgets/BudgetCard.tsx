@@ -14,7 +14,8 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import BudgetFormDialog from "@/components/planning/budgets/BudgetFormDialog";
-import ConfirmDeleteDialog from "@/components/planning/ConfirmDeleteDialog";
+import ConfirmDeleteDialog from "@/components/ConfirmDeleteDialog";
+import CategoryIcon from "@/components/CategoryIcon";
 import { DeleteBudgetAction } from "@/actions/budgets";
 import { BudgetWithProgress } from "@/app/api/budgets/route";
 import { BUDGET_STATUS_STYLES, getBudgetProgress } from "@/lib/planning";
@@ -50,9 +51,7 @@ export default function BudgetCard({ budget, period, formatter }: BudgetCardProp
     return (
         <div className="rounded-2xl border border-border/80 bg-card p-4 sm:p-5 shadow-xs space-y-4">
             <div className="flex items-center gap-3">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-muted/60 border border-border/50 text-lg shrink-0">
-                    {budget.categoryIcon || "🏷️"}
-                </span>
+                <CategoryIcon icon={budget.categoryIcon} />
                 <div className="min-w-0 flex-1">
                     <p className="text-sm font-semibold text-foreground truncate">{budget.category}</p>
                     <p className="text-xs text-muted-foreground font-mono truncate">
@@ -100,8 +99,8 @@ export default function BudgetCard({ budget, period, formatter }: BudgetCardProp
             <ConfirmDeleteDialog
                 open={isDeleteOpen}
                 setOpen={setIsDeleteOpen}
-                title="Delete Budget"
-                description={`Remove the "${budget.category}" spending limit for this month? Your transactions are not affected.`}
+                title={`Delete the ${budget.category} budget?`}
+                description="This removes the spending limit for this month only. Your transactions stay as they are."
                 isPending={deleteMutation.isPending}
                 onConfirm={() => deleteMutation.mutate({ id: budget.id })}
             />
