@@ -112,6 +112,8 @@ fulusin/
 │   ├── providers/             # NextAuth and React Query providers
 │   ├── schemas/               # Zod validation schemas
 │   └── proxy.ts               # Route protection
+├── tests/
+│   └── unit/lib/              # Vitest unit tests, one folder per src/lib module
 ├── deployment/Dockerfile
 ├── docker-compose.yaml
 └── vercel.json                # Vercel Cron schedule
@@ -231,13 +233,22 @@ Each run records every missed occurrence, up to 366 per schedule. Next dates are
 
 ## Testing
 
-Unit tests use Vitest and live next to the code they cover, as `*.test.ts` files in `src/`.
+Unit tests use Vitest and live in `tests/unit/`, mirroring the source path. Each module in `src/lib` gets its own folder:
+
+```
+tests/unit/lib/
+├── dateHelper/dateHelper.test.ts   # src/lib/dateHelper.ts
+├── planning/planning.test.ts       # src/lib/planning.ts
+└── recurring/recurring.test.ts     # src/lib/recurring.ts
+```
+
+Name new test files `<module>.test.ts` and import the code under test through the `@/` alias, for example `import { getBudgetProgress } from "@/lib/planning"`.
 
 ```sh
 pnpm test:run
 ```
 
-The current suite covers budget and goal progress calculations and recurring date scheduling.
+The current suite covers budget and goal progress, recurring date scheduling, and the WIB month and period helpers.
 
 ## Deployment
 
