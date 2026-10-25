@@ -1,15 +1,10 @@
 import { auth } from "@/lib/auth";
-import prisma from "@/lib/prisma";
 import { overviewQuerySchema } from "@/schemas/overview";
-import { getWibDateRange } from "@/lib/dateHelper";
+import { getBalanceStatistics } from "@/lib/statistics";
 import { redirect } from "next/navigation";
 import { NextRequest, NextResponse } from "next/server";
-import { roundCurrency } from "@/lib/financialMath";
 
-export interface BalanceStatistics {
-    expense: number;
-    income: number;
-}
+export type { BalanceStatistics } from "@/lib/statistics";
 
 export async function GET(request: NextRequest) {
     const session = await auth();
@@ -48,30 +43,4 @@ export async function GET(request: NextRequest) {
             { status: 500 }
         );
     }
-}
-
-async function getBalanceStatistics(userId: string, from: Date, to: Date): Promise<BalanceStatistics> {
-    const { start, end } = getWibDateRange(from, to);
-
-    const totals = await prisma.transaction.groupBy({
-        by: ["type"],
-        where: {
-            userId,
-            date: {
-                gte: start,
-                lte: end,
-            },
-        },
-        _sum: {
-            amount: true,
-        },
-    });
-
-    const expenseRecord = totals.find((t) => t.type === "expense");
-    const incomeRecord = totals.find((t) => t.type === "income");
-
-    return {
-        expense: roundCurrency(expenseRecord?._sum.amount ?? 0),
-        income: roundCurrency(incomeRecord?._sum.amount ?? 0),
-    };
 }
