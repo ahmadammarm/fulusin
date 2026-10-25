@@ -33,6 +33,8 @@ model User {
     budgets               Budget[]
     goals                 Goal[]
     recurringTransactions RecurringTransaction[]
+    aiUsages              AiUsage[]
+    aiInsights            AiInsight[]
 }
 
 model Account {
@@ -171,4 +173,29 @@ model RecurringTransaction {
     updatedAt    DateTime @updatedAt
 
     user         User     @relation(fields: [userId], references: [id])
+}
+
+model AiUsage {
+    userId  String
+    feature String   // "education" | "insight"
+    day     DateTime // WIB start of day
+    count   Int      @default(0)
+
+    user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@id([userId, feature, day])
+}
+
+model AiInsight {
+    id        String   @id @default(uuid())
+    userId    String
+    from      DateTime
+    to        DateTime
+    dataHash  String
+    result    Json
+    createdAt DateTime @default(now())
+
+    user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+    @@unique([userId, from, to, dataHash])
 }
