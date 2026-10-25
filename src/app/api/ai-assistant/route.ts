@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import geminiModel from "@/lib/gemini";
+import { auth } from "@/lib/auth";
 
 export async function POST(request: NextRequest) {
+    const session = await auth();
+    if (!session?.user) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
     try {
         const { userQuestion } = await request.json();
 

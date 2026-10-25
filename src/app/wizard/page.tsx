@@ -11,7 +11,7 @@ export default async function WizardPage() {
 
     const session = await auth();
     if (!session || !session.user) {
-        redirect("/signin");
+        redirect("/sign-in");
     }
 
     const user = session.user;
