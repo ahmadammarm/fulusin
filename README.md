@@ -28,6 +28,7 @@ Fulusin is a web-based personal finance tracker. It helps people record income a
 - Income, expense, and balance summary for any date range.
 - Top income and expense categories for the selected range.
 - Monthly and yearly history charts.
+- AI insights for the selected range: a summary, highlights, warnings, and suggestions based on the period's totals, category spending, budgets, goals, and upcoming recurring transactions. Insights are generated on request and cached until the underlying data changes.
 
 **Transactions**
 - Record income and expenses with a category, description, and date.
@@ -45,7 +46,11 @@ Fulusin is a web-based personal finance tracker. It helps people record income a
 - **Recurring:** schedule income or expenses that repeat daily, weekly, monthly, or yearly. Each occurrence is recorded as a real transaction when it falls due, including any occurrences missed while the app was not used.
 
 **Education**
-- An AI assistant powered by Google Gemini that explains financial concepts with a definition, key ideas, practical strategies, and an example.
+- An AI assistant powered by Google Gemini that answers free-form personal finance questions with a definition, key ideas, practical strategies, and an example. Answers stream in as they are generated.
+
+**AI usage limits**
+- Each user can make 30 Education requests and 10 insight requests per day. Limits reset at midnight WIB.
+- Only aggregated figures are sent to Gemini for insights. Transaction descriptions never leave the app.
 
 ## Tech Stack
 
@@ -59,7 +64,7 @@ Fulusin is a web-based personal finance tracker. It helps people record income a
 | Data fetching | TanStack React Query v5, Next.js Server Actions |
 | Forms and validation | React Hook Form, Zod |
 | Charts and motion | Recharts, Framer Motion, Three.js |
-| AI | Google Generative AI (`gemini-2.5-flash-lite`) |
+| AI | Google Gen AI SDK (`@google/genai`) with `gemini-3.8-flash` |
 | Testing | Vitest |
 | Hosting | Vercel (Docker is also supported) |
 
@@ -174,7 +179,8 @@ All variables are documented in `.env.example`.
 | `NEXTAUTH_URL` | Recommended | Public base URL of the app, for example `http://localhost:3000` locally. |
 | `GOOGLE_CLIENT_ID` | Yes | Google OAuth client ID. |
 | `GOOGLE_CLIENT_SECRET` | Yes | Google OAuth client secret. |
-| `GEMINI_API_KEY` | For Education | Google Gemini API key used by the Education assistant. |
+| `GEMINI_API_KEY` | For AI features | Google Gemini API key used by the Education assistant and AI insights. |
+| `GEMINI_MODEL` | No | Gemini model used by every AI feature. Defaults to `gemini-3.8-flash`. |
 | `CRON_SECRET` | For cron | Secret that authorizes `/api/cron/recurring`. Use a different value in every environment. |
 
 Generate random secrets with:
@@ -237,7 +243,10 @@ Unit tests use Vitest and live in `tests/unit/`, mirroring the source path. Each
 
 ```
 tests/unit/lib/
+├── aiInsight/aiInsight.test.ts     # src/lib/aiInsight.ts
+├── aiQuota/aiQuota.test.ts         # src/lib/aiQuota.ts
 ├── dateHelper/dateHelper.test.ts   # src/lib/dateHelper.ts
+├── gemini/gemini.test.ts           # src/lib/gemini.ts
 ├── planning/planning.test.ts       # src/lib/planning.ts
 └── recurring/recurring.test.ts     # src/lib/recurring.ts
 ```
@@ -248,7 +257,7 @@ Name new test files `<module>.test.ts` and import the code under test through th
 pnpm test:run
 ```
 
-The current suite covers budget and goal progress, recurring date scheduling, and the WIB month and period helpers.
+The current suite covers budget and goal progress, recurring date scheduling, the WIB month and period helpers, the AI insight snapshot, AI quota counting, and Gemini output validation and error mapping. Modules that import Prisma are tested with `vi.mock("@/lib/prisma")`, so the suite never needs a database.
 
 ## Deployment
 

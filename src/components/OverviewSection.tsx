@@ -8,6 +8,7 @@ import { MAX_DATE_RANGE_DAYS } from "@/lib/maxDateRangeConstant";
 import { toast } from "sonner";
 import StatisticsCard from "./StatisticsCard";
 import CategoriesStatistics from "./CategoriesStatistics";
+import AiInsightCard from "./AiInsightCard";
 import {
     CategoriesStatisticsSkeleton,
     StatisticsCardSkeleton,
@@ -68,6 +69,8 @@ export default function OverviewSection({ currencySettings }: { currencySettings
                         to={dateRange.to}
                     />
                 </Suspense>
+
+                <AiInsightCard currencySettings={currencySettings} from={dateRange.from} to={dateRange.to} />
             </div>
         </section>
     );
